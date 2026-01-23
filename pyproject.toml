@@ -24,7 +24,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 requires-python = '>=3.10,<4.0'
-dependencies = []
+dependencies = [
+    "pydantic>=2.0.0,<3.0.0",
+]
 
 [project.urls]
 homepage = "https://github.com/docling-project/docling-metric-types"
