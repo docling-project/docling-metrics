@@ -1,0 +1,39 @@
+name: Run checks
+
+on:
+  workflow_call:
+    inputs:
+      push_coverage:
+          type: boolean
+          description: "If true, the coverage results are pushed to codecov.io."
+          default: true
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+
+jobs:
+  run-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras
+      - name: Run styling check
+        run: uv run --no-sync pre-commit run --all-files
+      - name: Testing
+        run: |
+          uv run --no-sync pytest -v --cov=docling_metric_types --cov-report=xml tests
+      - name: Upload coverage to Codecov
+        if: inputs.push_coverage
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml

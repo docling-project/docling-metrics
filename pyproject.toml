@@ -1,0 +1,90 @@
+[project]
+name = "docling-metric-types"
+version = "0.0.1" # DO NOT EDIT, updated automatically
+description = "Metric types and evaluation utilities for Docling document processing"
+license = "MIT"
+keywords = ["docling", "metrics", "evaluation", "types"]
+readme = "README.md"
+authors = [
+    { name = "Christoph Auer", email = "cau@zurich.ibm.com" },
+    { name = "Panos Vagenas", email = "pva@zurich.ibm.com" },
+    { name = "Ahmed Nassar", email = "ahn@zurich.ibm.com" },
+    { name = "Nikos Livathinos", email = "nli@zurich.ibm.com" },
+    { name = "Maxim Lysak", email = "mly@zurich.ibm.com" },
+    { name = "Michele Dolfi", email = "dol@zurich.ibm.com" },
+    { name = "Peter Staar", email = "taa@zurich.ibm.com" },
+]
+classifiers = [
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+]
+requires-python = '>=3.10,<4.0'
+dependencies = []
+
+[project.urls]
+homepage = "https://github.com/docling-project/docling-metric-types"
+repository = "https://github.com/docling-project/docling-metric-types"
+issues = "https://github.com/docling-project/docling-metric-types/issues"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["docling_metric_types*"]
+
+[dependency-groups]
+dev = [
+    "pre-commit~=3.7",
+    "mypy~=1.10",
+    "black~=24.4",
+    "isort~=5.10",
+    "autoflake~=2.0",
+    "flake8~=7.1",
+    "flake8-docstrings~=1.6",
+    "types-setuptools~=70.3",
+    "coverage~=7.6",
+    "pytest~=8.3",
+    "pytest-cov>=6.1.1",
+    "pytest-dependency~=0.6",
+    "pytest-xdist~=3.3",
+    "python-semantic-release~=7.32",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+py_version = 310
+
+[tool.mypy]
+pretty = true
+# strict = true
+no_implicit_optional = true
+python_version = "3.10"
+exclude = '^\\.venv/'
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "E501"]
+
+[tool.semantic_release]
+# for default values check:
+# https://github.com/python-semantic-release/python-semantic-release/blob/v7.32.2/semantic_release/defaults.cfg
+
+version_source = "tag_only"
+branch = "main"
+
+# configure types which should trigger minor and patch version bumps respectively
+# (note that they must be a subset of the configured allowed types):
+parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
+parser_angular_minor_types = "feat"
+parser_angular_patch_types = "fix,perf"
