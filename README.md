@@ -1,10 +1,20 @@
 # docling-metric-types
 
-Metric types and evaluation utilities for Docling document processing.
+A minimal interface for computing and aggregating metrics on paired data samples.
 
-## Features
+## Overview
 
-*Coming soon*
+This package provides base types for building metrics that:
+- Evaluate pairs of input samples (e.g., ground-truth vs. prediction)
+- Produce per-sample results traceable by sample ID
+- Aggregate results across multiple samples
+
+## Core Types
+
+- **`BaseInputSample`** — Input data with a unique `id` shared between sample pairs
+- **`BaseSampleResult`** — Output of evaluating a single sample pair
+- **`BaseAggregateResult`** — Output of aggregating multiple sample results
+- **`BaseMetric`** — Abstract interface defining `evaluate_sample`, `aggregate`, and `evaluate_dataset`
 
 ## Installation
 
