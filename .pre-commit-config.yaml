@@ -1,22 +1,19 @@
 fail_fast: true
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.5
+    hooks:
+      - id: ruff-format
+        name: "Ruff formatter"
+        args: [--config=pyproject.toml]
+      - id: ruff
+        name: "Ruff linter"
+        args: [--exit-non-zero-on-fix, --fix, --config=pyproject.toml]
   - repo: local
     hooks:
-      - id: black
-        name: Black
-        entry: uv run --no-sync black docling_metric_types tests
-        pass_filenames: false
-        language: system
-        files: '\.py$'
-      - id: isort
-        name: isort
-        entry: uv run --no-sync isort docling_metric_types tests
-        pass_filenames: false
-        language: system
-        files: '\.py$'
       - id: mypy
         name: MyPy
-        entry: uv run --no-sync mypy docling_metric_types tests
+        entry: uv run --no-sync mypy docling_metric_types
         pass_filenames: false
         language: system
         files: '\.py$'
@@ -24,3 +21,4 @@ repos:
     rev: 0.7.8
     hooks:
       - id: uv-lock
+        name: uv up-to-date
