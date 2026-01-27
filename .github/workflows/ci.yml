@@ -10,7 +10,7 @@ on:
 
 jobs:
   code-checks:
-    if: ${{ github.event_name == 'push' || (github.event.pull_request.head.repo.full_name != 'docling-project/docling-metric-types') }}
+    if: ${{ github.event_name == 'push' || (github.event.pull_request.head.repo.full_name != 'docling-project/docling-metrics') }}
     uses: ./.github/workflows/job-checks.yml
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

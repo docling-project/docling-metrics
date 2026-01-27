@@ -25,12 +25,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
       - name: Install dependencies
-        run: uv sync --frozen --all-extras
+        run: uv sync --frozen --all-extras --all-packages
       - name: Run styling check
         run: uv run --no-sync pre-commit run --all-files
       - name: Testing
         run: |
-          uv run --no-sync pytest -v --cov=docling_metric_types --cov-report=xml tests
+          uv run --no-sync pytest -v --cov --cov-report=xml packages/*/tests
       - name: Upload coverage to Codecov
         if: inputs.push_coverage
         uses: codecov/codecov-action@v5
