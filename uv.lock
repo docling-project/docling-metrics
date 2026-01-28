@@ -4,6 +4,7 @@ requires-python = ">=3.10, <4.0"
 
 [manifest]
 members = [
+    "docling-metric-hello-world",
     "docling-metrics-core",
     "docling-metrics-workspace",
 ]
@@ -382,6 +383,35 @@ wheels = [
 ]
 
 [[package]]
+name = "docling-metric-hello-world"
+version = "0.0.1"
+source = { editable = "packages/docling-metric-hello-world" }
+dependencies = [
+    { name = "docling-metrics-core" },
+]
+
+[package.dev-dependencies]
+test = [
+    { name = "coverage" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-dependency" },
+    { name = "pytest-xdist" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "docling-metrics-core", editable = "packages/docling-metrics-core" }]
+
+[package.metadata.requires-dev]
+test = [
+    { name = "coverage", specifier = "~=7.6" },
+    { name = "pytest", specifier = "~=8.3" },
+    { name = "pytest-cov", specifier = ">=6.1.1" },
+    { name = "pytest-dependency", specifier = "~=0.6" },
+    { name = "pytest-xdist", specifier = "~=3.3" },
+]
+
+[[package]]
 name = "docling-metrics-core"
 version = "0.0.1"
 source = { editable = "packages/docling-metrics-core" }
@@ -418,6 +448,7 @@ source = { virtual = "." }
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
+    { name = "docling-metric-hello-world" },
     { name = "docling-metrics-core" },
     { name = "mypy" },
     { name = "pre-commit" },
@@ -435,6 +466,7 @@ dev = [
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage", specifier = "~=7.6" },
+    { name = "docling-metric-hello-world", editable = "packages/docling-metric-hello-world" },
     { name = "docling-metrics-core", editable = "packages/docling-metrics-core" },
     { name = "mypy", specifier = "~=1.10" },
     { name = "pre-commit", specifier = "~=3.7" },
