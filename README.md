@@ -6,7 +6,7 @@ Monorepo for Docling metric packages — types, evaluators, and scoring utilitie
 
 | Package | Description |
 |---------|-------------|
-| [docling-metric-types](packages/docling-metric-types/) | Base metric types and abstract interfaces |
+| [docling-metrics-core](packages/docling-metrics-core/) | Base metric types and abstract interfaces |
 
 ## Development
 
@@ -20,7 +20,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 
 # Run tests for a specific package
-uv run pytest packages/docling-metric-types/tests
+uv run pytest packages/docling-metrics-core/tests
 
 # Run all tests
 uv run pytest packages/*/tests
@@ -37,10 +37,10 @@ Changes to any workspace package are immediately available to all other packages
 2. If it depends on another workspace package, add it to `[project] dependencies` and declare `[tool.uv.sources]`:
    ```toml
    [project]
-   dependencies = ["docling-metric-types"]
+   dependencies = ["docling-metrics-core"]
 
    [tool.uv.sources]
-   docling-metric-types = { workspace = true }
+   docling-metrics-core = { workspace = true }
    ```
 3. Run `uv sync` to regenerate the lock file
 

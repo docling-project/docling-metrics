@@ -23,11 +23,11 @@ dev = [
     "pytest-dependency~=0.6",
     "pytest-xdist~=3.3",
     # Workspace members — ensures `uv sync` installs all packages
-    "docling-metric-types",
+    "docling-metrics-core",
 ]
 
 [tool.uv.sources]
-docling-metric-types = { workspace = true }
+docling-metrics-core = { workspace = true }
 
 [tool.mypy]
 pretty = true

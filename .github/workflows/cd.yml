@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         options:
-          - docling-metric-types
+          - docling-metrics-core
           # Add future packages here
 
 jobs:

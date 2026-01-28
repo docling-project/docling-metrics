@@ -128,7 +128,7 @@ More detailed options are described in the [uv documentation](https://docs.astra
 uv run pytest packages/*/tests
 
 # A specific package
-uv run pytest packages/docling-metric-types/tests
+uv run pytest packages/docling-metrics-core/tests
 ```
 
 #### Add a New Dependency
@@ -136,7 +136,7 @@ uv run pytest packages/docling-metric-types/tests
 Dependencies are managed per-package. To add a dependency to a specific package:
 
 ```bash
-uv add --package docling-metric-types NAME
+uv add --package docling-metrics-core NAME
 ```
 
 

@@ -1,4 +1,4 @@
-# docling-metric-types
+# docling-metrics-core
 
 A minimal interface for computing and aggregating metrics on paired data samples.
 
@@ -19,7 +19,7 @@ This package provides base types for building metrics that:
 ## Installation
 
 ```bash
-pip install docling-metric-types
+pip install docling-metrics-core
 ```
 
 ## Requirements

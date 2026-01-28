@@ -4,7 +4,7 @@ requires-python = ">=3.10, <4.0"
 
 [manifest]
 members = [
-    "docling-metric-types",
+    "docling-metrics-core",
     "docling-metrics-workspace",
 ]
 
@@ -382,9 +382,9 @@ wheels = [
 ]
 
 [[package]]
-name = "docling-metric-types"
+name = "docling-metrics-core"
 version = "0.0.1"
-source = { editable = "packages/docling-metric-types" }
+source = { editable = "packages/docling-metrics-core" }
 dependencies = [
     { name = "pydantic" },
 ]
@@ -418,7 +418,7 @@ source = { virtual = "." }
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
-    { name = "docling-metric-types" },
+    { name = "docling-metrics-core" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -435,7 +435,7 @@ dev = [
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage", specifier = "~=7.6" },
-    { name = "docling-metric-types", editable = "packages/docling-metric-types" },
+    { name = "docling-metrics-core", editable = "packages/docling-metrics-core" },
     { name = "mypy", specifier = "~=1.10" },
     { name = "pre-commit", specifier = "~=3.7" },
     { name = "pytest", specifier = "~=8.3" },
