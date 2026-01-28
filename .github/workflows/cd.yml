@@ -9,7 +9,8 @@ on:
         type: choice
         options:
           - docling-metrics-core
-          # Add future packages here
+          - docling-metric-hello-world
+          - docling-metric-hello-world-cpp
 
 jobs:
   code-checks:

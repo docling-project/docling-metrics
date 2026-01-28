@@ -25,11 +25,13 @@ dev = [
     # Workspace members — ensures `uv sync` installs all packages
     "docling-metrics-core",
     "docling-metric-hello-world",
+    "docling-metric-hello-world-cpp",
 ]
 
 [tool.uv.sources]
 docling-metrics-core = { workspace = true }
 docling-metric-hello-world = { workspace = true }
+docling-metric-hello-world-cpp = { workspace = true }
 
 [tool.mypy]
 pretty = true
