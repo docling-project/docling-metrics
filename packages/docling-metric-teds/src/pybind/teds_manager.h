@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <algorithm>
+#include <unordered_map>
 
 #include "node.h"
 #include "string_label.h"
@@ -18,6 +19,38 @@ using CostModelLD = cost_model::UnitCostModelLD<Label>;
 using LabelDictionary = label::LabelDictionary<Label>;
 
 
+struct TEDSampleEvaluation {
+    TEDSampleEvaluation(): TEDSampleEvaluation("") {}
+
+    TEDSampleEvaluation(const std::string& sid):
+        error_id(0), error_msg(""), id(sid), gt_tree_size(0), pred_tree_size(0), teds(-1.)
+    {}
+
+    int error_id;
+    std::string error_msg;
+    std::string id;
+    int gt_tree_size;
+    int pred_tree_size;
+
+    // TODO: How to have teds with/without content
+    double teds;
+};
+
+
+struct TEDSDatasetEvaluation {
+    TEDSDatasetEvaluation(): TEDSDatasetEvaluation("") {}
+
+    TEDSDatasetEvaluation(const std::string& sid):
+        error_id(0), error_msg(""), teds(-1.)
+    {}
+
+    int error_id;
+    std::string error_msg;
+    double teds;
+    std::unordered_map<std::string, TEDSampleEvaluation> sample_evaluations;
+};
+
+
 class TEDSManager {
 public:
     TEDSManager();
@@ -25,17 +58,24 @@ public:
     /**
      * Evaluate a single sample
      */
-    double eval_sample(const std::string& gt_bracket, const std::string& pred_bracket);
+    TEDSampleEvaluation eval_sample(
+        const std::string& id,
+        const std::string& gt_bracket,
+        const std::string& pred_bracket
 
-    // void aggregate();
-    //
-    // void eval_dataset();
+    );
+
+    void aggregate();
+    TEDSDatasetEvaluation eval_dataset();
 
 private:
     parser::BracketNotationParser<Label> bnp_;
     LabelDictionary ld_;
     std::unique_ptr<CostModelLD> ucm_ptr_ = nullptr;
     std::unique_ptr<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>> apted_ptr_;
+
+    // Accumulated evaluations per sample
+    std::unordered_map<std::string, TEDSampleEvaluation> sample_evaluations;
 };
 
 
@@ -50,24 +90,27 @@ TEDSManager::TEDSManager():
     std::cout << "Initializing TEDSManager\n";
 }
 
-double TEDSManager::eval_sample(const std::string& gt_bracket, const std::string& pred_bracket) {
-    /*
-     * TODO:
-     * - Throw exception of our type in case of invalid input
-     * - Return object with full information: teds, tree sizes, ...
-     */
+TEDSampleEvaluation TEDSManager::eval_sample(
+    const std::string& id,
+    const std::string& gt_bracket,
+    const std::string& pred_bracket
+) {
+    // Return object with full information: teds, tree sizes, ...
+    TEDSampleEvaluation eval_sample(id);
 
     // Create gt_tree
     if (!bnp_.validate_input(gt_bracket)) {
-        std::cerr << "Incorrect format of source tree. Is the number of opening and closing brackets equal?" << std::endl;
-        return -1.;
+        eval_sample.error_id = 1;
+        eval_sample.error_msg = "Incorrect format of the ground truth input";
+        return eval_sample;
     }
     const node::Node<Label> gt_tree = bnp_.parse_single(gt_bracket);
 
     // Create pred_tree
     if (!bnp_.validate_input(pred_bracket)) {
-        std::cerr << "Incorrect format of destination tree. Is the number of opening and closing brackets equal?" << std::endl;
-        return -1.;
+        eval_sample.error_id = 2;
+        eval_sample.error_msg = "Incorrect format of the predictions input";
+        return eval_sample;
     }
     const node::Node<Label> pred_tree = bnp_.parse_single(pred_bracket);
 
@@ -84,7 +127,21 @@ double TEDSManager::eval_sample(const std::string& gt_bracket, const std::string
     double distance = apted_ptr_->ted(ti1, ti2);
     double teds = 1. - (distance / max_tree_size);
 
-    return teds;
+    eval_sample.gt_tree_size = gt_tree_size;
+    eval_sample.pred_tree_size = pred_tree_size;
+    eval_sample.teds = teds;
+
+    return eval_sample;
+}
+
+void TEDSManager::aggregate() {
+    // TODO: Should the computation of the TEDS happen here or in the eval_dataset() ?
+}
+
+
+TEDSDatasetEvaluation TEDSManager::eval_dataset() {
+    TEDSDatasetEvaluation ds_evaluation;
+    return ds_evaluation;
 }
 
 } // namespace docling
