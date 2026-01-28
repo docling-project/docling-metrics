@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Invariants
-readonly BUILD_TYPE="Debug"
+readonly BUILD_TYPE="Debug"  # One of ["Debug", "Release"]
 readonly BUILD_DIR="build"
 readonly INSTALL_DIR="install_root"
 readonly EXTERNALS_DIR="externals"
@@ -16,13 +16,6 @@ mkdir "${BUILD_DIR}"
 ###########################################################################################
 # Compile
 
-# cmake \
-#     -S . \
-#     -B "${BUILD_DIR}" \
-#     -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
-#     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-#     -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
-
 cmake \
     -S . \
     -B "${BUILD_DIR}" \
@@ -34,7 +27,7 @@ cmake --build "${BUILD_DIR}" -j16
 
 ###########################################################################################
 # Test
-# ctest --test-dir "${BUILD_DIR}"
+ctest --test-dir "${BUILD_DIR}"
 
 
 ###########################################################################################
