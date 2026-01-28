@@ -2,6 +2,14 @@ name: "Run CD"
 
 on:
   workflow_dispatch:
+    inputs:
+      package:
+        description: "Package to release"
+        required: true
+        type: choice
+        options:
+          - docling-metrics-core
+          # Add future packages here
 
 jobs:
   code-checks:
@@ -56,6 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TARGET_VERSION: ${{ needs.pre-release-check.outputs.TARGET_TAG_V }}
+          PACKAGE: ${{ inputs.package }}
           CHGLOG_FILE: CHANGELOG.md
         run: ./.github/scripts/release.sh
         shell: bash

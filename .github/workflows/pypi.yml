@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/docling-metric-types
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
@@ -21,9 +20,15 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+      - name: Identify package from tag
+        id: meta
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          PKG="${TAG%-v*}"
+          echo "package=${PKG}" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: uv sync --all-extras --all-packages
       - name: Build
-        run: uv build
+        run: uv build --package ${{ steps.meta.outputs.package }}
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

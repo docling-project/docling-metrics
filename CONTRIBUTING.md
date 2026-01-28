@@ -2,10 +2,10 @@
 Our project welcomes external contributions. If you have an itch, please feel
 free to scratch it.
 
-To contribute code or documentation, please submit a [pull request](https://github.com/docling-project/docling-metric-types/pulls).
+To contribute code or documentation, please submit a [pull request](https://github.com/docling-project/docling-metrics/pulls).
 
 A good way to familiarize yourself with the codebase and contribution process is
-to look for and tackle low-hanging fruit in the [issue tracker](https://github.com/docling-project/docling-metric-types/issues).
+to look for and tackle low-hanging fruit in the [issue tracker](https://github.com/docling-project/docling-metrics/issues).
 Before embarking on a more ambitious contribution, please quickly [get in touch](#communication) with us.
 
 For general questions or support requests, please refer to the [discussion section](https://github.com/docling-project/docling/discussions)
@@ -17,14 +17,14 @@ cannot be accepted at all!**
 
 ### Proposing New Features
 
-If you would like to implement a new feature, please [raise an issue](https://github.com/docling-project/docling-metric-types/issues)
+If you would like to implement a new feature, please [raise an issue](https://github.com/docling-project/docling-metrics/issues)
 before sending a pull request so the feature can be discussed. This is to avoid
 you spending valuable time working on a feature that the project developers
 are not interested in accepting into the codebase.
 
 ### Fixing Bugs
 
-If you would like to fix a bug, please [raise an issue](https://github.com/docling-project/docling-metric-types/issues) before sending a
+If you would like to fix a bug, please [raise an issue](https://github.com/docling-project/docling-metrics/issues) before sending a
 pull request so it can be tracked.
 
 ### Merge Approval
@@ -100,25 +100,15 @@ To install `uv`, follow the documentation here: https://docs.astral.sh/uv/gettin
 
 3. The official guidelines linked above include useful details on configuring autocomplete for most shell environments, e.g., Bash and Zsh.
 
-#### Create a Virtual Environment and Install Dependencies
+#### Install All Packages
 
-To create the Virtual Environment, run:
-
-```bash
-uv venv
-```
-
-The virtual environment can be "activated" to make its packages available:
-
-```bash
-source .venv/bin/activate
-```
-
-Then, to install dependencies, run:
+This repository is a [uv workspace](https://docs.astral.sh/uv/concepts/workspaces/). All packages under `packages/` are installed in editable mode into a single virtual environment:
 
 ```bash
 uv sync
 ```
+
+This installs every workspace package plus all dev dependencies. Changes to any package's source code are immediately visible to all other packages.
 
 **(Advanced) Use a Specific Python Version**
 
@@ -126,15 +116,27 @@ If you need to work with a specific (older) version of Python, run:
 
 ```bash
 uv venv --python 3.12
+uv sync
 ```
 
 More detailed options are described in the [uv documentation](https://docs.astral.sh/uv/pip/environments).
 
+#### Run Tests
+
+```bash
+# All packages
+uv run pytest packages/*/tests
+
+# A specific package
+uv run pytest packages/docling-metrics-core/tests
+```
 
 #### Add a New Dependency
 
+Dependencies are managed per-package. To add a dependency to a specific package:
+
 ```bash
-uv add NAME
+uv add --package docling-metrics-core NAME
 ```
 
 

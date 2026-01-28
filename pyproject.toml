@@ -1,43 +1,14 @@
 [project]
-name = "docling-metric-types"
-version = "0.0.1" # DO NOT EDIT, updated automatically
-description = "Metric types and evaluation utilities for Docling document processing"
-license = "MIT"
-keywords = ["docling", "metrics", "evaluation", "types"]
-readme = "README.md"
-authors = [
-    { name = "Christoph Auer", email = "cau@zurich.ibm.com" },
-    { name = "Panos Vagenas", email = "pva@zurich.ibm.com" },
-    { name = "Ahmed Nassar", email = "ahn@zurich.ibm.com" },
-    { name = "Nikos Livathinos", email = "nli@zurich.ibm.com" },
-    { name = "Maxim Lysak", email = "mly@zurich.ibm.com" },
-    { name = "Michele Dolfi", email = "dol@zurich.ibm.com" },
-    { name = "Peter Staar", email = "taa@zurich.ibm.com" },
-]
-classifiers = [
-    "Operating System :: MacOS :: MacOS X",
-    "Operating System :: POSIX :: Linux",
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Programming Language :: Python :: 3",
-]
+name = "docling-metrics-workspace"
+version = "0.0.0"
 requires-python = '>=3.10,<4.0'
-dependencies = [
-    "pydantic>=2.0.0,<3.0.0",
-]
-
-[project.urls]
-homepage = "https://github.com/docling-project/docling-metric-types"
-repository = "https://github.com/docling-project/docling-metric-types"
-issues = "https://github.com/docling-project/docling-metric-types/issues"
 
 [tool.uv]
-package = true
+package = false
+default-groups = ["dev"]
 
-[tool.setuptools.packages.find]
-include = ["docling_metric_types*"]
+[tool.uv.workspace]
+members = ["packages/*"]
 
 [dependency-groups]
 dev = [
@@ -45,13 +16,18 @@ dev = [
     "mypy~=1.10",
     "ruff~=0.11",
     "types-setuptools~=70.3",
+    "python-semantic-release~=7.32",
     "coverage~=7.6",
     "pytest~=8.3",
     "pytest-cov>=6.1.1",
     "pytest-dependency~=0.6",
     "pytest-xdist~=3.3",
-    "python-semantic-release~=7.32",
+    # Workspace members — ensures `uv sync` installs all packages
+    "docling-metrics-core",
 ]
+
+[tool.uv.sources]
+docling-metrics-core = { workspace = true }
 
 [tool.mypy]
 pretty = true
@@ -100,17 +76,4 @@ classmethod-decorators = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"]
-"tests/*.py" = ["ASYNC"] # Disable ASYNC check for tests
-
-[tool.semantic_release]
-# for default values check:
-# https://github.com/python-semantic-release/python-semantic-release/blob/v7.32.2/semantic_release/defaults.cfg
-
-version_source = "tag_only"
-branch = "main"
-
-# configure types which should trigger minor and patch version bumps respectively
-# (note that they must be a subset of the configured allowed types):
-parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
-parser_angular_minor_types = "feat"
-parser_angular_patch_types = "fix,perf"
+"**/tests/*.py" = ["ASYNC"] # Disable ASYNC check for tests
