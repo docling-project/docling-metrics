@@ -24,10 +24,12 @@ dev = [
     "pytest-xdist~=3.3",
     # Workspace members — ensures `uv sync` installs all packages
     "docling-metrics-core",
+    "docling-metric-hello-world",
 ]
 
 [tool.uv.sources]
 docling-metrics-core = { workspace = true }
+docling-metric-hello-world = { workspace = true }
 
 [tool.mypy]
 pretty = true
@@ -77,3 +79,7 @@ classmethod-decorators = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"]
 "**/tests/*.py" = ["ASYNC"] # Disable ASYNC check for tests
+
+[tool.pytest.ini_options]
+# Use importlib import mode for monorepo compatibility
+addopts = "--import-mode=importlib"
