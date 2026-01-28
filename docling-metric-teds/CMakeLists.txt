@@ -1,0 +1,210 @@
+cmake_minimum_required(VERSION 3.14)
+
+
+#################################################################################
+# Names and versions
+#
+
+set(teds_project_name "docling-metrics-teds")
+set(teds_cli_name "docling_metric_teds_cli")
+set(teds_pybind_lib_name "docling_metric_teds")
+
+project(${teds_project_name} VERSION 1.0.0 LANGUAGES CXX C)
+
+add_compile_definitions(PROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
+add_compile_definitions(PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR})
+add_compile_definitions(PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+
+# Debug: Show make commands
+# set(CMAKE_VERBOSE_MAKEFILE ON)
+
+
+###########################################################################################
+# Path variables
+# External dependencies are downloaded inside the externals/ dir
+#
+
+if(NOT DEFINED TOPLEVEL_PREFIX_PATH)
+    set(TOPLEVEL_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${TOPLEVEL_PREFIX_PATH}/install_root" CACHE PATH "Install prefix" FORCE)
+endif()
+
+if(NOT DEFINED EXTERNALS_PREFIX_PATH)
+    set(EXTERNALS_PREFIX_PATH "${TOPLEVEL_PREFIX_PATH}/externals" CACHE INTERNAL "")
+endif()
+
+if(NOT "${TOPLEVEL_PREFIX_PATH}/cmake" IN_LIST CMAKE_MODULE_PATH)
+    set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${TOPLEVEL_PREFIX_PATH}/cmake")
+endif()
+
+include(GNUInstallDirs)
+
+
+# set(ENV_ARCH $ENV{CIBW_ARCHS})
+# message(STATUS "cibw arch: " ${ENV_ARCH})
+
+# set(CMAKE_OSX_ARCHITECTURES $ENV{CIBW_ARCHS})
+# message(STATUS "cibw arch: " ${ENV_ARCH})
+
+set(ENV_ARCHFLAGS $ENV{ARCHFLAGS})
+message(STATUS "arch flags: " ${ENV_ARCHFLAGS})
+message(STATUS "        top path: " ${TOPLEVEL_PREFIX_PATH})
+message(STATUS "        lib path: " ${EXTERNALS_PREFIX_PATH})
+message(STATUS "    install path: " ${CMAKE_INSTALL_PREFIX})
+message(STATUS "bin install path: " ${CMAKE_INSTALL_BINDIR})
+message(STATUS "lib install path: " ${CMAKE_INSTALL_LIBDIR})
+message(STATUS "      cmake path: " ${CMAKE_MODULE_PATH})
+message(STATUS "    cmake system: " ${CMAKE_SYSTEM_PROCESSOR})
+message(STATUS "   make osx arch: " ${CMAKE_OSX_ARCHITECTURES})
+
+
+#################################################################################
+# Compiler
+#
+message(STATUS "cmake osx-deployment: " ${CMAKE_OSX_DEPLOYMENT_TARGET})
+
+# minimum macosx, ignored on other platforms
+if(APPLE)
+    if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        message(STATUS "cmake is not set")
+    elseif(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 10.15)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum macOS version" FORCE)
+    endif()
+endif()
+
+message(STATUS "cmake system-version: " ${CMAKE_SYSTEM_VERSION})
+message(STATUS "cmake osx-deployment: " ${CMAKE_OSX_DEPLOYMENT_TARGET})
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if (WIN32)
+    set(TEST_PATH "\\\"${TOPLEVEL_PREFIX_PATH}\\\"")
+    add_definitions(-DROOT_PATH="\\\"${TOPLEVEL_PREFIX_PATH}\\\"")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-sign-compare -O3 ${ENV_ARCHFLAGS}")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-sign-compare -O3 -DROOT_PATH='\"${TOPLEVEL_PREFIX_PATH}\"' ${ENV_ARCHFLAGS}")
+endif()
+
+message(STATUS "cxx-compiler: " ${CMAKE_CXX_COMPILER})
+message(STATUS "cxx-flags   : " ${CMAKE_CXX_FLAGS})
+message(STATUS "cxx-standard: " ${CMAKE_CXX_STANDARD})
+
+
+#################################################################################
+# Source files, include dirs
+#
+
+# List of source files
+# Get all *.cc except those begining with underscore
+file(GLOB_RECURSE teds_srcs "src/[!_]*.cc")
+file(GLOB_RECURSE teds_srcs_EXCLUSIONS "src/command_line/main.cc" "src/pybind/pybind_module.cc")
+list(REMOVE_ITEM teds_srcs ${teds_srcs_EXCLUSIONS})
+# message(STATUS "Source files: ${teds_srcs}")
+
+# List of header files
+# Get all *.h except those begining with underscore
+file(GLOB_RECURSE teds_headers "${PROJECT_SOURCE_DIR}/src/[!_]*.h")
+# message(STATUS "Header files: ${teds_headers}")
+
+# List all header directories
+set(teds_include_dirs "")
+foreach(header ${teds_headers})
+    get_filename_component(dir "${header}" DIRECTORY)
+    list(APPEND teds_include_dirs "${dir}")
+endforeach()
+list(REMOVE_DUPLICATES teds_include_dirs)
+list(APPEND teds_include_dirs "${pybind11_INCLUDE_DIRS}")
+list(APPEND teds_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
+
+# Debug
+string(REPLACE ";" "\n" teds_include_dirs_str "${teds_include_dirs}")
+message(STATUS "Include dirs: ${teds_include_dirs_str}")
+
+
+###########################################################################################
+# Dependencies
+#
+
+# Interface library for our source code
+add_library(teds_interface INTERFACE)
+target_include_directories(teds_interface INTERFACE "${teds_include_dirs}")
+
+# Add pybind11
+set(PYBIND11_FINDPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
+message(STATUS "PyBind11 + Python include dirs: ${pybind11_INCLUDE_DIRS}")
+message(STATUS "PyBind11 libs: ${pybind11_LIBRARIES}")
+
+option(USE_SYSTEM_DEPS OFF "If enabled, the build will find and link to system dependencies, otherwise they are sourced from the original repos and compiled on the fly.")
+
+# Directory structure to building external packages
+if(NOT USE_SYSTEM_DEPS)
+    if(NOT EXISTS ${EXTERNALS_PREFIX_PATH})
+        file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH})
+        file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/bin)
+        file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/lib)
+        file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/include)
+    endif()
+endif()
+
+# Include external dependencies
+include(cmake/extlib_cxxopts.cmake)
+include(cmake/extlib_loguru.cmake)
+include(cmake/extlib_json.cmake)
+
+# define LIB_LINK and OS_DEPENDENCIES
+# include(cmake/os_opts.cmake)
+# list(APPEND DEPENDENCIES ${OS_DEPENDENCIES})
+
+# define subdirlist utility
+# include(cmake/subdirlist.cmake)
+
+set(dependencies 
+    teds_interface
+    "${ext_name_json}"
+    "${ext_name_loguru}"
+    "${ext_name_cxxopts}"
+)
+
+
+###########################################################################################
+# Executables
+#
+
+# Compile CLI
+add_executable("${teds_cli_name}" "src/command_line/main.cc")
+target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies})
+
+
+###########################################################################################
+# Python bindings
+#
+
+pybind11_add_module(
+    "${teds_pybind_lib_name}"
+    "${TOPLEVEL_PREFIX_PATH}/src/pybind/pybind_module.cc"
+)
+target_link_libraries("${teds_pybind_lib_name}" PUBLIC ${dependencies})
+
+
+###########################################################################################
+# Install
+#
+
+# CLI
+install(TARGETS "${teds_cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+
+# Bindings
+install(TARGETS "${teds_pybind_lib_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
+
+###########################################################################################
+# Tests
+#
+include(CTest)
+add_subdirectory(test/)
+
