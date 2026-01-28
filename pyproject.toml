@@ -27,6 +27,10 @@ dev = [
     "docling-metric-hello-world",
     "docling-metric-hello-world-cpp",
 ]
+build = [
+    "cibuildwheel>=2.19",
+    "delocate>=0.12",
+]
 
 [tool.uv.sources]
 docling-metrics-core = { workspace = true }

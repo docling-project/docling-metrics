@@ -1,0 +1,83 @@
+on:
+  workflow_call:
+    inputs:
+      publish:
+        type: boolean
+        description: "If true, the packages will be published."
+        default: false
+      package:
+        type: string
+        description: "Package to build"
+        required: true
+
+jobs:
+  build_sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - name: Install build tools
+        run: uv pip install --group build
+      - name: Build sdist
+        run: uv build --package ${{ inputs.package }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/
+
+  build_wheels:
+    name: Build wheels for ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        os: ["ubuntu-latest", "macos-14", "windows-2025"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set CPython tag [posix]
+        if: runner.os != 'Windows'
+        run: |
+          version=${{ matrix.python-version }}
+          echo "CIBW_BUILD=cp${version/./}" >> "$GITHUB_ENV"
+      - name: Set CPython tag [windows]
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = "${{ matrix.python-version }}"
+          $cp_version = "cp$($version -replace '\.', '')"
+          Add-Content -Path $env:GITHUB_ENV -Value "CIBW_BUILD=$cp_version"
+      - name: Install build tools
+        run: uv pip install --group build
+      - name: Build wheels
+        working-directory: packages/${{ inputs.package }}
+        env:
+          CIBW_BUILD_VERBOSITY: 2
+        run: uv run python -m cibuildwheel --output-dir ../../dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.python-version }}-${{ matrix.os }}
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    if: inputs.publish
+    needs: [build_sdist, build_wheels]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/${{ inputs.package }}
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
