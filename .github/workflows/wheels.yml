@@ -1,10 +1,6 @@
 on:
   workflow_call:
     inputs:
-      publish:
-        type: boolean
-        description: "If true, the packages will be published."
-        default: false
       package:
         type: string
         description: "Package to build"
@@ -63,21 +59,3 @@ jobs:
           name: wheels-${{ matrix.python-version }}-${{ matrix.os }}
           path: dist/
 
-  publish:
-    name: Publish to PyPI
-    if: inputs.publish
-    needs: [build_sdist, build_wheels]
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/${{ inputs.package }}
-    permissions:
-      id-token: write
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-          path: dist/
-      - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1

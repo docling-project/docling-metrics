@@ -48,14 +48,28 @@ jobs:
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-  build-and-publish-native:
+  build-native:
     if: needs.meta.outputs.is_native == 'true'
     needs: [meta]
     uses: ./.github/workflows/wheels.yml
     with:
-      publish: true
       package: ${{ needs.meta.outputs.package }}
-    secrets: inherit
+
+  publish-native:
+    name: Publish native package to PyPI
+    if: needs.meta.outputs.is_native == 'true'
+    needs: [meta, build-native]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/${{ needs.meta.outputs.package }}
     permissions:
       id-token: write
       contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
