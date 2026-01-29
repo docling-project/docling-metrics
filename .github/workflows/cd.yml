@@ -9,7 +9,8 @@ on:
         type: choice
         options:
           - docling-metrics-core
-          # Add future packages here
+          - docling-metric-hello-world
+          - docling-metric-hello-world-cpp
 
 jobs:
   code-checks:
@@ -29,7 +30,7 @@ jobs:
         with:
           enable-cache: true
       - name: Install dependencies
-        run: uv sync --only-dev
+        run: uv sync --frozen --only-dev
       - name: Check version of potential release
         id: version_check
         run: |
@@ -59,7 +60,7 @@ jobs:
         with:
           enable-cache: true
       - name: Install dependencies
-        run: uv sync --only-dev
+        run: uv sync --frozen --only-dev
       - name: Run release script
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}

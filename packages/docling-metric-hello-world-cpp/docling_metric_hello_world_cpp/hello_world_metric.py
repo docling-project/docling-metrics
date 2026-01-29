@@ -1,4 +1,4 @@
-"""Hello World metric implementation demonstrating the docling-metrics-core interface."""
+"""Hello World metric implementation using a C++ backend."""
 
 from typing import Annotated, Iterable, Tuple
 
@@ -9,6 +9,8 @@ from docling_metrics_core.base_types import (
     BaseSampleResult,
 )
 from pydantic import Field
+
+from ._hello_world_cpp import evaluate_sample as cpp_evaluate_sample
 
 
 class StringInputSample(BaseInputSample):
@@ -34,38 +36,19 @@ class HelloWorldAggregateResult(BaseAggregateResult):
 
 
 class HelloWorldMetric(BaseMetric):
-    """A minimal example metric that always returns 1.0.
-
-    This metric demonstrates the basic structure for implementing custom metrics
-    using the docling-metrics-core base types. It accepts string payloads as input
-    and always produces a score of 1.0 for each sample evaluation.
-    """
+    """A minimal example metric that always returns 1.0, backed by C++."""
 
     def evaluate_sample(  # type: ignore[override]
         self, sample_a: StringInputSample, sample_b: StringInputSample
     ) -> HelloWorldSampleResult:
-        """Evaluate a single sample pair.
-
-        Args:
-            sample_a: First input sample with string payload.
-            sample_b: Second input sample with string payload.
-
-        Returns:
-            HelloWorldSampleResult with score always equal to 1.0.
-        """
-        return HelloWorldSampleResult(id=sample_a.id, score=1.0)
+        score = float(
+            cpp_evaluate_sample(sample_a.id, sample_a.payload, sample_b.payload)
+        )
+        return HelloWorldSampleResult(id=sample_a.id, score=score)
 
     def aggregate(  # type: ignore[override]
         self, results: Iterable[HelloWorldSampleResult]
     ) -> HelloWorldAggregateResult:
-        """Aggregate multiple sample results.
-
-        Args:
-            results: Iterable of sample evaluation results.
-
-        Returns:
-            HelloWorldAggregateResult with mean score and sample count.
-        """
         results_list = list(results)
         sample_count = len(results_list)
         if sample_count == 0:
@@ -79,14 +62,6 @@ class HelloWorldMetric(BaseMetric):
     def evaluate_dataset(  # type: ignore[override]
         self, sample_pairs: Iterable[Tuple[StringInputSample, StringInputSample]]
     ) -> HelloWorldAggregateResult:
-        """Evaluate an entire dataset of sample pairs.
-
-        Args:
-            sample_pairs: Iterable of (sample_a, sample_b) tuples.
-
-        Returns:
-            HelloWorldAggregateResult with aggregated statistics.
-        """
         results = [
             self.evaluate_sample(sample_a, sample_b)
             for sample_a, sample_b in sample_pairs
