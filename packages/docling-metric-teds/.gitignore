@@ -321,7 +321,9 @@ Temporary Items
 # AI
 .bob/
 
-# Additional dirs to ignore
+# Additional dirs/files to ignore
 externals/
 install_root/
+
+**/docling_metric_teds_cli
 
