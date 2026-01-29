@@ -1,9 +1,3 @@
-#
-# Copyright IBM Inc. All rights reserved.
-#
-# SPDX-License-Identifier: MIT
-#
-
 """Hello World metric implementation demonstrating the docling-metrics-core interface."""
 
 from typing import Annotated, Iterable, Tuple

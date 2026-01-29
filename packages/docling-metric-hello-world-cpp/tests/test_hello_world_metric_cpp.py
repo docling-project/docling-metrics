@@ -1,9 +1,3 @@
-#
-# Copyright IBM Inc. All rights reserved.
-#
-# SPDX-License-Identifier: MIT
-#
-
 """Tests for the HelloWorld C++ metric."""
 
 from docling_metric_hello_world_cpp import HelloWorldMetric, StringInputSample
