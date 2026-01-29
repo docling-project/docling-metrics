@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
         ("g,gt-file", "Input ground truth file in bracket notation", cxxopts::value<std::string>())
         ("p,pred-file", "Input predictions file in bracket notation", cxxopts::value<std::string>())
         ("l,loglevel", "loglevel [error;warning;success;info]", cxxopts::value<std::string>())
+        ("v,version", "Show version")
         ("h,help", "Print usage");
 
       // Parse command line arguments
@@ -37,6 +38,12 @@ int main(int argc, char* argv[]) {
       // Help option or no arguments provided
       if (result.count("help")) {
         LOG_F(INFO, "%s", options.help().c_str());
+        return 0;
+      }
+      
+      // Show version
+      if (result.count("version")) {
+        LOG_F(INFO, "Version: %d.%d.%d", PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR, PROJECT_VERSION_PATCH);
         return 0;
       }
       

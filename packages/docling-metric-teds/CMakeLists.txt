@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.14)
 #################################################################################
 # Names and versions
 #
-
-set(teds_project_name "docling-metrics-teds")
+set(teds_project_name "docling_metric_teds")
 set(teds_cli_name "docling_metric_teds_cli")
-set(teds_pybind_lib_name "docling_metric_teds")
+set(externals_root "externals")
+set(install_root "${teds_project_name}")
 
 project(${teds_project_name} VERSION 1.0.0 LANGUAGES CXX C)
 
@@ -29,11 +29,11 @@ if(NOT DEFINED TOPLEVEL_PREFIX_PATH)
 endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${TOPLEVEL_PREFIX_PATH}/install_root" CACHE PATH "Install prefix" FORCE)
+    set(CMAKE_INSTALL_PREFIX "${TOPLEVEL_PREFIX_PATH}/${install_root}" CACHE PATH "Install prefix" FORCE)
 endif()
 
 if(NOT DEFINED EXTERNALS_PREFIX_PATH)
-    set(EXTERNALS_PREFIX_PATH "${TOPLEVEL_PREFIX_PATH}/externals" CACHE INTERNAL "")
+    set(EXTERNALS_PREFIX_PATH "${TOPLEVEL_PREFIX_PATH}/${externals_root}" CACHE INTERNAL "")
 endif()
 
 if(NOT "${TOPLEVEL_PREFIX_PATH}/cmake" IN_LIST CMAKE_MODULE_PATH)
@@ -55,7 +55,6 @@ message(STATUS "        top path: " ${TOPLEVEL_PREFIX_PATH})
 message(STATUS "        lib path: " ${EXTERNALS_PREFIX_PATH})
 message(STATUS "    install path: " ${CMAKE_INSTALL_PREFIX})
 message(STATUS "bin install path: " ${CMAKE_INSTALL_BINDIR})
-message(STATUS "lib install path: " ${CMAKE_INSTALL_LIBDIR})
 message(STATUS "      cmake path: " ${CMAKE_MODULE_PATH})
 message(STATUS "    cmake system: " ${CMAKE_SYSTEM_PROCESSOR})
 message(STATUS "   make osx arch: " ${CMAKE_OSX_ARCHITECTURES})
@@ -97,13 +96,6 @@ message(STATUS "cxx-standard: " ${CMAKE_CXX_STANDARD})
 #################################################################################
 # Source files, include dirs
 #
-
-# List of source files
-# Get all *.cc except those begining with underscore
-file(GLOB_RECURSE teds_srcs "src/[!_]*.cc")
-file(GLOB_RECURSE teds_srcs_EXCLUSIONS "src/command_line/main.cc" "src/pybind/pybind_module.cc")
-list(REMOVE_ITEM teds_srcs ${teds_srcs_EXCLUSIONS})
-# message(STATUS "Source files: ${teds_srcs}")
 
 # List of header files
 # Get all *.h except those begining with underscore
@@ -176,7 +168,7 @@ set(dependencies
 #
 
 # Compile CLI
-add_executable("${teds_cli_name}" "src/command_line/main.cc")
+add_executable("${teds_cli_name}" "src/command_line/main.cpp")
 target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies})
 
 
@@ -185,10 +177,10 @@ target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies})
 #
 
 pybind11_add_module(
-    "${teds_pybind_lib_name}"
-    "${TOPLEVEL_PREFIX_PATH}/src/pybind/pybind_module.cc"
+    "${teds_project_name}"
+    "${TOPLEVEL_PREFIX_PATH}/src/pybind/pybind_module.cpp"
 )
-target_link_libraries("${teds_pybind_lib_name}" PUBLIC ${dependencies})
+target_link_libraries("${teds_project_name}" PUBLIC ${dependencies})
 
 
 ###########################################################################################
@@ -198,8 +190,8 @@ target_link_libraries("${teds_pybind_lib_name}" PUBLIC ${dependencies})
 # CLI
 install(TARGETS "${teds_cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
-# Bindings
-install(TARGETS "${teds_pybind_lib_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+# Python bindings
+install(TARGETS "${teds_project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 
 ###########################################################################################
@@ -207,4 +199,3 @@ install(TARGETS "${teds_pybind_lib_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_L
 #
 include(CTest)
 add_subdirectory(test/)
-
