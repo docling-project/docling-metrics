@@ -8,27 +8,69 @@ permissions:
   contents: read
 
 jobs:
-  build-and-publish:
+  meta:
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-    permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+    outputs:
+      package: ${{ steps.meta.outputs.package }}
+      is_native: ${{ steps.meta.outputs.is_native }}
     steps:
       - uses: actions/checkout@v5
-      - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
       - name: Identify package from tag
         id: meta
         run: |
           TAG="${{ github.event.release.tag_name }}"
           PKG="${TAG%-v*}"
           echo "package=${PKG}" >> "$GITHUB_OUTPUT"
+          if grep -q "scikit_build_core" "packages/${PKG}/pyproject.toml" 2>/dev/null; then
+            echo "is_native=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_native=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-publish-pure:
+    if: needs.meta.outputs.is_native == 'false'
+    needs: [meta]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
       - name: Install dependencies
-        run: uv sync --all-extras --all-packages
+        run: uv sync --frozen --all-extras --all-packages
       - name: Build
-        run: uv build --package ${{ steps.meta.outputs.package }}
+        run: uv build --package ${{ needs.meta.outputs.package }}
       - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  build-native:
+    if: needs.meta.outputs.is_native == 'true'
+    needs: [meta]
+    uses: ./.github/workflows/wheels.yml
+    with:
+      package: ${{ needs.meta.outputs.package }}
+
+  publish-native:
+    name: Publish native package to PyPI
+    if: needs.meta.outputs.is_native == 'true'
+    needs: [meta, build-native]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/${{ needs.meta.outputs.package }}
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+      - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

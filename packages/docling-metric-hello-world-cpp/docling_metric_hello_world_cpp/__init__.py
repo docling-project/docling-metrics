@@ -1,6 +1,6 @@
-"""A hello-world example metric implementation for Docling metrics."""
+"""Docling metric hello world C++ package."""
 
-from docling_metric_hello_world.hello_world_metric import (
+from .hello_world_metric import (
     HelloWorldAggregateResult,
     HelloWorldMetric,
     HelloWorldSampleResult,
