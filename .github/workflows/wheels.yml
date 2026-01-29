@@ -39,14 +39,14 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           version=${{ matrix.python-version }}
-          echo "CIBW_BUILD=cp${version/./}" >> "$GITHUB_ENV"
+          echo "CIBW_BUILD=cp${version/./}-*" >> "$GITHUB_ENV"
       - name: Set CPython tag [windows]
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $version = "${{ matrix.python-version }}"
           $cp_version = "cp$($version -replace '\.', '')"
-          Add-Content -Path $env:GITHUB_ENV -Value "CIBW_BUILD=$cp_version"
+          Add-Content -Path $env:GITHUB_ENV -Value "CIBW_BUILD=$cp_version-*"
       - name: Install build tools
         run: uv sync --frozen --group build
       - name: Build wheels
