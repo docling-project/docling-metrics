@@ -3,14 +3,26 @@
 # Invariants
 readonly BUILD_TYPE="Debug"  # One of ["Debug", "Release"]
 readonly BUILD_DIR="build"
-readonly INSTALL_DIR="install_root"
 readonly EXTERNALS_DIR="externals"
+readonly VENV_ROOT="../../.venv"
 
 
 ###########################################################################################
-# Prepare directories
-rm -rf "${BUILD_DIR}" "${INSTALL_DIR}" "${EXTERNALS_DIR}"
-mkdir "${BUILD_DIR}"
+# Resolve python
+#
+if [ ! -d "${VENV_ROOT}" ]; then
+    echo "Missing venv at the root of the monorepo"
+    exit 1
+fi
+
+python_root=$(cd "${VENV_ROOT}/bin"; pwd)
+python_bin="${python_root}/python3"
+
+
+###########################################################################################
+# Clean up dirs
+rm -rf "${BUILD_DIR}" "${EXTERNALS_DIR}"
+
 
 
 ###########################################################################################
@@ -19,15 +31,13 @@ mkdir "${BUILD_DIR}"
 cmake \
     -S . \
     -B "${BUILD_DIR}" \
+    -DPython3_EXECUTABLE="${python_bin}" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
 
+
 cmake --build "${BUILD_DIR}" -j16
 
-
-###########################################################################################
-# Test
-ctest --test-dir "${BUILD_DIR}"
 
 
 ###########################################################################################

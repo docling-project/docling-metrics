@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.14)
 #################################################################################
 # Names and versions
 #
-set(teds_project_name "docling_metric_teds")
+set(teds_project_name "docling_metric_teds_cpp")
 set(teds_cli_name "docling_metric_teds_cli")
+set(install_root "docling_metric_teds")
 set(externals_root "externals")
-set(install_root "${teds_project_name}")
 
 project(${teds_project_name} VERSION 1.0.0 LANGUAGES CXX C)
 
@@ -112,8 +112,8 @@ list(APPEND teds_include_dirs "${pybind11_INCLUDE_DIRS}")
 list(APPEND teds_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
 
 # Debug
-string(REPLACE ";" "\n" teds_include_dirs_str "${teds_include_dirs}")
-message(STATUS "Include dirs: ${teds_include_dirs_str}")
+# string(REPLACE ";" "\n" teds_include_dirs_str "${teds_include_dirs}")
+# message(STATUS "Include dirs: ${teds_include_dirs_str}")
 
 
 ###########################################################################################
@@ -124,8 +124,15 @@ message(STATUS "Include dirs: ${teds_include_dirs_str}")
 add_library(teds_interface INTERFACE)
 target_include_directories(teds_interface INTERFACE "${teds_include_dirs}")
 
-# Add pybind11
+# Find Python first (before pybind11) to ensure we use the correct version
+# This will use the Python from the activated virtual environment
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+message(STATUS "Python3 executable: ${Python3_EXECUTABLE}")
+message(STATUS "Python3 version: ${Python3_VERSION}")
+
+# Add pybind11 - it will now use the Python3 found above
 set(PYBIND11_FINDPYTHON ON)
+set(PYBIND11_PYTHON_VERSION ${Python3_VERSION})
 find_package(pybind11 CONFIG REQUIRED)
 message(STATUS "PyBind11 + Python include dirs: ${pybind11_INCLUDE_DIRS}")
 message(STATUS "PyBind11 libs: ${pybind11_LIBRARIES}")
