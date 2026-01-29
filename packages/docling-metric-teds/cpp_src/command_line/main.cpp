@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
 
       // Compute TEDs
       docling::TEDSManager manager;
-      docling::TEDSampleEvaluation eval_sample = manager.eval_sample("test", gt_bracket, pred_bracket);
+      docling::TEDSSampleEvaluation eval_sample = manager.eval_sample("test", gt_bracket, pred_bracket);
       LOG_F(INFO, "eval_sample error_id: %d", eval_sample.error_id);
       LOG_F(INFO, "eval_sample error_msg: %s", eval_sample.error_msg.c_str());
       LOG_F(INFO, "eval_sample gt_tree_size: %d", eval_sample.gt_tree_size);

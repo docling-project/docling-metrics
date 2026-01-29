@@ -54,7 +54,6 @@ message(STATUS "arch flags: " ${ENV_ARCHFLAGS})
 message(STATUS "        top path: " ${TOPLEVEL_PREFIX_PATH})
 message(STATUS "        lib path: " ${EXTERNALS_PREFIX_PATH})
 message(STATUS "    install path: " ${CMAKE_INSTALL_PREFIX})
-message(STATUS "bin install path: " ${CMAKE_INSTALL_BINDIR})
 message(STATUS "      cmake path: " ${CMAKE_MODULE_PATH})
 message(STATUS "    cmake system: " ${CMAKE_SYSTEM_PROCESSOR})
 message(STATUS "   make osx arch: " ${CMAKE_OSX_ARCHITECTURES})
@@ -99,7 +98,7 @@ message(STATUS "cxx-standard: " ${CMAKE_CXX_STANDARD})
 
 # List of header files
 # Get all *.h except those begining with underscore
-file(GLOB_RECURSE teds_headers "${PROJECT_SOURCE_DIR}/src/[!_]*.h")
+file(GLOB_RECURSE teds_headers "${PROJECT_SOURCE_DIR}/cpp_src/[!_]*.h")
 # message(STATUS "Header files: ${teds_headers}")
 
 # List all header directories
@@ -168,7 +167,7 @@ set(dependencies
 #
 
 # Compile CLI
-add_executable("${teds_cli_name}" "src/command_line/main.cpp")
+add_executable("${teds_cli_name}" "cpp_src/command_line/main.cpp")
 target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies})
 
 
@@ -178,7 +177,7 @@ target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies})
 
 pybind11_add_module(
     "${teds_project_name}"
-    "${TOPLEVEL_PREFIX_PATH}/src/pybind/pybind_module.cpp"
+    "${TOPLEVEL_PREFIX_PATH}/cpp_src/pybind/pybind_module.cpp"
 )
 target_link_libraries("${teds_project_name}" PUBLIC ${dependencies})
 
@@ -188,7 +187,7 @@ target_link_libraries("${teds_project_name}" PUBLIC ${dependencies})
 #
 
 # CLI
-install(TARGETS "${teds_cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(TARGETS "${teds_cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 # Python bindings
 install(TARGETS "${teds_project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")
@@ -198,4 +197,4 @@ install(TARGETS "${teds_project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREF
 # Tests
 #
 include(CTest)
-add_subdirectory(test/)
+add_subdirectory(cpp_tests/)

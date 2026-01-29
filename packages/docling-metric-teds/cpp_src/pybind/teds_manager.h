@@ -19,10 +19,10 @@ using CostModelLD = cost_model::UnitCostModelLD<Label>;
 using LabelDictionary = label::LabelDictionary<Label>;
 
 
-struct TEDSampleEvaluation {
-    TEDSampleEvaluation(): TEDSampleEvaluation("") {}
+struct TEDSSampleEvaluation {
+    TEDSSampleEvaluation(): TEDSSampleEvaluation("") {}
 
-    TEDSampleEvaluation(const std::string& sid):
+    TEDSSampleEvaluation(const std::string& sid):
         error_id(0), error_msg(""), id(sid), gt_tree_size(0), pred_tree_size(0), teds(-1.)
     {}
 
@@ -47,7 +47,7 @@ struct TEDSDatasetEvaluation {
     int error_id;
     std::string error_msg;
     double teds;
-    std::unordered_map<std::string, TEDSampleEvaluation> sample_evaluations;
+    std::unordered_map<std::string, TEDSSampleEvaluation> sample_evaluations;
 };
 
 
@@ -58,7 +58,7 @@ public:
     /**
      * Evaluate a single sample
      */
-    TEDSampleEvaluation eval_sample(
+    TEDSSampleEvaluation eval_sample(
         const std::string& id,
         const std::string& gt_bracket,
         const std::string& pred_bracket
@@ -75,7 +75,7 @@ private:
     std::unique_ptr<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>> apted_ptr_;
 
     // Accumulated evaluations per sample
-    std::unordered_map<std::string, TEDSampleEvaluation> sample_evaluations;
+    std::unordered_map<std::string, TEDSSampleEvaluation> sample_evaluations;
 };
 
 
@@ -90,13 +90,13 @@ TEDSManager::TEDSManager():
     std::cout << "Initializing TEDSManager\n";
 }
 
-TEDSampleEvaluation TEDSManager::eval_sample(
+TEDSSampleEvaluation TEDSManager::eval_sample(
     const std::string& id,
     const std::string& gt_bracket,
     const std::string& pred_bracket
 ) {
     // Return object with full information: teds, tree sizes, ...
-    TEDSampleEvaluation eval_sample(id);
+    TEDSSampleEvaluation eval_sample(id);
 
     // Create gt_tree
     if (!bnp_.validate_input(gt_bracket)) {
