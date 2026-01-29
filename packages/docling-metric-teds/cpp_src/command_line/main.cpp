@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
       options.add_options()
         ("g,gt-file", "Input ground truth file in bracket notation", cxxopts::value<std::string>())
         ("p,pred-file", "Input predictions file in bracket notation", cxxopts::value<std::string>())
-        ("l,loglevel", "loglevel [error;warning;success;info]", cxxopts::value<std::string>())
+        // ("l,loglevel", "loglevel [error;warning;success;info]", cxxopts::value<std::string>())
         ("V,version", "Show version")
         ("h,help", "Print usage");
 
