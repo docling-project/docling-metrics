@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
         ("g,gt-file", "Input ground truth file in bracket notation", cxxopts::value<std::string>())
         ("p,pred-file", "Input predictions file in bracket notation", cxxopts::value<std::string>())
         ("l,loglevel", "loglevel [error;warning;success;info]", cxxopts::value<std::string>())
-        ("v,version", "Show version")
+        ("V,version", "Show version")
         ("h,help", "Print usage");
 
       // Parse command line arguments
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
 
       // Compute TEDs
       docling::TEDSManager manager;
-      docling::TEDSSampleEvaluation eval_sample = manager.eval_sample("test", gt_bracket, pred_bracket);
+      docling::TEDSSampleEvaluation eval_sample = manager.evaluate_sample("test", gt_bracket, pred_bracket);
       LOG_F(INFO, "eval_sample error_id: %d", eval_sample.error_id);
       LOG_F(INFO, "eval_sample error_msg: %s", eval_sample.error_msg.c_str());
       LOG_F(INFO, "eval_sample gt_tree_size: %d", eval_sample.gt_tree_size);

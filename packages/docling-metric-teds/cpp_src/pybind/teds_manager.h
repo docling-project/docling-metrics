@@ -53,20 +53,64 @@ struct TEDSDatasetEvaluation {
 
 class TEDSManager {
 public:
-    TEDSManager();
+    TEDSManager():
+        ucm_ptr_(std::make_unique<CostModelLD>(ld_)),
+        apted_ptr_(std::make_unique<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>>(*ucm_ptr_))
+    { }
 
     /**
      * Evaluate a single sample
      */
-    TEDSSampleEvaluation eval_sample(
+    TEDSSampleEvaluation evaluate_sample(
         const std::string& id,
         const std::string& gt_bracket,
         const std::string& pred_bracket
+    ) {
+        // Return object with full information: teds, tree sizes, ...
+        TEDSSampleEvaluation eval_sample(id);
 
-    );
+        // Create gt_tree
+        if (!bnp_.validate_input(gt_bracket)) {
+            eval_sample.error_id = 1;
+            eval_sample.error_msg = "Incorrect format of the ground truth input";
+            return eval_sample;
+        }
+        const node::Node<Label> gt_tree = bnp_.parse_single(gt_bracket);
 
-    void aggregate();
-    TEDSDatasetEvaluation eval_dataset();
+        // Create pred_tree
+        if (!bnp_.validate_input(pred_bracket)) {
+            eval_sample.error_id = 2;
+            eval_sample.error_msg = "Incorrect format of the predictions input";
+            return eval_sample;
+        }
+        const node::Node<Label> pred_tree = bnp_.parse_single(pred_bracket);
+
+
+        // Compute ted
+        int gt_tree_size = gt_tree.get_tree_size();
+        int pred_tree_size = pred_tree.get_tree_size();
+        int max_tree_size = std::max(gt_tree_size, pred_tree_size);
+
+        node::TreeIndexAPTED ti1;
+        node::TreeIndexAPTED ti2;
+        node::index_tree(ti1, gt_tree, ld_, *ucm_ptr_);
+        node::index_tree(ti2, pred_tree, ld_, *ucm_ptr_);
+        double distance = apted_ptr_->ted(ti1, ti2);
+        double teds = 1. - (distance / max_tree_size);
+
+        eval_sample.gt_tree_size = gt_tree_size;
+        eval_sample.pred_tree_size = pred_tree_size;
+        eval_sample.teds = teds;
+
+        return eval_sample;
+    }
+
+    void aggregate() {}
+
+    TEDSDatasetEvaluation evaluate_dataset() {
+        TEDSDatasetEvaluation eval_dataset;
+        return eval_dataset;
+    }
 
 private:
     parser::BracketNotationParser<Label> bnp_;
@@ -77,72 +121,6 @@ private:
     // Accumulated evaluations per sample
     std::unordered_map<std::string, TEDSSampleEvaluation> sample_evaluations;
 };
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Implementation
-//
-
-TEDSManager::TEDSManager():
-    ucm_ptr_(std::make_unique<CostModelLD>(ld_)),
-    apted_ptr_(std::make_unique<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>>(*ucm_ptr_))
-{
-    std::cout << "Initializing TEDSManager\n";
-}
-
-TEDSSampleEvaluation TEDSManager::eval_sample(
-    const std::string& id,
-    const std::string& gt_bracket,
-    const std::string& pred_bracket
-) {
-    // Return object with full information: teds, tree sizes, ...
-    TEDSSampleEvaluation eval_sample(id);
-
-    // Create gt_tree
-    if (!bnp_.validate_input(gt_bracket)) {
-        eval_sample.error_id = 1;
-        eval_sample.error_msg = "Incorrect format of the ground truth input";
-        return eval_sample;
-    }
-    const node::Node<Label> gt_tree = bnp_.parse_single(gt_bracket);
-
-    // Create pred_tree
-    if (!bnp_.validate_input(pred_bracket)) {
-        eval_sample.error_id = 2;
-        eval_sample.error_msg = "Incorrect format of the predictions input";
-        return eval_sample;
-    }
-    const node::Node<Label> pred_tree = bnp_.parse_single(pred_bracket);
-
-
-    // Compute ted
-    int gt_tree_size = gt_tree.get_tree_size();
-    int pred_tree_size = pred_tree.get_tree_size();
-    int max_tree_size = std::max(gt_tree_size, pred_tree_size);
-
-    node::TreeIndexAPTED ti1;
-    node::TreeIndexAPTED ti2;
-    node::index_tree(ti1, gt_tree, ld_, *ucm_ptr_);
-    node::index_tree(ti2, pred_tree, ld_, *ucm_ptr_);
-    double distance = apted_ptr_->ted(ti1, ti2);
-    double teds = 1. - (distance / max_tree_size);
-
-    eval_sample.gt_tree_size = gt_tree_size;
-    eval_sample.pred_tree_size = pred_tree_size;
-    eval_sample.teds = teds;
-
-    return eval_sample;
-}
-
-void TEDSManager::aggregate() {
-    // TODO: Should the computation of the TEDS happen here or in the eval_dataset() ?
-}
-
-
-TEDSDatasetEvaluation TEDSManager::eval_dataset() {
-    TEDSDatasetEvaluation ds_evaluation;
-    return ds_evaluation;
-}
 
 } // namespace docling
 
