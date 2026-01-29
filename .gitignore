@@ -438,3 +438,8 @@ pip-selfcheck.json
 # Docs
 # docs/**/*.png
 # docs/**/*.svg
+
+
+# AI tools
+**/.bob/
+
