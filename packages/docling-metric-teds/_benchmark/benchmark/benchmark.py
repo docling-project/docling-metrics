@@ -38,7 +38,7 @@ class BenchmarkReport(BaseModel):
     cpp_ms_stats: BenchmarkStats
 
 
-class Benchmarker:
+class CLIBenchmarker:
     def __init__(
         self,
         cpp_ted: Path,

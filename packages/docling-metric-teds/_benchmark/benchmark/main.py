@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 import logging
 
-from benchmark.benchmark import Benchmarker
+from benchmark.benchmark import CLIBenchmarker
 from benchmark.dataset import ParquetDataset
 
 _log = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def main():
         ds.export_teds_str(ds_path=input_root)
     elif args.operation == "benchmark":
         _log.info("Benchmark Python vs C++ TEDs implementations")
-        benchmarker = Benchmarker(CPP_TED, save_root)
+        benchmarker = CLIBenchmarker(CPP_TED, save_root)
         benchmarker.benchmark(input_root)
     else:
         _log.error("Invalid operation: %s", args.operation)
