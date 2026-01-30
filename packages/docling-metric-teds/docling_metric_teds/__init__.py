@@ -1,6 +1,6 @@
-# """C++ package."""
+"""C++ package."""
 
-import docling_metric_teds_cpp
+import docling_metric_teds_cpp  # type: ignore[import-not-found]
 
 TEDSSampleEvaluation = docling_metric_teds_cpp.TEDSSampleEvaluation
 TEDSDatasetEvaluation = docling_metric_teds_cpp.TEDSDatasetEvaluation
