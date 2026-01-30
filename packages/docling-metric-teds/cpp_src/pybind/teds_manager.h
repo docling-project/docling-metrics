@@ -57,6 +57,21 @@ public:
         ucm_ptr_(std::make_unique<CostModelLD>(ld_)),
         apted_ptr_(std::make_unique<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>>(*ucm_ptr_))
     { }
+    
+    /**
+     * Evaluate a single sample in html format
+     */
+    TEDSSampleEvaluation evaluate_html_sample(
+        const std::string& id,
+        const std::string& gt_html,
+        const std::string& pred_html
+    ) {
+        return evaluate_sample(
+            id,
+            html_to_bracket(gt_html),
+            html_to_bracket(pred_html)
+        );
+    }
 
     /**
      * Evaluate a single sample
@@ -110,6 +125,12 @@ public:
     TEDSDatasetEvaluation evaluate_dataset() {
         TEDSDatasetEvaluation eval_dataset;
         return eval_dataset;
+    }
+
+private:
+    std::string html_to_bracket(const std::string& html) {
+        // TODO
+        return "";
     }
 
 private:

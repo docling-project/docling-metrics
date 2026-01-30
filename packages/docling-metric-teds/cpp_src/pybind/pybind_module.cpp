@@ -37,6 +37,15 @@ PYBIND11_MODULE(docling_metric_teds_cpp, m) {
              "    pred_bracket: Prediction tree in bracket notation\n\n"
              "Returns:\n"
              "    TEDSSampleEvaluation: Evaluation result containing TEDS score and metadata")
+        .def("evaluate_html_sample", &TEDSManager::evaluate_html_sample,
+             py::arg("id"), py::arg("gt_html"), py::arg("pred_html"),
+             "Evaluate a single sample from HTML format\n\n"
+             "Args:\n"
+             "    id: Sample identifier\n"
+             "    gt_html: Ground truth table in HTML format\n"
+             "    pred_html: Prediction table in HTML format\n\n"
+             "Returns:\n"
+             "    TEDSSampleEvaluation: Evaluation result containing TEDS score and metadata")
         .def("aggregate", &TEDSManager::aggregate,
              "Aggregate evaluation results across all samples")
         .def("evaluate_dataset", &TEDSManager::evaluate_dataset,
