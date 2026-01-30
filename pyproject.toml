@@ -44,7 +44,16 @@ pretty = true
 # strict = true
 no_implicit_optional = true
 python_version = "3.10"
-exclude = '^\\.venv/'
+exclude = [
+    '^\\.venv/',
+    'build/',
+    'externals/',
+    '.*/build/.*',
+    '.*/externals/.*',
+]
+
+ignore_missing_imports = true
+follow_imports = "skip"
 
 [tool.ruff]
 target-version = "py310"
