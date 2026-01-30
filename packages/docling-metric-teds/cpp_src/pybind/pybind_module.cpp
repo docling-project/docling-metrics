@@ -1,8 +1,6 @@
 #include <optional>
 #include "pybind11/pybind11.h"
 #include <pybind11/stl.h>
-// #include <pybind11/buffer_info.h>
-// #include <pybind/utils/pybind11_json.h>
 
 #include "teds_manager.h"
 
@@ -14,7 +12,7 @@ namespace docling {
 PYBIND11_MODULE(docling_metric_teds_cpp, m) {
     m.doc() = "Docling TEDS (Tree Edit Distance based Similarity) metric module";
 
-    pybind11::class_<TEDSSampleEvaluation>(m, "TEDSampleEvaluation", "Evaluation result for a single sample")
+    pybind11::class_<TEDSSampleEvaluation>(m, "TEDSSampleEvaluation", "Evaluation result for a single sample")
         .def_readwrite("error_id", &TEDSSampleEvaluation::error_id, "Error identifier (0 if no error)")
         .def_readwrite("error_msg", &TEDSSampleEvaluation::error_msg, "Error message (empty if no error)")
         .def_readwrite("id", &TEDSSampleEvaluation::id, "Sample identifier")
@@ -38,14 +36,13 @@ PYBIND11_MODULE(docling_metric_teds_cpp, m) {
              "    gt_bracket: Ground truth tree in bracket notation\n"
              "    pred_bracket: Prediction tree in bracket notation\n\n"
              "Returns:\n"
-             "    TEDSampleEvaluation: Evaluation result containing TEDS score and metadata")
+             "    TEDSSampleEvaluation: Evaluation result containing TEDS score and metadata")
         .def("aggregate", &TEDSManager::aggregate,
              "Aggregate evaluation results across all samples")
         .def("evaluate_dataset", &TEDSManager::evaluate_dataset,
              "Evaluate the entire dataset\n\n"
              "Returns:\n"
              "    TEDSDatasetEvaluation: Dataset-level evaluation result");
-
 }
 
 }  // namespace docling

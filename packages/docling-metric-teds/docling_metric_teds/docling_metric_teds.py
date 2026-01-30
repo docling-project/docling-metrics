@@ -1,6 +1,6 @@
-from typing import Annotated, Iterable, Tuple, Optional
-from unittest import result
+from typing import Iterable, Optional, Tuple
 
+import docling_metric_teds_cpp
 from docling_metrics_core.base_types import (
     BaseAggregateResult,
     BaseInputSample,
@@ -8,9 +8,9 @@ from docling_metrics_core.base_types import (
     BaseSampleResult,
 )
 
-import docling_metric_teds_cpp
 TEDSManager = docling_metric_teds_cpp.TEDSManager
-TEDSSampleEvaluation = docling_metric_teds_cpp.TEDSampleEvaluation
+TEDSSampleEvaluation = docling_metric_teds_cpp.TEDSSampleEvaluation
+TEDSDatasetEvaluation = docling_metric_teds_cpp.TEDSDatasetEvaluation
 
 
 class TEDSMetricInputSample(BaseInputSample):
@@ -35,12 +35,14 @@ class TEDSMetric(BaseMetric):
     r"""
     Expose the C++ TEDS metric as a Python module.
     """
+
     def __init__(self) -> None:
-        r"""
-        """
+        r""" """
         self._teds_manager = TEDSManager()
 
-    def evaluate_sample(self, sample: TEDSMetricInputSample) -> TEDSMetricSampleEvaluation:
+    def evaluate_sample(
+        self, sample: TEDSMetricInputSample
+    ) -> TEDSMetricSampleEvaluation:
         r"""
         Evaluate a single sample.
         """
@@ -51,7 +53,7 @@ class TEDSMetric(BaseMetric):
         )
         if sample_evaluaton.error_id != 0:
             raise ValueError(sample_evaluaton.error_msg)
-        
+
         result = TEDSMetricSampleEvaluation(
             id=sample.id,
             gt_tree_size=sample_evaluaton.gt_tree_size,
@@ -60,11 +62,12 @@ class TEDSMetric(BaseMetric):
         )
         return result
 
-    def aggregate(self, results: Iterable[TEDSMetricSampleEvaluation]) -> Optional[TEDSMetricDatasetEvaluation]:
+    def aggregate(
+        self, results: Iterable[TEDSMetricSampleEvaluation]
+    ) -> Optional[TEDSMetricDatasetEvaluation]:
         r"""
         Aggregate multiple sample results
         """
-        pass
 
     def evaluate_dataset(
         self, sample_pairs: Iterable[Tuple[BaseInputSample, BaseInputSample]]
@@ -73,5 +76,5 @@ class TEDSMetric(BaseMetric):
         Evaluate a dataset.
         """
         # TODO
-        result = TEDSMetricDatasetEvaluation()
+        result: TEDSMetricDatasetEvaluation = TEDSMetricDatasetEvaluation()
         return result
