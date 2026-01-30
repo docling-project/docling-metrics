@@ -1,174 +1,24 @@
 import argparse
-from statistics import mean, median, stdev
+import logging
 import time
-from typing import Optional
-from pydantic import BaseModel
+from datetime import datetime
 from logging import Logger
 from pathlib import Path
-from apted import APTED, Config
-from apted.helpers import Tree
-from Levenshtein import distance
-import logging
-from datetime import datetime
+from statistics import mean, median, stdev
+from typing import Optional
 
-from docling_metric_teds.docling_metric_teds import TEDSMetric, TEDSMetricSampleEvaluation, TEDSMetricInputSample 
+from apted import APTED
+from lxml import html
+from pydantic import BaseModel
+
+from docling_metric_teds.docling_metric_teds import (
+    TEDSMetric,
+    TEDSMetricInputSample,
+    TEDSMetricSampleEvaluation,
+)
+from docling_metric_teds.utils.teds import CustomConfig, TableTree, TEDScorer
 
 _log: Logger = logging.getLogger(__name__)
-
-
-class CustomConfig(Config):
-    @staticmethod
-    def maximum(*sequences):
-        """Get maximum possible value"""
-        return max(map(len, sequences))
-
-    def normalized_distance(self, *sequences):
-        """Get distance from 0 to 1"""
-        return float(distance.levenshtein(*sequences)) / self.maximum(*sequences)
-
-    def rename(self, node1, node2):
-        """Compares attributes of trees"""
-        if (
-            (node1.tag != node2.tag)
-            or (node1.colspan != node2.colspan)
-            or (node1.rowspan != node2.rowspan)
-        ):
-            return 1.0
-        if node1.tag in ["td", "th"]:
-            if node1.content or node2.content:
-                return self.normalized_distance(node1.content, node2.content)
-        return 0.0
-
-
-class TableTree(Tree):
-    def __init__(self, tag, colspan=None, rowspan=None, content=None, *children):
-        self.tag = tag
-        self.colspan = colspan
-        self.rowspan = rowspan
-        self.content = content
-        self.children = list(children)
-
-    def bracket(self):
-        """Show tree using brackets notation"""
-        if self.tag in ["td", "th"]:
-            result = '"tag": %s, "colspan": %d, "rowspan": %d, "text": %s' % (
-                self.tag,
-                self.colspan,
-                self.rowspan,
-                self.content,
-            )
-        else:
-            result = '"tag": %s' % self.tag
-        for child in self.children:
-            result += child.bracket()
-        return "{{{}}}".format(result)
-
-    @staticmethod
-    def from_bracket(bracket_str):
-        """Parse tree from bracket notation string
-
-        Args:
-            bracket_str: String in bracket notation format, e.g.:
-                {"tag": table{"tag": tbody{"tag": tr{"tag": td, "colspan": 1, "rowspan": 1, "text": []}}}}
-
-        Returns:
-            TableTree: Parsed tree structure
-        """
-        import re
-        import ast
-
-        def parse_node(s, pos):
-            """Recursively parse a node from bracket notation
-
-            Args:
-                s: The full bracket string
-                pos: Current position in the string
-
-            Returns:
-                tuple: (parsed_node, new_position)
-            """
-            # Skip whitespace
-            while pos < len(s) and s[pos].isspace():
-                pos += 1
-
-            # Expect opening {
-            if pos >= len(s) or s[pos] != "{":
-                raise ValueError(
-                    f"Expected '{{' at position {pos}, found: {s[pos : pos + 10]}"
-                )
-            pos += 1
-
-            # Parse the tag attribute
-            tag_match = re.match(r'"tag":\s*(\w+)', s[pos:])
-            if not tag_match:
-                raise ValueError(f"Could not find tag at position {pos}")
-
-            tag = tag_match.group(1)
-            pos += tag_match.end()
-
-            # Check if this is a td/th node by looking for colspan
-            colspan = None
-            rowspan = None
-            content = None
-
-            # Look ahead to see if we have colspan/rowspan (indicates td/th node)
-            lookahead = s[pos : pos + 100]
-            colspan_match = re.match(r',\s*"colspan":\s*(\d+)', lookahead)
-
-            if colspan_match:
-                # This is a td/th node
-                pos += colspan_match.end()
-                colspan = int(colspan_match.group(1))
-
-                # Parse rowspan
-                rowspan_match = re.match(r',\s*"rowspan":\s*(\d+)', s[pos:])
-                if rowspan_match:
-                    pos += rowspan_match.end()
-                    rowspan = int(rowspan_match.group(1))
-
-                # Parse text content
-                text_match = re.match(r',\s*"text":\s*(\[.*?\])', s[pos:])
-                if text_match:
-                    pos += text_match.end()
-                    try:
-                        content = ast.literal_eval(text_match.group(1))
-                    except:
-                        content = []
-                else:
-                    content = []
-
-                node = TableTree(tag, colspan, rowspan, content)
-            else:
-                # This is a structural node (table, tbody, tr, etc.)
-                node = TableTree(tag, None, None, None)
-
-            # Parse children
-            while pos < len(s):
-                # Skip whitespace
-                while pos < len(s) and s[pos].isspace():
-                    pos += 1
-
-                if pos >= len(s):
-                    raise ValueError("Unexpected end of string")
-
-                # Check for closing brace
-                if s[pos] == "}":
-                    pos += 1
-                    break
-
-                # Check for child node
-                if s[pos] == "{":
-                    child, pos = parse_node(s, pos)
-                    node.children.append(child)
-                else:
-                    # Skip any other characters (shouldn't happen in valid input)
-                    pos += 1
-
-            return node, pos
-
-        # Parse the root node
-        root, _ = parse_node(bracket_str, 0)
-        return root
 
 
 class BenchmarkStats(BaseModel):
@@ -186,6 +36,9 @@ class BenchmarkSample(BaseModel):
     python_ms: float
     cpp_teds: float
     cpp_ms: float
+    html_to_bracket_ms: (
+        float  # This includes converting both GT and preds from HTML to bracket
+    )
     match: bool
 
 
@@ -193,12 +46,16 @@ class BenchmarkReport(BaseModel):
     samples: dict[str, BenchmarkSample]  # id -> BenchmarkSample
     python_ms_stats: BenchmarkStats
     cpp_ms_stats: BenchmarkStats
+    html_to_bracket_ms_stats: BenchmarkStats
 
 
-# TODO:
-# 1. Wrap the call of APTED in a function that encapsulates the TED to TEDS computation
-# 2. Call the TEDSMetric instead of any C++ code
 class Benchmarker:
+    r"""
+    Receive a dataset of bracket strings and evaluate the TEDS metric.
+    Compare the APTED (python) vs the docling-metric-teds (C++/Python bindings) implementations.
+    Save a report with detailed results as json file.
+    """
+
     def __init__(
         self,
         save_root: Path,
@@ -213,11 +70,9 @@ class Benchmarker:
 
         # Get the TEDSMetric instead of any C++ code
         self._teds_metric = TEDSMetric()
+        self._teds_scorer: TEDScorer = TEDScorer()
 
-        # Benchmarking report
-        # self._report: dict
-
-    def benchmark(self, bracket_root: Path) -> Optional[BenchmarkReport]:
+    def benchmark(self, data_root: Path) -> Optional[BenchmarkReport]:
         r"""
         1. Match the ground truth and prediction files using the find_matches().
         2. Use the matched file pairs from step 1, load the files and pass their content in TableTree.from_bracket() to create TableTree instances.
@@ -228,8 +83,31 @@ class Benchmarker:
            - Third argument is the path to the prediction bracket file prefixed with self._pred_prefix.
         5. Print the output of the python and the C++ implementations.
         """
+
+        def create_stats(timing_list: list[float]) -> BenchmarkStats:
+            """Create BenchmarkStats from a list of timing measurements."""
+            return BenchmarkStats(
+                mean=mean(timing_list),
+                median=median(timing_list),
+                std=stdev(timing_list) if len(timing_list) > 1 else 0.0,
+                max=max(timing_list),
+                min=min(timing_list),
+            )
+
+        def log_stats(name: str, stats: BenchmarkStats) -> None:
+            """Log benchmark statistics in a formatted way."""
+            _log.info(
+                "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
+                name,
+                stats.mean,
+                stats.median,
+                stats.std,
+                stats.min,
+                stats.max,
+            )
+
         # Step 1: Match ground truth and prediction files
-        matches = self._find_matches(bracket_root)
+        matches = self._find_matches(data_root)
 
         if not matches:
             _log.info("No matching files found.")
@@ -239,36 +117,50 @@ class Benchmarker:
         benchmark_samples: dict[str, BenchmarkSample] = {}
         all_python_ms: list[float] = []
         all_cpp_ms: list[float] = []
+        all_html_to_bracket_ms: list[float] = []
 
         for i, (gt_file, pred_file) in enumerate(matches.items()):
             # Extract filename without GT prefix
             gt_filename = gt_file.stem
             file_id = gt_filename[len(self._gt_prefix) + 1 :]
 
-            # Step 2: Load files and create TableTree instances
-            with open(gt_file, "r") as f:
-                gt_bracket_str: str = f.read()
-            with open(pred_file, "r") as f:
-                pred_bracket_str: str = f.read()
-
-            # Step 2: Call APTED
-            t0 = time.monotonic()
-            python_teds = self._apted_teds(gt_bracket_str, pred_bracket_str)
-            python_ms = (time.monotonic() - t0) * 1000
-            all_python_ms.append(python_ms)
-
-            # Step 3: Call docling-meetric-teds
-            cpp_teds = None
-            cpp_ms = -1
             try:
+                # Step 2: Load files and create TableTree instances
+                # with open(gt_file, "r") as f:
+                #     gt_bracket_str: str = f.read()
+                # with open(pred_file, "r") as f:
+                #     pred_bracket_str: str = f.read()
+
+                # Step2: Load the html files and convert them into bracket format
+                with open(gt_file, "r") as f:
+                    gt_html_str: str = f.read()
+                with open(pred_file, "r") as f:
+                    pred_html_str: str = f.read()
+
+                # Convert html to brackets for both GT and predictions
+                t0 = time.monotonic()
+                gt_bracket_str = self._html_to_bracket(gt_html_str)
+                pred_bracket_str = self._html_to_bracket(pred_html_str)
+                html_to_bracket_ms = (time.monotonic() - t0) * 1000
+                all_html_to_bracket_ms.append(html_to_bracket_ms)
+
+                # Step 2: Call APTED
+                t0 = time.monotonic()
+                python_teds = self._apted_teds(gt_bracket_str, pred_bracket_str)
+                python_ms = (time.monotonic() - t0) * 1000
+                all_python_ms.append(python_ms)
+
+                # Step 3: Call docling-metric-teds
+                cpp_teds = None
+                cpp_ms = -1.0
                 t0 = time.monotonic()
                 metric_input: TEDSMetricInputSample = TEDSMetricInputSample(
                     id=file_id,
                     gt_bracket=gt_bracket_str,
                     pred_bracket=pred_bracket_str,
                 )
-                sample_evaluaton: TEDSMetricSampleEvaluation = self._teds_metric.evaluate_sample(
-                    metric_input
+                sample_evaluaton: TEDSMetricSampleEvaluation = (
+                    self._teds_metric.evaluate_sample(metric_input)
                 )
                 cpp_teds = sample_evaluaton.teds
                 cpp_ms = (time.monotonic() - t0) * 1000
@@ -287,14 +179,16 @@ class Benchmarker:
                     cpp_ms=cpp_ms,
                     match=match,
                     sample_len=n_nodes,
+                    html_to_bracket_ms=html_to_bracket_ms,
                 )
                 benchmark_samples[file_id] = sample
 
                 _log.info(
-                    "%d: %s | n_nodes: %d | Python: %.6f (%.2fms) | C++: %.6f (%.2fms) | %s",
+                    "%d: %s | n_nodes: %d | HTML: %.2fms | Python: %.6f (%.2fms) | C++: %.6f (%.2fms) | %s",
                     i,
                     file_id,
                     n_nodes,
+                    html_to_bracket_ms,
                     python_teds,
                     python_ms,
                     cpp_teds,
@@ -302,55 +196,29 @@ class Benchmarker:
                     characterization,
                 )
             except Exception as e:
-                _log.error("%s | C++ error: %s", file_id, str(e))
+                _log.error("%s | error: %s", file_id, str(e))
 
         # Create BenchmarkStats from timing data
         if not all_python_ms or not all_cpp_ms:
             _log.error("No valid benchmark data collected")
             return None
 
-        python_ms_stats = BenchmarkStats(
-            mean=mean(all_python_ms),
-            median=median(all_python_ms),
-            std=stdev(all_python_ms) if len(all_python_ms) > 1 else 0.0,
-            max=max(all_python_ms),
-            min=min(all_python_ms),
-        )
-
-        cpp_ms_stats = BenchmarkStats(
-            mean=mean(all_cpp_ms),
-            median=median(all_cpp_ms),
-            std=stdev(all_cpp_ms) if len(all_cpp_ms) > 1 else 0.0,
-            max=max(all_cpp_ms),
-            min=min(all_cpp_ms),
-        )
+        python_ms_stats = create_stats(all_python_ms)
+        cpp_ms_stats = create_stats(all_cpp_ms)
+        html_to_bracket_ms_stats = create_stats(all_html_to_bracket_ms)
 
         # Create and return BenchmarkReport
         report = BenchmarkReport(
             samples=benchmark_samples,
             python_ms_stats=python_ms_stats,
             cpp_ms_stats=cpp_ms_stats,
+            html_to_bracket_ms_stats=html_to_bracket_ms_stats,
         )
-
-        # Save report as JSON
 
         # Log benchmark statistics
-        _log.info(
-            "Python stats | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
-            python_ms_stats.mean,
-            python_ms_stats.median,
-            python_ms_stats.std,
-            python_ms_stats.min,
-            python_ms_stats.max,
-        )
-        _log.info(
-            "C++ stats    | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
-            cpp_ms_stats.mean,
-            cpp_ms_stats.median,
-            cpp_ms_stats.std,
-            cpp_ms_stats.min,
-            cpp_ms_stats.max,
-        )
+        log_stats("Python stats", python_ms_stats)
+        log_stats("C++ stats   ", cpp_ms_stats)
+        log_stats("HTML to bracket stats", html_to_bracket_ms_stats)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_path = self._save_root / f"benchmark_report_{timestamp}.json"
@@ -360,9 +228,9 @@ class Benchmarker:
 
         return report
 
-    def _find_matches(self, bracket_root: Path) -> dict[Path, Path]:
+    def _find_matches(self, data_root: Path) -> dict[Path, Path]:
         r"""
-        1. Scan the bracket_root for the ground truth and prediction files.
+        1. Scan the root for the ground truth and prediction files.
         2. Return a dictionary with the paths to the ground truth and prediction files.
         3. The ground truth files are the ones with the prefix "GT" and the prediction files are the ones with the prefix "pred".
         4. The keys of the dictionary are the paths to the ground truth files and the values are the paths to the prediction files.
@@ -373,7 +241,9 @@ class Benchmarker:
 
         # Find all ground truth files with the GT prefix
         gt_files = sorted(
-            bracket_root.glob(f"{self._gt_prefix}_*.bracket"), key=lambda p: p.stem
+            # data_root.glob(f"{self._gt_prefix}_*.bracket"), key=lambda p: p.stem
+            data_root.glob(f"{self._gt_prefix}_*.html"),
+            key=lambda p: p.stem,
         )
 
         for gt_file in gt_files:
@@ -384,18 +254,18 @@ class Benchmarker:
             suffix = gt_filename[len(self._gt_prefix) + 1 :]  # +1 for underscore
 
             # Construct the corresponding prediction filename
-            pred_filename = f"{self._pred_prefix}_{suffix}.bracket"
-            pred_file = bracket_root / pred_filename
+            # pred_filename = f"{self._pred_prefix}_{suffix}.bracket"
+            pred_filename = f"{self._pred_prefix}_{suffix}.html"
+            pred_file = data_root / pred_filename
 
             # Only add to matches if the prediction file exists
             if pred_file.exists():
                 matches[gt_file] = pred_file
 
         return matches
-    
+
     def _apted_teds(self, gt_bracket_str: str, pred_bracket_str: str) -> float:
-        r"""
-        """
+        r""" """
         gt_tree: TableTree = TableTree.from_bracket(gt_bracket_str)
         pred_tree: TableTree = TableTree.from_bracket(pred_bracket_str)
 
@@ -415,6 +285,15 @@ class Benchmarker:
         python_teds = 1.0 - (float(python_distance) / n_nodes)
 
         return python_teds
+
+    def _html_to_bracket(self, html_str: str) -> str:
+        r"""
+        Convert html to bracket format
+        """
+        html_obj = html.fromstring(html_str)
+        table_tree: TableTree = self._teds_scorer.html_to_table_tree(html_obj)
+        bracket: str = table_tree.bracket()
+        return bracket
 
 
 def main():
