@@ -27,6 +27,7 @@ dependencies = [
     "apted",
     "pydantic",
     "Levenshtein",
+    "lxml",
 ]
 
 [project.urls]
