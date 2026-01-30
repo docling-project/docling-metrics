@@ -8,7 +8,9 @@ from docling_metrics_core.base_types import (
     BaseSampleResult,
 )
 
-from .docling_metric_teds_cpp import TEDSManager, TEDSampleEvaluation, TEDSDatasetEvaluation
+import docling_metric_teds_cpp
+TEDSManager = docling_metric_teds_cpp.TEDSManager
+TEDSSampleEvaluation = docling_metric_teds_cpp.TEDSampleEvaluation
 
 
 class TEDSMetricInputSample(BaseInputSample):

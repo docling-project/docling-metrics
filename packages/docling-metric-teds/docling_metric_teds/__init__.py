@@ -1,10 +1,10 @@
-"""C++ package."""
+"""Expose the C++ package"""
 
-from .docling_metric_teds_cpp import (
-    TEDSampleEvaluation,
-    TEDSDatasetEvaluation,
-    TEDSManager,
-)
+import docling_metric_teds_cpp
+
+TEDSampleEvaluation = docling_metric_teds_cpp.TEDSampleEvaluation
+TEDSDatasetEvaluation = docling_metric_teds_cpp.TEDSDatasetEvaluation
+TEDSManager = docling_metric_teds_cpp.TEDSManager
 
 __all__ = [
     "TEDSampleEvaluation",
