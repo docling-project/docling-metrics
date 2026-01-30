@@ -23,6 +23,7 @@ classifiers = [
 requires-python = ">=3.10,<4.0"
 dependencies = [
     "docling-metrics-core>=0.0.1",
+    "pybind11",
 ]
 
 [project.urls]

@@ -21,13 +21,14 @@ python_bin="${python_root}/python3"
 
 ###########################################################################################
 # Clean up dirs
+#
 rm -rf "${BUILD_DIR}" "${EXTERNALS_DIR}"
 
 
 
 ###########################################################################################
 # Compile
-
+#
 cmake \
     -S . \
     -B "${BUILD_DIR}" \
@@ -35,12 +36,11 @@ cmake \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
 
-
 cmake --build "${BUILD_DIR}" -j16
-
 
 
 ###########################################################################################
 # Install
+#
 cmake --install "${BUILD_DIR}"
 

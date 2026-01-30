@@ -124,19 +124,6 @@ list(APPEND teds_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
 add_library(teds_interface INTERFACE)
 target_include_directories(teds_interface INTERFACE "${teds_include_dirs}")
 
-# Find Python first (before pybind11) to ensure we use the correct version
-# This will use the Python from the activated virtual environment
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-message(STATUS "Python3 executable: ${Python3_EXECUTABLE}")
-message(STATUS "Python3 version: ${Python3_VERSION}")
-
-# Add pybind11 - it will now use the Python3 found above
-set(PYBIND11_FINDPYTHON ON)
-set(PYBIND11_PYTHON_VERSION ${Python3_VERSION})
-find_package(pybind11 CONFIG REQUIRED)
-message(STATUS "PyBind11 + Python include dirs: ${pybind11_INCLUDE_DIRS}")
-message(STATUS "PyBind11 libs: ${pybind11_LIBRARIES}")
-
 option(USE_SYSTEM_DEPS OFF "If enabled, the build will find and link to system dependencies, otherwise they are sourced from the original repos and compiled on the fly.")
 
 # Directory structure to building external packages
@@ -154,6 +141,23 @@ include(cmake/extlib_cxxopts.cmake)
 include(cmake/extlib_loguru.cmake)
 include(cmake/extlib_json.cmake)
 
+# Use the Python from the python venv
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+message(STATUS "Python3 executable: ${Python3_EXECUTABLE}")
+message(STATUS "Python3 version: ${Python3_VERSION}")
+
+# Add pybind11 from the python venv with the python from venv
+set(PYBIND11_FINDPYTHON ON)
+set(PYBIND11_PYTHON_VERSION ${Python3_VERSION})
+execute_process(
+  COMMAND ${Python3_EXECUTABLE} -m pybind11 --cmakedir
+  OUTPUT_VARIABLE pybind11_DIR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+find_package(pybind11 CONFIG REQUIRED)
+message(STATUS "PyBind11 + Python include dirs: ${pybind11_INCLUDE_DIRS}")
+message(STATUS "PyBind11 libs: ${pybind11_LIBRARIES}")
+
 # define LIB_LINK and OS_DEPENDENCIES
 # include(cmake/os_opts.cmake)
 # list(APPEND DEPENDENCIES ${OS_DEPENDENCIES})
@@ -161,7 +165,7 @@ include(cmake/extlib_json.cmake)
 # define subdirlist utility
 # include(cmake/subdirlist.cmake)
 
-set(dependencies 
+set(dependencies
     teds_interface
     "${ext_name_json}"
     "${ext_name_loguru}"
@@ -176,6 +180,7 @@ set(dependencies
 # Compile CLI
 add_executable("${teds_cli_name}" "cpp_src/command_line/main.cpp")
 target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies})
+add_dependencies("${teds_cli_name}" ${dependencies})
 
 
 ###########################################################################################
@@ -187,6 +192,7 @@ pybind11_add_module(
     "${TOPLEVEL_PREFIX_PATH}/cpp_src/pybind/pybind_module.cpp"
 )
 target_link_libraries("${teds_project_name}" PUBLIC ${dependencies})
+add_dependencies("${teds_project_name}" ${dependencies})
 
 
 ###########################################################################################

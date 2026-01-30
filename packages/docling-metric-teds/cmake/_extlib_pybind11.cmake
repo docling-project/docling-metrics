@@ -1,5 +1,7 @@
 message(STATUS "entering in extlib_pybind11.cmake")
 
+set(ext_name_pybind11 "pybind11")
+
 include(ExternalProject)
 include(CMakeParseArguments)
 
@@ -22,7 +24,7 @@ ExternalProject_Add(extlib_pybind11
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/include/ ${EXTERNALS_PREFIX_PATH}/include/
     )
 
-add_library(pybind11 INTERFACE)
+add_library("${ext_name_pybind11}" INTERFACE)
 add_custom_target(install_extlib_pybind11 DEPENDS extlib_pybind11)
-add_dependencies(pybind11 install_extlib_pybind11)
+add_dependencies("${ext_name_pybind11}" install_extlib_pybind11)
 
