@@ -11,6 +11,7 @@ on:
           - docling-metrics-core
           - docling-metric-hello-world
           - docling-metric-hello-world-cpp
+          - docling-metric-teds
 
 jobs:
   code-checks:

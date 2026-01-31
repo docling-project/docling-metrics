@@ -14,8 +14,13 @@ jobs:
     uses: ./.github/workflows/job-checks.yml
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-  build-wheels:
+  build-wheels-hello-world-cpp:
     if: ${{ github.event_name == 'push' || (github.event.pull_request.head.repo.full_name != 'docling-project/docling-metrics') }}
     uses: ./.github/workflows/wheels.yml
     with:
       package: docling-metric-hello-world-cpp
+  build-wheels-teds:
+    if: ${{ github.event_name == 'push' || (github.event.pull_request.head.repo.full_name != 'docling-project/docling-metrics') }}
+    uses: ./.github/workflows/wheels.yml
+    with:
+      package: docling-metric-teds
