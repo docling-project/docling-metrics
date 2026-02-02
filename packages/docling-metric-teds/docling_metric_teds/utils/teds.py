@@ -242,3 +242,14 @@ class TEDScorer:
         # if parent is None:
         #     return new_node
         return new_node
+
+    def html_to_bracket(self, html_str: str, structure_only: bool = False) -> str:
+        r"""
+        Convert html to bracket format
+        """
+        html_obj = html.fromstring(html_str)
+        table_tree: TableTree = self.html_to_table_tree(
+            html_obj, convert_cell=not structure_only
+        )
+        bracket: str = table_tree.bracket()
+        return bracket

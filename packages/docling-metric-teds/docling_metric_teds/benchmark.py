@@ -8,12 +8,11 @@ from statistics import mean, median, stdev
 from typing import Optional
 
 from apted import APTED
-from lxml import html
 from pydantic import BaseModel
 
 from docling_metric_teds.docling_metric_teds import (
     TEDSMetric,
-    TEDSMetricInputSample,
+    TEDSMetricBracketInputSample,
     TEDSMetricSampleEvaluation,
 )
 from docling_metric_teds.utils.teds import CustomConfig, TableTree, TEDScorer
@@ -77,10 +76,7 @@ class Benchmarker:
         1. Match the ground truth and prediction files using the find_matches().
         2. Use the matched file pairs from step 1, load the files and pass their content in TableTree.from_bracket() to create TableTree instances.
         3. Pass the TableTree instances to the APTED class to get the TED score.
-        4. Call the c++ implementation using the subprocess module. The input arguments must be:
-           - First argument is the literal "file"
-           - Second argument is the path to the ground truth bracket file prefixed with self._gt_prefix.
-           - Third argument is the path to the prediction bracket file prefixed with self._pred_prefix.
+        4. Call the C++ implementation using the Python bindings.
         5. Print the output of the python and the C++ implementations.
         """
 
@@ -125,12 +121,6 @@ class Benchmarker:
             file_id = gt_filename[len(self._gt_prefix) + 1 :]
 
             try:
-                # Step 2: Load files and create TableTree instances
-                # with open(gt_file, "r") as f:
-                #     gt_bracket_str: str = f.read()
-                # with open(pred_file, "r") as f:
-                #     pred_bracket_str: str = f.read()
-
                 # Step2: Load the html files and convert them into bracket format
                 with open(gt_file, "r") as f:
                     gt_html_str: str = f.read()
@@ -139,8 +129,8 @@ class Benchmarker:
 
                 # Convert html to brackets for both GT and predictions
                 t0 = time.monotonic()
-                gt_bracket_str = self._html_to_bracket(gt_html_str)
-                pred_bracket_str = self._html_to_bracket(pred_html_str)
+                gt_bracket_str = self._teds_scorer.html_to_bracket(gt_html_str)
+                pred_bracket_str = self._teds_scorer.html_to_bracket(pred_html_str)
                 html_to_bracket_ms = (time.monotonic() - t0) * 1000
                 all_html_to_bracket_ms.append(html_to_bracket_ms)
 
@@ -154,10 +144,12 @@ class Benchmarker:
                 cpp_teds = None
                 cpp_ms = -1.0
                 t0 = time.monotonic()
-                metric_input: TEDSMetricInputSample = TEDSMetricInputSample(
-                    id=file_id,
-                    gt_bracket=gt_bracket_str,
-                    pred_bracket=pred_bracket_str,
+                metric_input: TEDSMetricBracketInputSample = (
+                    TEDSMetricBracketInputSample(
+                        id=file_id,
+                        a_bracket=gt_bracket_str,
+                        b_bracket=pred_bracket_str,
+                    )
                 )
                 sample_evaluaton: TEDSMetricSampleEvaluation = (
                     self._teds_metric.evaluate_sample(metric_input)
@@ -285,15 +277,6 @@ class Benchmarker:
         python_teds = 1.0 - (float(python_distance) / n_nodes)
 
         return python_teds
-
-    def _html_to_bracket(self, html_str: str) -> str:
-        r"""
-        Convert html to bracket format
-        """
-        html_obj = html.fromstring(html_str)
-        table_tree: TableTree = self._teds_scorer.html_to_table_tree(html_obj)
-        bracket: str = table_tree.bracket()
-        return bracket
 
 
 def main():

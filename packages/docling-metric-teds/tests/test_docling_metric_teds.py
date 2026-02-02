@@ -9,7 +9,7 @@ from docling_metric_teds import (
 )
 from docling_metric_teds.docling_metric_teds import (
     TEDSMetric,
-    TEDSMetricInputSample,
+    TEDSMetricBracketInputSample,
     TEDSMetricSampleEvaluation,
 )
 
@@ -94,10 +94,10 @@ def test_teds_metric_api():
     teds_metric = TEDSMetric()
 
     # Evaluate sample using the high-level API
-    sample = TEDSMetricInputSample(
+    sample = TEDSMetricBracketInputSample(
         id="s1",
-        gt_bracket=gt_bracket,
-        pred_bracket=pred_bracket,
+        a_bracket=gt_bracket,
+        b_bracket=pred_bracket,
     )
     sample_evaluation: TEDSMetricSampleEvaluation = teds_metric.evaluate_sample(sample)
 
@@ -109,10 +109,10 @@ def test_teds_metric_api():
 
     # Test with broken bracket - should raise ValueError
     print("\n=== Testing Broken Bracket ===")
-    broken_sample = TEDSMetricInputSample(
+    broken_sample = TEDSMetricBracketInputSample(
         id="s2",
-        gt_bracket=broken_bracket,
-        pred_bracket=pred_bracket,
+        a_bracket=broken_bracket,
+        b_bracket=pred_bracket,
     )
 
     with pytest.raises(ValueError) as exc_info:
