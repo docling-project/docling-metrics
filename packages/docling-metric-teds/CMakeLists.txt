@@ -142,7 +142,7 @@ include(cmake/extlib_loguru.cmake)
 include(cmake/extlib_json.cmake)
 
 # Use the Python from the python venv
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 message(STATUS "Python3 executable: ${Python3_EXECUTABLE}")
 message(STATUS "Python3 version: ${Python3_VERSION}")
 
