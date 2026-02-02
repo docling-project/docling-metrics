@@ -67,9 +67,9 @@ message(STATUS "cmake osx-deployment: " ${CMAKE_OSX_DEPLOYMENT_TARGET})
 # minimum macosx, ignored on other platforms
 if(APPLE)
     if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-        message(STATUS "cmake is not set")
-    elseif(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 10.15)
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum macOS version" FORCE)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
+    elseif(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 11.0)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
     endif()
 endif()
 
