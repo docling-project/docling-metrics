@@ -1,6 +1,6 @@
 """Hello World metric implementation using a C++ backend."""
 
-from typing import Annotated, Iterable, Tuple
+from typing import Annotated, Iterable
 
 from docling_metrics_core.base_types import (
     BaseAggregateResult,
@@ -39,12 +39,10 @@ class HelloWorldMetric(BaseMetric):
     """A minimal example metric that always returns 1.0, backed by C++."""
 
     def evaluate_sample(  # type: ignore[override]
-        self, sample_a: StringInputSample, sample_b: StringInputSample
+        self, sample: StringInputSample
     ) -> HelloWorldSampleResult:
-        score = float(
-            cpp_evaluate_sample(sample_a.id, sample_a.payload, sample_b.payload)
-        )
-        return HelloWorldSampleResult(id=sample_a.id, score=score)
+        score = float(cpp_evaluate_sample(sample.id, sample.payload))
+        return HelloWorldSampleResult(id=sample.id, score=score)
 
     def aggregate(  # type: ignore[override]
         self, results: Iterable[HelloWorldSampleResult]
@@ -60,10 +58,7 @@ class HelloWorldMetric(BaseMetric):
         )
 
     def evaluate_dataset(  # type: ignore[override]
-        self, sample_pairs: Iterable[Tuple[StringInputSample, StringInputSample]]
+        self, sample_pairs: Iterable[StringInputSample]
     ) -> HelloWorldAggregateResult:
-        results = [
-            self.evaluate_sample(sample_a, sample_b)
-            for sample_a, sample_b in sample_pairs
-        ]
+        results = [self.evaluate_sample(sample) for sample in sample_pairs]
         return self.aggregate(results)

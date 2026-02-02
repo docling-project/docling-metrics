@@ -1,6 +1,6 @@
 """Hello World metric implementation demonstrating the docling-metrics-core interface."""
 
-from typing import Annotated, Iterable, Tuple
+from typing import Annotated, Iterable
 
 from docling_metrics_core.base_types import (
     BaseAggregateResult,
@@ -42,7 +42,8 @@ class HelloWorldMetric(BaseMetric):
     """
 
     def evaluate_sample(  # type: ignore[override]
-        self, sample_a: StringInputSample, sample_b: StringInputSample
+        self,
+        sample: StringInputSample,
     ) -> HelloWorldSampleResult:
         """Evaluate a single sample pair.
 
@@ -53,7 +54,7 @@ class HelloWorldMetric(BaseMetric):
         Returns:
             HelloWorldSampleResult with score always equal to 1.0.
         """
-        return HelloWorldSampleResult(id=sample_a.id, score=1.0)
+        return HelloWorldSampleResult(id=sample.id, score=1.0)
 
     def aggregate(  # type: ignore[override]
         self, results: Iterable[HelloWorldSampleResult]
@@ -77,7 +78,7 @@ class HelloWorldMetric(BaseMetric):
         )
 
     def evaluate_dataset(  # type: ignore[override]
-        self, sample_pairs: Iterable[Tuple[StringInputSample, StringInputSample]]
+        self, sample_pairs: Iterable[StringInputSample]
     ) -> HelloWorldAggregateResult:
         """Evaluate an entire dataset of sample pairs.
 
@@ -87,8 +88,5 @@ class HelloWorldMetric(BaseMetric):
         Returns:
             HelloWorldAggregateResult with aggregated statistics.
         """
-        results = [
-            self.evaluate_sample(sample_a, sample_b)
-            for sample_a, sample_b in sample_pairs
-        ]
+        results = [self.evaluate_sample(sample) for sample in sample_pairs]
         return self.aggregate(results)

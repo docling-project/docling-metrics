@@ -5,8 +5,7 @@ namespace py = pybind11;
 
 double evaluate_sample(
     const std::string &id,
-    const std::string &payload_a,
-    const std::string &payload_b
+    const std::string &payload
 ) {
     return 1.0;
 }
