@@ -179,7 +179,7 @@ set(dependencies
 
 # Compile CLI
 add_executable("${teds_cli_name}" "cpp_src/command_line/main.cpp")
-target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies})
+target_link_libraries("${teds_cli_name}" PUBLIC ${dependencies} ${CMAKE_DL_LIBS})
 add_dependencies("${teds_cli_name}" ${dependencies})
 
 
