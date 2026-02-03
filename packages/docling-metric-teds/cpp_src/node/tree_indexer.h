@@ -23,21 +23,26 @@
 
 #pragma once
 
-#include <vector>
-#include <unordered_map>
+#include "../cost_model/unit_cost_model.h"
+#include "../label/label_dictionary.h"
+#include <algorithm>
 #include <string>
 #include <type_traits>
-#include <algorithm>
-#include "../label/label_dictionary.h"
-#include "../cost_model/unit_cost_model.h"
+#include <unordered_map>
+#include <vector>
 
 namespace node {
 
 /// Stores the size of the indexed tree.
 class Constants {
-  public: int tree_size_;
-  public: int tree_degree_;
-  public: int tree_height_;
+public:
+  int tree_size_;
+
+public:
+  int tree_degree_;
+
+public:
+  int tree_height_;
 };
 
 /// Stores label id of each node in a tree.
@@ -47,7 +52,8 @@ class Constants {
  * Indexed in left-to-right preorder.
  */
 class PreLToLabelId {
-  public: std::vector<int> prel_to_label_id_;
+public:
+  std::vector<int> prel_to_label_id_;
 };
 
 /// Stores label id of each node in a tree.
@@ -57,7 +63,8 @@ class PreLToLabelId {
  * Indexed in left-to-right postorder.
  */
 class PostLToLabelId {
-  public: std::vector<int> postl_to_label_id_;
+public:
+  std::vector<int> postl_to_label_id_;
 };
 
 /// Stores the type of each node in a tree.
@@ -65,7 +72,8 @@ class PostLToLabelId {
  * Indexed in left-to-right postorder.
  */
 class PostLToType {
-  public: std::vector<int> postl_to_type_;
+public:
+  std::vector<int> postl_to_type_;
 };
 
 /// Stores label id of each node in a tree.
@@ -75,7 +83,8 @@ class PostLToType {
  * Indexed in right-to-left postorder.
  */
 class PostRToLabelId {
-  public: std::vector<int> postr_to_label_id_;
+public:
+  std::vector<int> postr_to_label_id_;
 };
 
 /// Stores subtree size of each node in a tree.
@@ -83,7 +92,8 @@ class PostRToLabelId {
  * Indexed in left-to-right postorder.
  */
 class PostLToSize {
-  public: std::vector<int> postl_to_size_;
+public:
+  std::vector<int> postl_to_size_;
 };
 
 /// Stores subtree size of each node in a tree.
@@ -91,7 +101,8 @@ class PostLToSize {
  * Indexed in left-to-right preorder.
  */
 class PreLToSize {
-  public: std::vector<int> prel_to_size_;
+public:
+  std::vector<int> prel_to_size_;
 };
 
 /// Stores left-to-right postorder id of the parent node.
@@ -100,7 +111,8 @@ class PreLToSize {
  * `-1` represents no parent.
  */
 class PostLToParent {
-  public: std::vector<int> postl_to_parent_;
+public:
+  std::vector<int> postl_to_parent_;
 };
 
 /// Stores left-to-right preorder id of the parent node.
@@ -109,7 +121,8 @@ class PostLToParent {
  * `-1` represents no parent.
  */
 class PreLToParent {
-  public: std::vector<int> prel_to_parent_;
+public:
+  std::vector<int> prel_to_parent_;
 };
 
 /// Stores left-to-right postorder id of the leftmost leaf descendant of a node.
@@ -117,7 +130,8 @@ class PreLToParent {
  * Indexed in left-to-right postorder.
  */
 class PostLToLLD {
-  public: std::vector<int> postl_to_lld_;
+public:
+  std::vector<int> postl_to_lld_;
 };
 
 /// Stores left-to-right preorder id of the leftmost leaf descendant of a node.
@@ -125,7 +139,8 @@ class PostLToLLD {
  * Indexed in left-to-right preorder.
  */
 class PreLToLLD {
-  public: std::vector<int> prel_to_lld_;
+public:
+  std::vector<int> prel_to_lld_;
 };
 
 /// Stores left-to-right preorder id of the rightmost leaf descendant of a node.
@@ -133,7 +148,8 @@ class PreLToLLD {
  * Indexed in left-to-right preorder.
  */
 class PreLToRLD {
-  public: std::vector<int> prel_to_rld_;
+public:
+  std::vector<int> prel_to_rld_;
 };
 
 /// Stores right-to-left postorder id of the rightmost leaf descendant of a node.
@@ -142,7 +158,8 @@ class PreLToRLD {
  * Depends on: PreLToSize, PostRToPreL, PreLToPostR, PreLToChildren.
  */
 class PostRToRLD {
-  public: std::vector<int> postr_to_rld_;
+public:
+  std::vector<int> postr_to_rld_;
 };
 
 /// Stores left-to-right preorder id of each node.
@@ -150,7 +167,8 @@ class PostRToRLD {
  * Indexed in left-to-right postorder.
  */
 class PostLToPreL {
-  public: std::vector<int> postl_to_prel_;
+public:
+  std::vector<int> postl_to_prel_;
 };
 
 /// Stores left-to-right postorder id of each node.
@@ -158,7 +176,8 @@ class PostLToPreL {
  * Indexed in left-to-right preorder.
  */
 class PreLToPostL {
-  public: std::vector<int> prel_to_postl_;
+public:
+  std::vector<int> prel_to_postl_;
 };
 
 /// Stores right-to-left preorder id of each node.
@@ -166,7 +185,8 @@ class PreLToPostL {
  * Indexed in left-to-right preorder.
  */
 class PreLToPreR {
-  public: std::vector<int> prel_to_prer_;
+public:
+  std::vector<int> prel_to_prer_;
 };
 
 /// Stores left-to-right preorder id of each node.
@@ -174,7 +194,8 @@ class PreLToPreR {
  * Indexed in right-to-left preorder.
  */
 class PreRToPreL {
-  public: std::vector<int> prer_to_prel_;
+public:
+  std::vector<int> prer_to_prel_;
 };
 
 /// Stores right-to-left postorder id of each node.
@@ -182,7 +203,8 @@ class PreRToPreL {
  * Indexed in left-to-right preorder.
  */
 class PreLToPostR {
-  public: std::vector<int> prel_to_postr_;
+public:
+  std::vector<int> prel_to_postr_;
 };
 
 /// Stores left-to-right preorder id of each node.
@@ -190,7 +212,8 @@ class PreLToPostR {
  * Indexed in right-to-left postorder.
  */
 class PostRToPreL {
-  public: std::vector<int> postr_to_prel_;
+public:
+  std::vector<int> postr_to_prel_;
 };
 
 /// Stores left-to-right postorder ids of each node's children.
@@ -198,7 +221,8 @@ class PostRToPreL {
  * Indexed in left-to-right postorder.
  */
 class PostLToChildren {
-  public: std::vector<std::vector<int>> postl_to_children_;
+public:
+  std::vector<std::vector<int>> postl_to_children_;
 };
 
 /// Stores left-to-right preorder ids of each node's children.
@@ -206,7 +230,8 @@ class PostLToChildren {
  * Indexed in left-to-right preorder.
  */
 class PreLToChildren {
-  public: std::vector<std::vector<int>> prel_to_children_;
+public:
+  std::vector<std::vector<int>> prel_to_children_;
 };
 
 /// Stores depth of every node in the tree.
@@ -215,7 +240,8 @@ class PreLToChildren {
  * Depth of the root node is 0.
  */
 class PostLToDepth {
-  public: std::vector<int> postl_to_depth_;
+public:
+  std::vector<int> postl_to_depth_;
 };
 
 /// Stores left-to-right postorder id of the leftmost (first) child for each node.
@@ -224,7 +250,8 @@ class PostLToDepth {
  * '-1' represents no child.
  */
 class PostLToLCh {
-  public: std::vector<int> postl_to_lch_;
+public:
+  std::vector<int> postl_to_lch_;
 };
 
 /// Stores the maximum depth for each subtree.
@@ -233,7 +260,8 @@ class PostLToLCh {
  * Depth of the root node is 0.
  */
 class PostLToSubtreeMaxDepth {
-  public: std::vector<int> postl_to_subtree_max_depth_;
+public:
+  std::vector<int> postl_to_subtree_max_depth_;
 };
 
 /// Stores the left-to-right postorder id of the nearest keyroot ancestor.
@@ -243,7 +271,8 @@ class PostLToSubtreeMaxDepth {
  * Depends on: PostLToLCh, ListKR.
  */
 class PostLToKRAncestor {
-  public: std::vector<int> postl_to_kr_ancestor_;
+public:
+  std::vector<int> postl_to_kr_ancestor_;
 };
 
 // Stores preorder id of the first leaf node to the left/right.
@@ -254,8 +283,11 @@ class PostLToKRAncestor {
  * Depends on: PreLToSize, PreRToPreL.
  */
 class PreToLn {
-  public: std::vector<int> prel_to_ln_;
-  public: std::vector<int> prer_to_ln_;
+public:
+  std::vector<int> prel_to_ln_;
+
+public:
+  std::vector<int> prer_to_ln_;
 };
 
 // Stores true if a node is leftmost child of its parent.
@@ -263,7 +295,8 @@ class PreToLn {
  * Indexed in left-to-right preorder.
  */
 class PreLToTypeLeft {
-  public: std::vector<bool> prel_to_type_left_;
+public:
+  std::vector<bool> prel_to_type_left_;
 };
 
 // Stores true if a node is rightmost child of its parent.
@@ -271,7 +304,8 @@ class PreLToTypeLeft {
  * Indexed in left-to-right preorder.
  */
 class PreLToTypeRight {
-  public: std::vector<bool> prel_to_type_right_;
+public:
+  std::vector<bool> prel_to_type_right_;
 };
 
 // Stores cost of a single-path function for each node [1, Section 5.2].
@@ -282,9 +316,14 @@ class PreLToTypeRight {
  * Indexed in left-to-right preorder.
  */
 class PreLToSpfCost {
-  public: std::vector<long long int> prel_to_cost_all_;
-  public: std::vector<long long int> prel_to_cost_left_;
-  public: std::vector<long long int> prel_to_cost_right_;
+public:
+  std::vector<long long int> prel_to_cost_all_;
+
+public:
+  std::vector<long long int> prel_to_cost_left_;
+
+public:
+  std::vector<long long int> prel_to_cost_right_;
 };
 
 // Stores cost of deleting/inserting entire subtree for each node.
@@ -294,8 +333,11 @@ class PreLToSpfCost {
  * Indexed in left-to-right preorder.
  */
 class PreLToSubtreeCost {
-  public: std::vector<double> prel_to_subtree_del_cost_;
-  public: std::vector<double> prel_to_subtree_ins_cost_;
+public:
+  std::vector<double> prel_to_subtree_del_cost_;
+
+public:
+  std::vector<double> prel_to_subtree_ins_cost_;
 };
 
 /// Stores postorder ids of the keyroot nodes in the tree.
@@ -303,7 +345,8 @@ class PreLToSubtreeCost {
  * Sorted in left-to-right postorder.
  */
 class ListKR {
-  public: std::vector<int> list_kr_;
+public:
+  std::vector<int> list_kr_;
 };
 
 /// For each depth value stores left-to-right postorder ids of nodes with that depth.
@@ -311,7 +354,8 @@ class ListKR {
  * Indexed in depth value.
  */
 class InvertedListDepthToPostL {
-  public: std::vector<std::vector<int>> inverted_list_depth_to_postl_;
+public:
+  std::vector<std::vector<int>> inverted_list_depth_to_postl_;
 };
 
 /// For each label in the source tree, stores postorder ids of nodes that carry it.
@@ -325,7 +369,8 @@ class InvertedListDepthToPostL {
  * vector.
  */
 class InvertedListLabelIdToPostL {
-  public: std::unordered_map<int, std::vector<int>> inverted_list_label_id_to_postl_;
+public:
+  std::unordered_map<int, std::vector<int>> inverted_list_label_id_to_postl_;
 };
 
 /// Stores postorder id of the favorable child and its left sibling of each node in a tree.
@@ -333,8 +378,11 @@ class InvertedListLabelIdToPostL {
  * Indexed in left-to-right postorder.
  */
 class PostLToFavChild {
-  public: std::vector<int> postl_to_fav_child_;
-  public: std::vector<int> postl_to_left_fav_child_;
+public:
+  std::vector<int> postl_to_fav_child_;
+
+public:
+  std::vector<int> postl_to_left_fav_child_;
 };
 
 /// Stores the height of each node in a tree.
@@ -342,7 +390,8 @@ class PostLToFavChild {
  * Indexed in left-to-right postorder.
  */
 class PostLToHeight {
-  public: std::vector<int> postl_to_height_;
+public:
+  std::vector<int> postl_to_height_;
 };
 
 /// Stores the subtree sizes of all children in ascending order.
@@ -350,7 +399,8 @@ class PostLToHeight {
  * Indexed in left-to-right postorder.
  */
 class PostLToOrderedChildSize {
-  public: std::vector<std::vector<int>> postl_to_ordered_child_size_;
+public:
+  std::vector<std::vector<int>> postl_to_ordered_child_size_;
 };
 
 /// Stores postorder to favorable child order.
@@ -358,7 +408,8 @@ class PostLToOrderedChildSize {
  * Indexed in left-to-right postorder.
  */
 class PostLToFavorableChildOrder {
-  public: std::vector<int> postl_to_favorder_;
+public:
+  std::vector<int> postl_to_favorder_;
 };
 
 /// Stores postorder to left sibling.
@@ -366,193 +417,159 @@ class PostLToFavorableChildOrder {
  * Indexed in left-to-right postorder.
  */
 class PostLToLeftSibling {
-  public: std::vector<int> postl_to_left_sibling_;
+public:
+  std::vector<int> postl_to_left_sibling_;
 };
 
 /// Tree index for Zhangh and Shasha algorithm.
-class TreeIndexZhangShasha :
-  public Constants,
-  public PostLToLabelId,
-  public PostLToLLD,
-  public ListKR
-{};
+class TreeIndexZhangShasha : public Constants,
+                             public PostLToLabelId,
+                             public PostLToLLD,
+                             public ListKR {};
 
 /// Tree index for APTED algorithm.
-class TreeIndexAPTED :
-  public Constants,
-  public PreLToLabelId,
-  public PostLToLabelId,
-  public PostRToLabelId,
-  public PreLToSize,
-  public PreLToParent,
-  public PreLToChildren,
-  public PostLToLLD,
-  public PostRToRLD,
-  public PreLToLLD,
-  public PreLToRLD,
-  public PreToLn,
-  public PreLToTypeLeft,
-  public PreLToTypeRight,
-  public PreLToPreR,
-  public PreRToPreL,
-  public PreLToPostL,
-  public PostLToPreL,
-  public PreLToPostR,
-  public PostRToPreL,
-  public PreLToSpfCost,
-  public PreLToSubtreeCost
-{};
+class TreeIndexAPTED : public Constants,
+                       public PreLToLabelId,
+                       public PostLToLabelId,
+                       public PostRToLabelId,
+                       public PreLToSize,
+                       public PreLToParent,
+                       public PreLToChildren,
+                       public PostLToLLD,
+                       public PostRToRLD,
+                       public PreLToLLD,
+                       public PreLToRLD,
+                       public PreToLn,
+                       public PreLToTypeLeft,
+                       public PreLToTypeRight,
+                       public PreLToPreR,
+                       public PreRToPreL,
+                       public PreLToPostL,
+                       public PostLToPreL,
+                       public PreLToPostR,
+                       public PostRToPreL,
+                       public PreLToSpfCost,
+                       public PreLToSubtreeCost {};
 
 /// Tree index for Touzet Baseline algorithm.
-class TreeIndexTouzetBaseline :
-  public Constants,
-  public PostLToLabelId,
-  public PostLToSize,
-  public PostLToDepth
-{};
+class TreeIndexTouzetBaseline : public Constants,
+                                public PostLToLabelId,
+                                public PostLToSize,
+                                public PostLToDepth {};
 
 /// Tree index for Touzet Depth Pruning algorithm.
-class TreeIndexTouzetDepthPruning :
-  public TreeIndexTouzetBaseline,
-  public PostLToSubtreeMaxDepth,
-  public InvertedListDepthToPostL
-{};
+class TreeIndexTouzetDepthPruning : public TreeIndexTouzetBaseline,
+                                    public PostLToSubtreeMaxDepth,
+                                    public InvertedListDepthToPostL {};
 
 /// Tree index for Touzet Depth Pruning with truncated tree fix algorithm.
-class TreeIndexTouzetDepthPruningTruncatedTreeFix :
-  virtual public TreeIndexTouzetBaseline,
-  public PostLToSubtreeMaxDepth
-{};
+class TreeIndexTouzetDepthPruningTruncatedTreeFix : virtual public TreeIndexTouzetBaseline,
+                                                    public PostLToSubtreeMaxDepth {};
 
 /// Tree index for Touzet KR Loop algorithm.
-class TreeIndexTouzetKRLoop :
-  public TreeIndexTouzetBaseline,
-  public ListKR,
-  public PostLToLCh
-{};
+class TreeIndexTouzetKRLoop : public TreeIndexTouzetBaseline, public ListKR, public PostLToLCh {};
 
 /// Tree index for Touzet KR Set algorithm.
-class TreeIndexTouzetKRSet :
-  virtual public TreeIndexTouzetBaseline,
-  public PostLToLCh,
-  public PostLToKRAncestor,
-  // missing dependency for PostLToKRAncestor
-  public ListKR
-{};
+class TreeIndexTouzetKRSet : virtual public TreeIndexTouzetBaseline,
+                             public PostLToLCh,
+                             public PostLToKRAncestor,
+                             // missing dependency for PostLToKRAncestor
+                             public ListKR {};
 
 /// Tree index for String Edit Distance algorithm.
-class TreeIndexSED :
-  public Constants,
-  public PreLToLabelId,
-  public PostLToLabelId
-{};
+class TreeIndexSED : public Constants, public PreLToLabelId, public PostLToLabelId {};
 
 /// Tree index for String Edit Distance algorithm.
-class TreeIndexLI :
-  public Constants,
-  public InvertedListLabelIdToPostL
-{};
+class TreeIndexLI : public Constants, public InvertedListLabelIdToPostL {};
 
 /// Tree index for Constrained Tree Edit Distance agorithm.
-class TreeIndexCTED :
-  public Constants,
-  public PostLToLabelId,
-  public PostLToChildren,
-  public PostLToParent
-{};
+class TreeIndexCTED : public Constants,
+                      public PostLToLabelId,
+                      public PostLToChildren,
+                      public PostLToParent {};
 
 /// Tree index for Constrained Tree Edit Distance agorithm.
-class TreeIndexDPJED :
-  public Constants,
-  public PostLToType,
-  public PostLToLabelId,
-  public PostLToChildren,
-  public PostLToParent
-{};
+class TreeIndexDPJED : public Constants,
+                       public PostLToType,
+                       public PostLToLabelId,
+                       public PostLToChildren,
+                       public PostLToParent {};
 
 /// Tree index for SED and CTED agorithms.
-class TreeIndexSCTED :
-  public Constants,
-  public PreLToLabelId,
-  public PostLToLabelId,
-  public PostLToChildren,
-  public PostLToParent
-{};
+class TreeIndexSCTED : public Constants,
+                       public PreLToLabelId,
+                       public PostLToLabelId,
+                       public PostLToChildren,
+                       public PostLToParent {};
 
 /// Tree index for LGM upper bound.
-class TreeIndexLGM :
-  public Constants,
-  public PostLToLabelId,
-  public PostLToSize,
-  public PostLToDepth,
-  public PostLToParent,
-  public PostLToPreL,
-  public PreLToPostL,
-  public InvertedListLabelIdToPostL
-{};
+class TreeIndexLGM : public Constants,
+                     public PostLToLabelId,
+                     public PostLToSize,
+                     public PostLToDepth,
+                     public PostLToParent,
+                     public PostLToPreL,
+                     public PreLToPostL,
+                     public InvertedListLabelIdToPostL {};
 
 /// All tree indexes. Used for correctness tests and prototyping.
-class TreeIndexJSON :
-  public Constants,
-  public ListKR,
-  public PostLToType,
-  public PostLToLabelId,
-  public PostLToSize,
-  public PostLToChildren,
-  public PostLToParent,
-  public PostLToDepth,
-  public PostLToLCh,
-  public PostLToSubtreeMaxDepth,
-  public PostLToKRAncestor,
-  public PostLToFavChild,
-  public PostLToHeight,
-  public PostLToOrderedChildSize,
-  public PostLToFavorableChildOrder,
-  public PostLToLeftSibling,
-  public InvertedListLabelIdToPostL
-{};
+class TreeIndexJSON : public Constants,
+                      public ListKR,
+                      public PostLToType,
+                      public PostLToLabelId,
+                      public PostLToSize,
+                      public PostLToChildren,
+                      public PostLToParent,
+                      public PostLToDepth,
+                      public PostLToLCh,
+                      public PostLToSubtreeMaxDepth,
+                      public PostLToKRAncestor,
+                      public PostLToFavChild,
+                      public PostLToHeight,
+                      public PostLToOrderedChildSize,
+                      public PostLToFavorableChildOrder,
+                      public PostLToLeftSibling,
+                      public InvertedListLabelIdToPostL {};
 
 /// All tree indexes. Used for correctness tests and prototyping.
-class TreeIndexAll :
-  public Constants,
-  public PreLToLabelId,
-  public PostLToType,
-  public PostLToLabelId,
-  public PostRToLabelId,
-  public PostLToSize,
-  public PreLToSize,
-  public PostLToPreL,
-  public PreLToPostL,
-  public PreLToPreR,
-  public PreRToPreL,
-  public PreLToPostR,
-  public PostRToPreL,
-  public PostLToChildren,
-  public PreLToChildren,
-  public PostLToLLD,
-  public PreLToLLD,
-  public PreLToRLD,
-  public PostRToRLD,
-  public PostLToParent,
-  public PreLToParent,
-  public PostLToDepth,
-  public PostLToLCh,
-  public PostLToSubtreeMaxDepth,
-  public PostLToKRAncestor,
-  public PreToLn,
-  public PreLToTypeLeft,
-  public PreLToTypeRight,
-  public PreLToSpfCost,
-  public PreLToSubtreeCost,
-  public ListKR,
-  public InvertedListDepthToPostL,
-  public InvertedListLabelIdToPostL,
-  public PostLToFavChild,
-  public PostLToHeight,
-  public PostLToOrderedChildSize,
-  public PostLToFavorableChildOrder,
-  public PostLToLeftSibling
-{};
+class TreeIndexAll : public Constants,
+                     public PreLToLabelId,
+                     public PostLToType,
+                     public PostLToLabelId,
+                     public PostRToLabelId,
+                     public PostLToSize,
+                     public PreLToSize,
+                     public PostLToPreL,
+                     public PreLToPostL,
+                     public PreLToPreR,
+                     public PreRToPreL,
+                     public PreLToPostR,
+                     public PostRToPreL,
+                     public PostLToChildren,
+                     public PreLToChildren,
+                     public PostLToLLD,
+                     public PreLToLLD,
+                     public PreLToRLD,
+                     public PostRToRLD,
+                     public PostLToParent,
+                     public PreLToParent,
+                     public PostLToDepth,
+                     public PostLToLCh,
+                     public PostLToSubtreeMaxDepth,
+                     public PostLToKRAncestor,
+                     public PreToLn,
+                     public PreLToTypeLeft,
+                     public PreLToTypeRight,
+                     public PreLToSpfCost,
+                     public PreLToSubtreeCost,
+                     public ListKR,
+                     public InvertedListDepthToPostL,
+                     public InvertedListLabelIdToPostL,
+                     public PostLToFavChild,
+                     public PostLToHeight,
+                     public PostLToOrderedChildSize,
+                     public PostLToFavorableChildOrder,
+                     public PostLToLeftSibling {};
 
 /// Main method to index a tree.
 /**
@@ -564,8 +581,8 @@ class TreeIndexAll :
  * \param ld LabelDictionary to collect node labels and assign their ids.
  */
 template <typename TreeIndex, typename Label, typename CostModel>
-void index_tree(TreeIndex& ti, const node::Node<Label>& n,
-    label::LabelDictionary<Label>& ld, const CostModel& cm);
+void index_tree(TreeIndex &ti, const node::Node<Label> &n, label::LabelDictionary<Label> &ld,
+                const CostModel &cm);
 
 /// Recursive tree traversal method that indexes a tree.
 /**
@@ -578,18 +595,18 @@ void index_tree(TreeIndex& ti, const node::Node<Label>& n,
  * \param start_preorder Variable to hold current preorder id; modified during the recursion.
  * \param start_postorder Variable to hold current postorder id; modified during the recursion.
  * \param start_depth Variable to hold current depth of a node.
- * \param subtree_max_depth Variable to hold current maximum depth of a subtree; modified during the recursion.
+ * \param subtree_max_depth Variable to hold current maximum depth of a subtree; modified during the
+ * recursion.
  * \param parent_preorder The left-to-right preorder id of a parent node.
  * \param is_rightmost_child Is true if the node is the rightmost child of its parent.
  * \return Subtree size rooted at node n.
  */
 template <typename TreeIndex, typename Label, typename CostModel>
-int index_tree_recursion(TreeIndex& ti, const node::Node<Label>& n,
-    label::LabelDictionary<Label>& ld, const CostModel& cm,
-    int& start_preorder, int& start_postorder,
-    int start_depth, int& subtree_max_depth,
-    int start_height, int& height,
-    int parent_preorder, bool is_rightmost_child);
+int index_tree_recursion(TreeIndex &ti, const node::Node<Label> &n,
+                         label::LabelDictionary<Label> &ld, const CostModel &cm,
+                         int &start_preorder, int &start_postorder, int start_depth,
+                         int &subtree_max_depth, int start_height, int &height, int parent_preorder,
+                         bool is_rightmost_child);
 
 // TODO: Combine fill_kr_ancestors, fill_ln, and fill_rld into a single
 //       function. Check the base type inside.
@@ -598,33 +615,28 @@ int index_tree_recursion(TreeIndex& ti, const node::Node<Label>& n,
 /**
  * See description of the class PostLToKRAncestor.
  */
-void fill_kr_ancestors(std::vector<int>& kr_ancestors,
-    const std::vector<int>& postl_to_lch, const std::vector<int>& list_kr);
+void fill_kr_ancestors(std::vector<int> &kr_ancestors, const std::vector<int> &postl_to_lch,
+                       const std::vector<int> &list_kr);
 
 /// Fills in the PreToLn indexes.
 /**
  * See description of the classes PreToLn.
  */
-void fill_ln(std::vector<int>& prel_to_ln,
-    std::vector<int>& prer_to_ln,
-    const std::vector<int>& prel_to_size,
-    const std::vector<int>& prer_to_prel);
+void fill_ln(std::vector<int> &prel_to_ln, std::vector<int> &prer_to_ln,
+             const std::vector<int> &prel_to_size, const std::vector<int> &prer_to_prel);
 
 /// Fills in the PostRToRLD indexes.
 /**
  * See description of the classes PostRToRLD.
  */
-void fill_rld(std::vector<int>& postr_to_rld,
-    const std::vector<int>& prel_to_size,
-    const std::vector<int>& postr_to_prel,
-    const std::vector<int>& prel_to_postr,
-    const std::vector<std::vector<int>>& prel_to_children);
+void fill_rld(std::vector<int> &postr_to_rld, const std::vector<int> &prel_to_size,
+              const std::vector<int> &postr_to_prel, const std::vector<int> &prel_to_postr,
+              const std::vector<std::vector<int>> &prel_to_children);
 
 template <typename TreeIndex>
-void fav_child_processing_order(TreeIndex& ti, int& postorder, 
-    int& favorder);
+void fav_child_processing_order(TreeIndex &ti, int &postorder, int &favorder);
 
 // Implementation details
 #include "tree_indexer_impl.h"
 
-}
+} // namespace node

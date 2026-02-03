@@ -24,9 +24,9 @@
 #pragma once
 
 template <typename CostModel, typename TreeIndex>
-double TouzetKRLoopTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex& t1,
-    const TreeIndex& t2, const int k) {
-  
+double TouzetKRLoopTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex &t1, const TreeIndex &t2,
+                                                          const int k) {
+
   const int t1_size = t1.tree_size_;
   const int t2_size = t2.tree_size_;
 
@@ -40,14 +40,14 @@ double TouzetKRLoopTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex& t1,
   if (std::abs(t1_size - t2_size) > k) {
     return std::numeric_limits<double>::infinity();
   }
-  
+
   // NOTE: There is an alternative approach to the kr-loop solution.
   //       Given kr pair, find top_x as in the current loop. Find top_y by
   //       swapping x and y parameters.
   //       The two solutions differ in the number of steps for the worst and
   //       best case.
   //       TODO: Verify empirically.
-  
+
   // Iterate over all keyroot node pairs.
   for (auto x : t1.list_kr_) {
     for (auto y : t2.list_kr_) {
@@ -59,16 +59,17 @@ double TouzetKRLoopTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex& t1,
                          // the consecutive x have to be checked against only
                          // y_l > top_y.
         int y_l = y;
-        while (y_l > top_y) { // Verify only those nodes on the left
-                              // path from y that are above the
-                              // already found relevant node.
+        while (y_l > top_y) {                    // Verify only those nodes on the left
+                                                 // path from y that are above the
+                                                 // already found relevant node.
           if (k_relevant(t1, t2, x_l, y_l, k)) { // The pair has to be in the band
-                                         // (std::abs(x_l - y_l) <= k satisfied
-                                         // by the stronger k-relevancy)
-                                         // and it has to be relevant.
-            if (top_x == -1) top_x = x_l; // The first top_x found is maximal.
-            top_y = y_l; // y_l always > top_y; std::max(top_y, y_l) not needed.
-            break; // Don't continue down the path in the right-hand tree.
+                                                 // (std::abs(x_l - y_l) <= k satisfied
+                                                 // by the stronger k-relevancy)
+                                                 // and it has to be relevant.
+            if (top_x == -1)
+              top_x = x_l; // The first top_x found is maximal.
+            top_y = y_l;   // y_l always > top_y; std::max(top_y, y_l) not needed.
+            break;         // Don't continue down the path in the right-hand tree.
           }
           y_l = t2.postl_to_lch_[y_l];
         }
@@ -81,20 +82,20 @@ double TouzetKRLoopTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex& t1,
         //       but I think it is kind of an optimization if e_max can be
         //       smaller than k.
         // if (compute_e_max) {
-          // e_max = 0;
-          // int x_i = top_x;
-          // while (x_i > -1) {
-          //   int y_i = top_y;
-          //   while (y_i > -1) {
-          //     e_max = std::max(e_max, e_budget(t1, t2, x_i, y_i, k));
-          //     y_i = t2.postl_to_lch_[y_i];
-          //   }
-          //   x_i = t1.postl_to_lch_[x_i];
-          // }
+        // e_max = 0;
+        // int x_i = top_x;
+        // while (x_i > -1) {
+        //   int y_i = top_y;
+        //   while (y_i > -1) {
+        //     e_max = std::max(e_max, e_budget(t1, t2, x_i, y_i, k));
+        //     y_i = t2.postl_to_lch_[y_i];
+        //   }
+        //   x_i = t1.postl_to_lch_[x_i];
+        // }
         // }
         td_.at(top_x, top_y) = tree_dist(t1, t2, top_x, top_y, k, e_max);
       }
     }
   }
-  return td_.read_at(t1_size-1, t2_size-1);
+  return td_.read_at(t1_size - 1, t2_size - 1);
 }

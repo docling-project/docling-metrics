@@ -34,10 +34,9 @@ TJoinTI<Label, VerificationAlgorithm>::TJoinTI() {
 
 template <typename Label, typename VerificationAlgorithm>
 void TJoinTI<Label, VerificationAlgorithm>::execute_join(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>& sets_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result,
+    std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>> &sets_collection,
+    std::vector<std::pair<int, int>> &candidates, std::vector<join::JoinResultElement> &join_result,
     const double distance_threshold) {
 
   // Convert trees to sets and get the result.
@@ -55,8 +54,9 @@ void TJoinTI<Label, VerificationAlgorithm>::execute_join(
 
 template <typename Label, typename VerificationAlgorithm>
 void TJoinTI<Label, VerificationAlgorithm>::convert_trees_to_sets(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>& sets_collection) {
+    std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>
+        &sets_collection) {
 
   // Convert trees to sets and get the result.
   label_set_converter::Converter<Label> lsc;
@@ -66,9 +66,8 @@ void TJoinTI<Label, VerificationAlgorithm>::convert_trees_to_sets(
 
 template <typename Label, typename VerificationAlgorithm>
 void TJoinTI<Label, VerificationAlgorithm>::retrieve_candidates(
-    std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>& sets_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    const double distance_threshold) {
+    std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>> &sets_collection,
+    std::vector<std::pair<int, int>> &candidates, const double distance_threshold) {
 
   // Initialize candidate index.
   candidate_index::CandidateIndex c_index;
@@ -84,29 +83,26 @@ void TJoinTI<Label, VerificationAlgorithm>::retrieve_candidates(
 
 template <typename Label, typename VerificationAlgorithm>
 void TJoinTI<Label, VerificationAlgorithm>::upperbound(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result,
-    const double distance_threshold) {
-  
+    std::vector<node::Node<Label>> &trees_collection, std::vector<std::pair<int, int>> &candidates,
+    std::vector<join::JoinResultElement> &join_result, const double distance_threshold) {
+
   typename VerificationAlgorithm::AlgsCostModel cm(ld_);
   ted_ub::LGMTreeIndex<typename VerificationAlgorithm::AlgsCostModel> lgm_algorithm(cm);
   // TODO: Index trees only once for LGM And Verification using a TreeIndex
   //       that is a superset of TreeIndexLGM and VerificationAlgorithm::AlgsTreeIndex.
   node::TreeIndexLGM ti_1;
   node::TreeIndexLGM ti_2;
-  
+
   std::vector<std::pair<int, int>>::iterator it = candidates.begin();
-  while(it != candidates.end()) {
+  while (it != candidates.end()) {
     node::index_tree(ti_1, trees_collection[it->first], ld_, cm);
     node::index_tree(ti_2, trees_collection[it->second], ld_, cm);
     double ub_value = lgm_algorithm.ted_k(ti_1, ti_2, distance_threshold);
-    if(ub_value <= distance_threshold) {
+    if (ub_value <= distance_threshold) {
       join_result.emplace_back(it->first, it->second, ub_value);
       *it = candidates.back();
       candidates.pop_back();
-    }
-    else {
+    } else {
       ++it;
     }
   }
@@ -114,10 +110,8 @@ void TJoinTI<Label, VerificationAlgorithm>::upperbound(
 
 template <typename Label, typename VerificationAlgorithm>
 void TJoinTI<Label, VerificationAlgorithm>::verify_candidates(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result,
-    const double distance_threshold) {
+    std::vector<node::Node<Label>> &trees_collection, std::vector<std::pair<int, int>> &candidates,
+    std::vector<join::JoinResultElement> &join_result, const double distance_threshold) {
 
   typename VerificationAlgorithm::AlgsCostModel cm(ld_);
   VerificationAlgorithm ted_algorithm(cm);
@@ -125,21 +119,20 @@ void TJoinTI<Label, VerificationAlgorithm>::verify_candidates(
   typename VerificationAlgorithm::AlgsTreeIndex ti_2;
 
   // Verify each pair in the candidate set
-  for(const auto& pair: candidates) {
+  for (const auto &pair : candidates) {
     node::index_tree(ti_1, trees_collection[pair.first], ld_, cm);
     node::index_tree(ti_2, trees_collection[pair.second], ld_, cm);
     double ted_value = ted_algorithm.ted_k(ti_1, ti_2, distance_threshold);
-    if(ted_value <= distance_threshold)
+    if (ted_value <= distance_threshold)
       join_result.emplace_back(pair.first, pair.second, ted_value);
-    
+
     // Sum up all number of subproblems
     sum_subproblem_counter_ += ted_algorithm.get_subproblem_count();
   }
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int
-    TJoinTI<Label, VerificationAlgorithm>::get_number_of_pre_candidates() const {
+long long int TJoinTI<Label, VerificationAlgorithm>::get_number_of_pre_candidates() const {
   return pre_candidates_;
 }
 
@@ -149,7 +142,6 @@ long long int TJoinTI<Label, VerificationAlgorithm>::get_subproblem_count() cons
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int
-    TJoinTI<Label, VerificationAlgorithm>::get_number_of_il_lookups() const {
+long long int TJoinTI<Label, VerificationAlgorithm>::get_number_of_il_lookups() const {
   return il_lookups_;
 }

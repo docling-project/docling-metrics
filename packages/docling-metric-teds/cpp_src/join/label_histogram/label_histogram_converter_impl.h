@@ -22,21 +22,20 @@
 /// \file join/label_histogram/label_histogram_converter_impl.h
 ///
 /// \details
-/// Implements an algorithm that converts a collection of trees into a collection 
-/// of label histograms. 
+/// Implements an algorithm that converts a collection of trees into a collection
+/// of label histograms.
 
 #pragma once
 
-template<typename Label>
-Converter<Label>::Converter() {}
+template <typename Label> Converter<Label>::Converter() {}
 
-template<typename Label>
+template <typename Label>
 void Converter<Label>::create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection) {
+    const std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection) {
 
   // for each tree in the tree collection
-  for (const auto& tree: trees_collection) {
+  for (const auto &tree : trees_collection) {
     // stores the number of nodes per label
     std::unordered_map<int, int> label_histogram;
     // stores the number of nodes per label
@@ -48,14 +47,13 @@ void Converter<Label>::create_histogram(
   }
 }
 
-template<typename Label>
-void Converter<Label>::create_label_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::unordered_map<int, int>& label_histogram, 
-    int& tree_size) {
+template <typename Label>
+void Converter<Label>::create_label_histrogram(const node::Node<Label> &tree_node,
+                                               std::unordered_map<int, int> &label_histogram,
+                                               int &tree_size) {
 
   // do recursively for all children
-  for (const auto& child: tree_node.get_children()) {
+  for (const auto &child : tree_node.get_children()) {
     create_label_histrogram(child, label_histogram, tree_size);
   }
 
@@ -63,10 +61,10 @@ void Converter<Label>::create_label_histrogram(
   std::string label_str = tree_node.label().to_string();
 
   // lookup key in token_map
-  typename std::unordered_map<Label, int, labelhash>::const_iterator 
-                              label_in_map = label_id_map_.find(key);
+  typename std::unordered_map<Label, int, labelhash>::const_iterator label_in_map =
+      label_id_map_.find(key);
   // if label not in map
-  if(label_in_map == label_id_map_.end())
+  if (label_in_map == label_id_map_.end())
     // add label id to map
     label_id_map_[key] = label_id_++;
 
@@ -76,7 +74,4 @@ void Converter<Label>::create_label_histrogram(
   ++tree_size;
 }
 
-template<typename Label>
-int Converter<Label>::get_number_of_labels() const {
-  return label_id_;
-}
+template <typename Label> int Converter<Label>::get_number_of_labels() const { return label_id_; }

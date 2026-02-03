@@ -26,24 +26,18 @@
 
 #pragma once
 
-StringLabel::StringLabel(const std::string& label) : label_(label) {}
+StringLabel::StringLabel(const std::string &label) : label_(label) {}
 
 // const std::string& StringLabel::label() const {
 //   return label_;
 // }
 
-bool StringLabel::operator==(const StringLabel& other) const {
+bool StringLabel::operator==(const StringLabel &other) const {
   return (label_.compare(other.to_string()) == 0);
 }
 
-const std::string& StringLabel::to_string() const {
-  return label_;
-}
+const std::string &StringLabel::to_string() const { return label_; }
 
-unsigned int StringLabel::get_type() const {
-  return 0;
-}
+unsigned int StringLabel::get_type() const { return 0; }
 
-const std::string& StringLabel::get_label() const {
-  return label_;
-}
+const std::string &StringLabel::get_label() const { return label_; }

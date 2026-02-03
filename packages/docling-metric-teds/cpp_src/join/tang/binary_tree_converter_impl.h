@@ -22,20 +22,18 @@
 /// \file join/tang/binary_tree_converter_impl.h
 ///
 /// \details
-/// Implements an algorithm that converts a collection of trees into a collection 
+/// Implements an algorithm that converts a collection of trees into a collection
 /// of binary trees.
 
 #pragma once
 
-template<typename Label>
-Converter<Label>::Converter() {}
+template <typename Label> Converter<Label>::Converter() {}
 
-template<typename Label>
-void Converter<Label>::convert(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<node::BinaryNode<Label>>& binary_trees_collection) {
+template <typename Label>
+void Converter<Label>::convert(std::vector<node::Node<Label>> &trees_collection,
+                               std::vector<node::BinaryNode<Label>> &binary_trees_collection) {
   // for each tree in the tree collection
-  for(auto tree: trees_collection) {
+  for (auto tree : trees_collection) {
     // create root in binary tree
     node::BinaryNode<Label> binary_tree(tree.label());
     // convert tree to a binary tree recursively
@@ -45,23 +43,22 @@ void Converter<Label>::convert(
   }
 }
 
-template<typename Label>
-void Converter<Label>::create_binary_tree(
-    const node::Node<Label>& tree_node,
-    node::BinaryNode<Label>& binary_tree_node) {
+template <typename Label>
+void Converter<Label>::create_binary_tree(const node::Node<Label> &tree_node,
+                                          node::BinaryNode<Label> &binary_tree_node) {
   // marks position where the next node needs to be inserted
   node::BinaryNode<Label> *current_binary_node = &binary_tree_node;
   // used to distinguish the first child (i==0) from the other siblings
   bool first_child = true;
 
   // handle all children
-  for(const auto& child: tree_node.get_children()) {
+  for (const auto &child : tree_node.get_children()) {
     // create a copy of the node in the original tree and add it as a child in the binary tree
     auto binary_child = std::make_unique<node::BinaryNode<Label>>(child.label());
-    
-    node::BinaryNode<Label>* binary_child_new_pointer;
+
+    node::BinaryNode<Label> *binary_child_new_pointer;
     // only the first child is added as a left child, all others are added as right children
-    if(first_child)
+    if (first_child)
       binary_child_new_pointer = current_binary_node->add_left_child(binary_child);
     else
       binary_child_new_pointer = current_binary_node->add_right_child(binary_child);
@@ -69,7 +66,7 @@ void Converter<Label>::create_binary_tree(
     create_binary_tree(child, *binary_child_new_pointer);
 
     // update current node in the binary tree, where the next node is inserted
-    if(first_child) // only the first child is added as a left child
+    if (first_child) // only the first child is added as a left child
       current_binary_node = current_binary_node->get_left_child();
     else // all others are added as right children
       current_binary_node = current_binary_node->get_right_child();

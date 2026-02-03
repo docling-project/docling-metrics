@@ -22,7 +22,7 @@
 /// \file lookup/lookup_result_element.h
 ///
 /// \details
-/// Tree pair in the result set. Contains the IDs of both trees and their 
+/// Tree pair in the result set. Contains the IDs of both trees and their
 /// JEDI value.
 
 #ifndef TREE_SIMILARITY_LOOKUP_LOOKUP_RESULT_ELEMENT_IMPL_H
@@ -43,15 +43,15 @@ struct LookupResultElement {
   /// JSON edit distance between tree_id_1 and tree_id_2.
   double jedi_value;
   /// Constructor.
-  LookupResultElement(int tree_id_1, int tree_id_2, double lower_bound, 
-      double upper_bound, double jedi_value);
+  LookupResultElement(int tree_id_1, int tree_id_2, double lower_bound, double upper_bound,
+                      double jedi_value);
 };
 
-lookup::LookupResultElement::LookupResultElement(int tree_id_1, int tree_id_2, 
-    double lower_bound, double upper_bound, double jedi_value)
-    : tree_id_1(tree_id_1), tree_id_2(tree_id_2), lower_bound(lower_bound), 
-    upper_bound(upper_bound), jedi_value(jedi_value) {};
+lookup::LookupResultElement::LookupResultElement(int tree_id_1, int tree_id_2, double lower_bound,
+                                                 double upper_bound, double jedi_value)
+    : tree_id_1(tree_id_1), tree_id_2(tree_id_2), lower_bound(lower_bound),
+      upper_bound(upper_bound), jedi_value(jedi_value) {};
 
-}
+} // namespace lookup
 
 #endif // TREE_SIMILARITY_LOOKUP_LOOKUP_RESULT_ELEMENT_IMPL_H

@@ -21,19 +21,19 @@
 
 #pragma once
 
-#include <iostream>
-#include <vector>
-#include <map>
 #include "../../node/node.h"
 #include "../../node/tree_indexer.h"
-#include "label_set_element.h"
 #include "../lookup_result_element.h"
+#include "label_set_element.h"
 #include "two_stage_inverted_list.h"
+#include <iostream>
+#include <map>
+#include <vector>
 
 namespace lookup {
 
 /**
- * Implements a index lookup algorithm for a given verification and upper bound 
+ * Implements a index lookup algorithm for a given verification and upper bound
  * algorithm.
  */
 template <typename Label, typename VerificationAlgorithm, typename UpperBound>
@@ -41,7 +41,7 @@ class VerificationUBkIndex {
 
 public:
   VerificationUBkIndex();
-  
+
   /// Executes the lookup algorithm.
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -50,33 +50,34 @@ public:
    * \return A vector with the lookup result.
    */
   std::vector<lookup::LookupResultElement> execute_lookup(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>& sets_collection,
-      std::vector<std::pair<int, int>>& size_setid_map, lookup::TwoStageInvertedList& index,
+      std::vector<node::Node<Label>> &trees_collection,
+      std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>
+          &sets_collection,
+      std::vector<std::pair<int, int>> &size_setid_map, lookup::TwoStageInvertedList &index,
       unsigned int query_tree_id, const double distance_threshold);
-  
-  double node_lower_bound(std::vector<label_set_converter_index::LabelSetElement>& r, 
-      std::vector<label_set_converter_index::LabelSetElement>& s, 
-      double olap, int pr, int ps);
+
+  double node_lower_bound(std::vector<label_set_converter_index::LabelSetElement> &r,
+                          std::vector<label_set_converter_index::LabelSetElement> &s, double olap,
+                          int pr, int ps);
 
   /// Returns the summed subproblem count of JEDI algorithm executions.
   /**
    * \return sum_subproblem_counter_
    */
   long long int get_subproblem_count() const;
-  
+
   /// Returns the number of verifications.
   /**
    * \return verfications_
    */
   long long int get_verification_count() const;
-  
+
   /// Returns the number of candidates.
   /**
    * \return candidates_
    */
   long long int get_candidates_count() const;
-  
+
   /// Returns the number of pre_candidates.
   /**
    * \return pre_candidates_
@@ -97,12 +98,11 @@ private:
 /**
  * Implements a index lookup algorithm for a given verification.
  */
-template <typename Label, typename VerificationAlgorithm>
-class VerificationIndex {
+template <typename Label, typename VerificationAlgorithm> class VerificationIndex {
 
 public:
   VerificationIndex();
-  
+
   /// Executes the lookup algorithm.
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -111,33 +111,34 @@ public:
    * \return A vector with the lookup result.
    */
   std::vector<lookup::LookupResultElement> execute_lookup(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>& sets_collection,
-      std::vector<std::pair<int, int>>& size_setid_map, lookup::TwoStageInvertedList& index,
+      std::vector<node::Node<Label>> &trees_collection,
+      std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>
+          &sets_collection,
+      std::vector<std::pair<int, int>> &size_setid_map, lookup::TwoStageInvertedList &index,
       unsigned int query_tree_id, const double distance_threshold);
-  
-  double node_lower_bound(std::vector<label_set_converter_index::LabelSetElement>& r, 
-      std::vector<label_set_converter_index::LabelSetElement>& s, 
-      double olap, int pr, int ps);
+
+  double node_lower_bound(std::vector<label_set_converter_index::LabelSetElement> &r,
+                          std::vector<label_set_converter_index::LabelSetElement> &s, double olap,
+                          int pr, int ps);
 
   /// Returns the summed subproblem count of JEDI algorithm executions.
   /**
    * \return sum_subproblem_counter_
    */
   long long int get_subproblem_count() const;
-  
+
   /// Returns the number of verifications.
   /**
    * \return verfications_
    */
   long long int get_verification_count() const;
-  
+
   /// Returns the number of candidates.
   /**
    * \return candidates_
    */
   long long int get_candidates_count() const;
-  
+
   /// Returns the number of pre_candidates.
   /**
    * \return pre_candidates_
@@ -158,4 +159,4 @@ private:
 // Implementation details.
 #include "index_impl.h"
 
-}
+} // namespace lookup

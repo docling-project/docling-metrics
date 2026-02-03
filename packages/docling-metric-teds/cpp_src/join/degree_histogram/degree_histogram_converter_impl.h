@@ -22,21 +22,20 @@
 /// \file join/degree_histogram/degree_histogram_converter_impl.h
 ///
 /// \details
-/// Implements an algorithm that converts a collection of trees into a collection 
-/// of degree histograms. 
+/// Implements an algorithm that converts a collection of trees into a collection
+/// of degree histograms.
 
 #pragma once
 
-template<typename Label>
-Converter<Label>::Converter() {}
+template <typename Label> Converter<Label>::Converter() {}
 
-template<typename Label>
+template <typename Label>
 void Converter<Label>::create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection) {
+    const std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection) {
 
   // for each tree in the tree collection
-  for (const auto& tree: trees_collection) {
+  for (const auto &tree : trees_collection) {
     // stores the number of nodes per degree
     std::unordered_map<int, int> degree_histogram;
     // stores the number of nodes per degree
@@ -48,29 +47,25 @@ void Converter<Label>::create_histogram(
   }
 }
 
-template<typename Label>
-void Converter<Label>::create_degree_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::unordered_map<int, int>& degree_histogram, 
-    int& tree_size) {
+template <typename Label>
+void Converter<Label>::create_degree_histrogram(const node::Node<Label> &tree_node,
+                                                std::unordered_map<int, int> &degree_histogram,
+                                                int &tree_size) {
 
   // count number of children
   int number_of_children = 0;
   // do recursively for all children
-  for (const auto& child: tree_node.get_children()) {
+  for (const auto &child : tree_node.get_children()) {
     create_degree_histrogram(child, degree_histogram, tree_size);
     ++number_of_children;
   }
   // increase degree count for current node
   ++degree_histogram[number_of_children];
   // store maximum degree of the collection
-  if(number_of_children > max_degree_)
+  if (number_of_children > max_degree_)
     max_degree_ = number_of_children;
   // increase tree size
   ++tree_size;
 }
 
-template<typename Label>
-int Converter<Label>::get_maximum_degree() const {
-  return max_degree_;
-}
+template <typename Label> int Converter<Label>::get_maximum_degree() const { return max_degree_; }

@@ -1,5 +1,5 @@
 // The MIT License (MIT)
-// Copyright (c) 2017 Mateusz Pawlik, Nikolaus Augsten, Daniel Kocher, and 
+// Copyright (c) 2017 Mateusz Pawlik, Nikolaus Augsten, Daniel Kocher, and
 // Thomas Huetter.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,32 +23,27 @@
 #pragma once
 
 template <class Label>
-int UnitCostModel<Label>::ren(const node::Node<Label>& node1,
-                              const node::Node<Label>& node2) const {
+int UnitCostModel<Label>::ren(const node::Node<Label> &node1,
+                              const node::Node<Label> &node2) const {
   if (node1.label() == node2.label()) {
     return 0;
   }
   return 1;
 }
 
-template <class Label>
-int UnitCostModel<Label>::del(const node::Node<Label>& node) const {
+template <class Label> int UnitCostModel<Label>::del(const node::Node<Label> &node) const {
+  return 1;
+}
+
+template <class Label> int UnitCostModel<Label>::ins(const node::Node<Label> &node) const {
   return 1;
 }
 
 template <class Label>
-int UnitCostModel<Label>::ins(const node::Node<Label>& node) const {
-  return 1;
-}
-
-
-template <class Label>
-UnitCostModelLD<Label>::UnitCostModelLD(label::LabelDictionary<Label>& ld) :
-    ld_(ld) {}
+UnitCostModelLD<Label>::UnitCostModelLD(label::LabelDictionary<Label> &ld) : ld_(ld) {}
 
 template <typename Label>
-double UnitCostModelLD<Label>::ren(const int label_id_1,
-    const int label_id_2) const {
+double UnitCostModelLD<Label>::ren(const int label_id_1, const int label_id_2) const {
   if (label_id_1 == label_id_2) {
     return 0.0;
   }
@@ -56,43 +51,27 @@ double UnitCostModelLD<Label>::ren(const int label_id_1,
 }
 
 // Argument's name deleted because not used.
-template <typename Label>
-double UnitCostModelLD<Label>::del(const int) const {
-  return 1.0;
-}
+template <typename Label> double UnitCostModelLD<Label>::del(const int) const { return 1.0; }
 
 // Argument's name deleted because not used.
-template <typename Label>
-double UnitCostModelLD<Label>::ins(const int) const {
-  return 1.0;
-}
-
+template <typename Label> double UnitCostModelLD<Label>::ins(const int) const { return 1.0; }
 
 template <class Label>
-UnitCostModelJSON<Label>::UnitCostModelJSON(label::LabelDictionary<Label>& ld) :
-    ld_(ld) {}
+UnitCostModelJSON<Label>::UnitCostModelJSON(label::LabelDictionary<Label> &ld) : ld_(ld) {}
 
 template <typename Label>
-double UnitCostModelJSON<Label>::ren(const int label_id_1,
-    const int label_id_2) const {
+double UnitCostModelJSON<Label>::ren(const int label_id_1, const int label_id_2) const {
   if (ld_.get(label_id_1).get_type() != ld_.get(label_id_2).get_type())
     return std::numeric_limits<double>::infinity();
 
-  if (ld_.get(label_id_1).get_label().compare(ld_.get(label_id_2).get_label()) 
-      == 0)
+  if (ld_.get(label_id_1).get_label().compare(ld_.get(label_id_2).get_label()) == 0)
     return 0.0;
   else
     return 1.0;
 }
 
 // Argument's name deleted because not used.
-template <typename Label>
-double UnitCostModelJSON<Label>::del(const int) const {
-  return 1.0;
-}
+template <typename Label> double UnitCostModelJSON<Label>::del(const int) const { return 1.0; }
 
 // Argument's name deleted because not used.
-template <typename Label>
-double UnitCostModelJSON<Label>::ins(const int) const {
-  return 1.0;
-}
+template <typename Label> double UnitCostModelJSON<Label>::ins(const int) const { return 1.0; }

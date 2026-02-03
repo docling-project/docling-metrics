@@ -24,15 +24,15 @@
 #pragma once
 
 template <typename Label, typename VerificationAlgorithm, typename UpperBound>
-VerificationUBkScan<Label, VerificationAlgorithm, 
-    UpperBound>::VerificationUBkScan() {
-  verfications_ = 0;}
+VerificationUBkScan<Label, VerificationAlgorithm, UpperBound>::VerificationUBkScan() {
+  verfications_ = 0;
+}
 
 template <typename Label, typename VerificationAlgorithm, typename UpperBound>
-std::vector<lookup::LookupResultElement> 
-    VerificationUBkScan<Label, VerificationAlgorithm, UpperBound>::execute_lookup(
-    std::vector<node::Node<Label>>& trees_collection, 
-    unsigned int query_tree_id, const double distance_threshold) {
+std::vector<lookup::LookupResultElement>
+VerificationUBkScan<Label, VerificationAlgorithm, UpperBound>::execute_lookup(
+    std::vector<node::Node<Label>> &trees_collection, unsigned int query_tree_id,
+    const double distance_threshold) {
 
   label::LabelDictionary<Label> ld;
   typename VerificationAlgorithm::AlgsCostModel cm(ld);
@@ -52,8 +52,8 @@ std::vector<lookup::LookupResultElement>
   node::index_tree(tq, trees_collection[query_tree_id], ld, cm);
 
   // Verify which candidate trees are part of the result set.
-  for (unsigned int candidate_tree_id = 0; 
-      candidate_tree_id < trees_collection.size(); candidate_tree_id++) {
+  for (unsigned int candidate_tree_id = 0; candidate_tree_id < trees_collection.size();
+       candidate_tree_id++) {
     // Index candidate tree.
     node::index_tree(tc, trees_collection[candidate_tree_id], ld, cm);
 
@@ -77,14 +77,14 @@ std::vector<lookup::LookupResultElement>
 }
 
 template <typename Label, typename VerificationAlgorithm, typename UpperBound>
-long long int VerificationUBkScan<Label,
-    VerificationAlgorithm, UpperBound>::get_subproblem_count() const {
+long long int
+VerificationUBkScan<Label, VerificationAlgorithm, UpperBound>::get_subproblem_count() const {
   return sum_subproblem_counter_;
 }
 
 template <typename Label, typename VerificationAlgorithm, typename UpperBound>
-long long int VerificationUBkScan<Label,
-    VerificationAlgorithm, UpperBound>::get_verification_count() const {
+long long int
+VerificationUBkScan<Label, VerificationAlgorithm, UpperBound>::get_verification_count() const {
   return verfications_;
 }
 
@@ -96,10 +96,10 @@ VerificationScan<Label, VerificationAlgorithm>::VerificationScan() {
 }
 
 template <typename Label, typename VerificationAlgorithm>
-std::vector<lookup::LookupResultElement> 
-    VerificationScan<Label, VerificationAlgorithm>::execute_lookup(
-    std::vector<node::Node<Label>>& trees_collection, 
-    unsigned int query_tree_id, const double distance_threshold) {
+std::vector<lookup::LookupResultElement>
+VerificationScan<Label, VerificationAlgorithm>::execute_lookup(
+    std::vector<node::Node<Label>> &trees_collection, unsigned int query_tree_id,
+    const double distance_threshold) {
 
   label::LabelDictionary<Label> ld;
   typename VerificationAlgorithm::AlgsCostModel cm(ld);
@@ -117,8 +117,8 @@ std::vector<lookup::LookupResultElement>
   node::index_tree(tq, trees_collection[query_tree_id], ld, cm);
 
   // Verify which candidate trees are part of the result set.
-  for (unsigned int candidate_tree_id = 0; 
-      candidate_tree_id < trees_collection.size(); candidate_tree_id++) {
+  for (unsigned int candidate_tree_id = 0; candidate_tree_id < trees_collection.size();
+       candidate_tree_id++) {
     // Index candidate tree.
     node::index_tree(tc, trees_collection[candidate_tree_id], ld, cm);
 
@@ -136,13 +136,11 @@ std::vector<lookup::LookupResultElement>
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int VerificationScan<Label,
-    VerificationAlgorithm>::get_subproblem_count() const {
+long long int VerificationScan<Label, VerificationAlgorithm>::get_subproblem_count() const {
   return sum_subproblem_counter_;
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int VerificationScan<Label,
-    VerificationAlgorithm>::get_verification_count() const {
+long long int VerificationScan<Label, VerificationAlgorithm>::get_verification_count() const {
   return verfications_;
 }

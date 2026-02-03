@@ -26,20 +26,19 @@ namespace json {
 /**
  * Interface for all JEDI algorithms.
  */
-template <typename CostModel, typename TreeIndex>
-class JEDIAlgorithm {
+template <typename CostModel, typename TreeIndex> class JEDIAlgorithm {
 public:
   /// Constructor. Takes cost model.
-  JEDIAlgorithm(CostModel& c) : c_(c) {};
-  
+  JEDIAlgorithm(CostModel &c) : c_(c) {};
+
   /// Computes the tree edit distance between two trees.
   /**
    * \param t1 Source tree.
    * \param t2 Destination tree.
    * \return JSON edit distance value.
    */
-  virtual double jedi(const TreeIndex& t1, const TreeIndex& t2) = 0;
-  
+  virtual double jedi(const TreeIndex &t1, const TreeIndex &t2) = 0;
+
   /// Computes the tree edit distance between two trees.
   /**
    * \param t1 Source tree.
@@ -47,23 +46,22 @@ public:
    * \param threshold JSON similarity threshold.
    * \return JSON edit distance value.
    */
-  virtual double jedi_k(const TreeIndex& t1, const TreeIndex& t2,
-      const double threshold) = 0;
-  
+  virtual double jedi_k(const TreeIndex &t1, const TreeIndex &t2, const double threshold) = 0;
+
   /// Returns the number of subproblems encountered during JEDI computation.
   /**
    * \return The number of subproblems acountered in the last JEDI computation.
    */
   long long int get_subproblem_count() { return subproblem_counter_; };
-  
+
   /// To initialise VerificationAlgorithm and TreeIndex variables in join algorithms.
   typedef CostModel AlgsCostModel;
   typedef TreeIndex AlgsTreeIndex;
-  
+
 protected:
   /// Cost model.
-  const CostModel& c_;
-  
+  const CostModel &c_;
+
   /// Subproblem counter - for experiments only.
   /**
    * Counts the number of non-trivial values filled in fd_ matrix: subproblems
@@ -72,4 +70,4 @@ protected:
   long long int subproblem_counter_;
 };
 
-}
+} // namespace json

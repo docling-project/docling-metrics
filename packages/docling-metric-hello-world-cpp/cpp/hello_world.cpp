@@ -3,15 +3,12 @@
 
 namespace py = pybind11;
 
-double evaluate_sample(
-    const std::string &id,
-    const std::string &payload_a,
-    const std::string &payload_b
-) {
-    return 1.0;
+double evaluate_sample(const std::string &id, const std::string &payload_a,
+                       const std::string &payload_b) {
+  return 1.0;
 }
 
 PYBIND11_MODULE(_hello_world_cpp, m) {
-    m.doc() = "Hello World C++ metric bindings";
-    m.def("evaluate_sample", &evaluate_sample, "Return constant score");
+  m.doc() = "Hello World C++ metric bindings";
+  m.def("evaluate_sample", &evaluate_sample, "Return constant score");
 }

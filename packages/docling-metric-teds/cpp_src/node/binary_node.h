@@ -22,7 +22,7 @@
 /// \file node/binary_node.h
 ///
 /// \details
-/// Contains the declaration of the BinaryNode class (represents a node in a 
+/// Contains the declaration of the BinaryNode class (represents a node in a
 /// binary tree).
 
 #pragma once
@@ -50,16 +50,15 @@ namespace node {
 /// tree algorithms, so be careful.
 ///
 /// \tparam Label Satellite data associated with the binary node.
-template <class Label>
-class BinaryNode {
-// Types and type aliases
+template <class Label> class BinaryNode {
+  // Types and type aliases
 public:
-  using Reference = Label&;
-  using ConstReference = const Label&;
+  using Reference = Label &;
+  using ConstReference = const Label &;
 
   using SizeType = typename std::vector<Node<Label>>::size_type;
 
-// Member functions
+  // Member functions
 public:
   BinaryNode(ConstReference label);
 
@@ -76,12 +75,12 @@ public:
   /// Adds a copy of left_child as left child and returns its reference.
   ///
   /// \return Reference to the left child of this binary node.
-  BinaryNode<Label>* add_left_child(std::unique_ptr<BinaryNode<Label>>& node);
+  BinaryNode<Label> *add_left_child(std::unique_ptr<BinaryNode<Label>> &node);
 
   /// Adds a copy of right_child as right child and returns its reference.
   ///
   /// \return Reference to the right child of this binary node.
-  BinaryNode<Label>* add_right_child(std::unique_ptr<BinaryNode<Label>>& node);
+  BinaryNode<Label> *add_right_child(std::unique_ptr<BinaryNode<Label>> &node);
 
   /// Returns true if this binary node has a left child.
   ///
@@ -96,19 +95,19 @@ public:
   /// Returns the left child of this binary node.
   ///
   /// \return The left child of this binary node.
-  BinaryNode<Label>* get_left_child();
+  BinaryNode<Label> *get_left_child();
 
   /// Returns the right child of this binary node.
   ///
   /// \return The right child of this binary node.
-  BinaryNode<Label>* get_right_child();
+  BinaryNode<Label> *get_right_child();
 
   /// Returns the reference to children_ vector.
   ///
   /// \return Reference to children_ vector.
-  const std::vector<BinaryNode<Label>>& get_children() const;
+  const std::vector<BinaryNode<Label>> &get_children() const;
 
-  /// Calculates the size (number of binary nodes) in tree rooted at this. 
+  /// Calculates the size (number of binary nodes) in tree rooted at this.
   /// It traverses the entire subtree recursively.
   ///
   /// \return Size of subtree rooted at this.
@@ -118,7 +117,7 @@ public:
   ///
   /// \return Vector with labels of all binary nodes.
   const std::vector<std::string> get_all_labels() const;
-  void get_all_labels_recursion(std::vector<std::string>& labels) const;
+  void get_all_labels_recursion(std::vector<std::string> &labels) const;
 
   /// Prints the tree in inorder.
   void print_tree_inorder() const;
@@ -127,7 +126,7 @@ public:
   void print_tree_postorder() const;
 
   /// Returns a vector that contains all nodes of a tree in postorder.
-  void get_node_postorder_vector(std::vector<BinaryNode<Label>*>& postorder_vector);
+  void get_node_postorder_vector(std::vector<BinaryNode<Label> *> &postorder_vector);
 
   /// Returns a string that contains the labels of this node and its children.
   ///
@@ -157,13 +156,13 @@ public:
   /// Get postorder id.
   int get_postorder_id();
 
-// Member variables
+  // Member variables
 private:
   /// Left child of this node.
   std::unique_ptr<BinaryNode<Label>> left_child_ = std::unique_ptr<BinaryNode<Label>>(nullptr);
   /// Right child of this node.
   std::unique_ptr<BinaryNode<Label>> right_child_ = std::unique_ptr<BinaryNode<Label>>(nullptr);
-  /// Data representing the label of this binary node. Only this 
+  /// Data representing the label of this binary node. Only this
   /// BinaryNode object owns it.
   Label label_;
 
@@ -179,4 +178,4 @@ private:
 // Implementation details
 #include "binary_node_impl.h"
 
-}
+} // namespace node

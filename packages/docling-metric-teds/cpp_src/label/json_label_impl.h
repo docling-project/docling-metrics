@@ -26,7 +26,7 @@
 
 #pragma once
 
-JSONLabel::JSONLabel(const std::string& label) {
+JSONLabel::JSONLabel(const std::string &label) {
   label_ = label;
 
   // Set type to 0 in case of an object. An object is indicated by opening
@@ -50,18 +50,12 @@ JSONLabel::JSONLabel(const std::string& label) {
   }
 }
 
-unsigned int JSONLabel::get_type() const {
-  return type_;
-}
+unsigned int JSONLabel::get_type() const { return type_; }
 
-const std::string& JSONLabel::get_label() const {
-  return label_;
-}
+const std::string &JSONLabel::get_label() const { return label_; }
 
-bool JSONLabel::operator==(const JSONLabel& other) const {
+bool JSONLabel::operator==(const JSONLabel &other) const {
   return (type_ == other.get_type() && label_.compare(other.get_label()) == 0);
 }
 
-const std::string& JSONLabel::to_string() const {
-  return label_;
-}
+const std::string &JSONLabel::to_string() const { return label_; }

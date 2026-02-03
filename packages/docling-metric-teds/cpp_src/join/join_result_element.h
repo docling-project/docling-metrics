@@ -43,4 +43,4 @@ struct JoinResultElement {
 join::JoinResultElement::JoinResultElement(int tree_id_1, int tree_id_2, double ted_value)
     : tree_id_1(tree_id_1), tree_id_2(tree_id_2), ted_value(ted_value) {}
 
-}
+} // namespace join

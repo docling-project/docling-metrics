@@ -22,36 +22,34 @@
 /// \file join/degree_histogram/dh_candidate_index.h
 ///
 /// \details
-/// Implements a candidate index that efficiently and effectively returns tree 
-/// pairs that satisfy the degree histogram lower bound by Kailing et al. 
+/// Implements a candidate index that efficiently and effectively returns tree
+/// pairs that satisfy the degree histogram lower bound by Kailing et al.
 
 #pragma once
 
-#include <cmath>
-#include <climits>
-#include <algorithm>
-#include <vector>
-#include <unordered_map>
 #include "../../node/node.h"
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <unordered_map>
+#include <vector>
 
 namespace dh_candidate_index {
 
 class CandidateIndex {
-// Member functions.
+  // Member functions.
 public:
   /// Constructor.
   CandidateIndex();
-  /// Returns a set of candidates that satisfy the degree histogram lower bound. 
+  /// Returns a set of candidates that satisfy the degree histogram lower bound.
   ///
   /// \param histogram_collection Collection of all histograms.
   /// \param join_candidates Resultset that contains all join candidates.
   /// \param il_size Size of the inverted list.
   /// \param distance_threshold Given similarity threshold.
-  void lookup(
-      std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection,
-      std::vector<std::pair<int, int>>& join_candidates,
-      const int il_size,
-      const double distance_threshold);
+  void lookup(std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection,
+              std::vector<std::pair<int, int>> &join_candidates, const int il_size,
+              const double distance_threshold);
   /// Returns the number of precandidates.
   ///
   /// \return The number of precandidates.
@@ -62,7 +60,7 @@ public:
   ///
   /// \return The number of lookups in the inverted list.
   long int get_number_of_il_lookups() const;
-// Member variables.
+  // Member variables.
 private:
   /// Number of precandidates.
   long int pre_candidates_;
@@ -73,4 +71,4 @@ private:
 // Implementation details.
 #include "dh_candidate_index_impl.h"
 
-}
+} // namespace dh_candidate_index

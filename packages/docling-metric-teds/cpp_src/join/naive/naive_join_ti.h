@@ -21,11 +21,11 @@
 
 #pragma once
 
-#include <vector>
 #include "../../node/node.h"
 #include "../../node/tree_indexer.h"
 #include "../join_result_element.h"
 #include <iostream>
+#include <vector>
 
 namespace join {
 
@@ -34,12 +34,11 @@ namespace join {
  * tree edit distance (Zhang and Shasha) for each pair of trees from a
  * collection.
  */
-template <typename Label, typename VerificationAlgorithm>
-class NaiveJoinTI {
+template <typename Label, typename VerificationAlgorithm> class NaiveJoinTI {
 
 public:
   NaiveJoinTI();
-  
+
   /// Executes the join algorithm.
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -47,10 +46,9 @@ public:
    *                           differs two trees in the join's result set.
    * \return A vector with the join result.
    */
-  std::vector<join::JoinResultElement> execute_join(
-      std::vector<node::Node<Label>>& trees_collection,
-      const double distance_threshold);
-  
+  std::vector<join::JoinResultElement>
+  execute_join(std::vector<node::Node<Label>> &trees_collection, const double distance_threshold);
+
   /// Returns the summed subproblem count of TED algorithm executions.
   /**
    * \return sum_subproblem_counter_
@@ -65,4 +63,4 @@ private:
 // Implementation details.
 #include "naive_join_ti_impl.h"
 
-}
+} // namespace join

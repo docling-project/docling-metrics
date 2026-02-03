@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace node {
 
@@ -50,16 +50,15 @@ namespace node {
 /// tree algorithms, so be careful.
 ///
 /// \tparam Label Satellite data associated with the node.
-template <class Label>
-class Node {
-// Types and type aliases
+template <class Label> class Node {
+  // Types and type aliases
 public:
-  using Reference = Label&;
-  using ConstReference = const Label&;
+  using Reference = Label &;
+  using ConstReference = const Label &;
 
   using SizeType = typename std::vector<Node<Label>>::size_type;
 
-// Member functions
+  // Member functions
 public:
   Node(ConstReference label);
 
@@ -79,12 +78,12 @@ public:
   /// TODO: Verify if child is copied or moved.
   ///
   /// \param Node to be added.
-  Node<Label>& add_child(Node<Label> child);
+  Node<Label> &add_child(Node<Label> child);
 
   /// Returns the reference to children_ vector.
   ///
   /// \return Reference to children_ vector.
-  const std::vector<Node<Label>>& get_children() const;
+  const std::vector<Node<Label>> &get_children() const;
 
   /// Calculates the size (number of nodes) in tree rooted at this. It traverses
   /// the entire subtree recursively.
@@ -96,14 +95,14 @@ public:
   ///
   /// \return Vector with labels of all nodes.
   const std::vector<std::string> get_all_labels() const;
-  void get_all_labels_recursion(std::vector<std::string>& labels) const;
+  void get_all_labels_recursion(std::vector<std::string> &labels) const;
 
   /// Verifies if this node is a leaf.
   ///
   /// \return True if this node is leaf, false otherwise.
   bool is_leaf() const;
 
-// Member variables
+  // Member variables
 private:
   /// All children of this node.
   std::vector<Node<Label>> children_;
@@ -115,4 +114,4 @@ private:
 // Implementation details
 #include "node_impl.h"
 
-}
+} // namespace node

@@ -24,13 +24,12 @@
 #pragma once
 
 template <typename CostModel, typename TreeIndex>
-double APTEDTreeIndex<CostModel, TreeIndex>::ted(
-    const TreeIndex& t1, const TreeIndex& t2) {
+double APTEDTreeIndex<CostModel, TreeIndex>::ted(const TreeIndex &t1, const TreeIndex &t2) {
   // Determine the optimal strategy for the distance computation.
   // Use the heuristic from [2, Section 5.3].
   // TODO: Implement compute_opt_strategy_postR.
   // if (ni_1.lchl_ < ni_1.rchl_) {
-    delta_ = compute_opt_strategy_postL(t1, t2);
+  delta_ = compute_opt_strategy_postL(t1, t2);
   // } else {
   //   delta_ = compute_opt_strategy_postR(ni_1, ni_2);
   // }
@@ -41,7 +40,9 @@ double APTEDTreeIndex<CostModel, TreeIndex>::ted(
 }
 
 template <typename CostModel, typename TreeIndex>
-data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_opt_strategy_postL(const TreeIndex& t1, const TreeIndex& t2) {
+data_structures::Matrix<double>
+APTEDTreeIndex<CostModel, TreeIndex>::compute_opt_strategy_postL(const TreeIndex &t1,
+                                                                 const TreeIndex &t2) {
   const int size1 = t1.tree_size_;
   const int size2 = t2.tree_size_;
   data_structures::Matrix<double> strategy(size1, size2);
@@ -57,30 +58,30 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
   long long int minCost = std::numeric_limits<long long int>::max();
   double strategyPath = -1.0;
 
-  const std::vector<int>& pre2size1 = t1.prel_to_size_;
-  const std::vector<int>& pre2size2 = t2.prel_to_size_;
-  const std::vector<long long int>& pre2descSum1 = t1.prel_to_cost_all_;
-  const std::vector<long long int>& pre2descSum2 = t2.prel_to_cost_all_;
-  const std::vector<long long int>& pre2krSum1 = t1.prel_to_cost_left_;
-  const std::vector<long long int>& pre2krSum2 = t2.prel_to_cost_left_;
-  const std::vector<long long int>& pre2revkrSum1 = t1.prel_to_cost_right_;
-  const std::vector<long long int>& pre2revkrSum2 = t2.prel_to_cost_right_;
-  const std::vector<int>& preL_to_preR_1 = t1.prel_to_prer_;
-  const std::vector<int>& preL_to_preR_2 = t2.prel_to_prer_;
-  const std::vector<int>& preR_to_preL_1 = t1.prer_to_prel_;
-  const std::vector<int>& preR_to_preL_2 = t2.prer_to_prel_;
-  const std::vector<int>& pre2parent1 = t1.prel_to_parent_;
-  const std::vector<int>& pre2parent2 = t2.prel_to_parent_;
-  const std::vector<bool>& nodeType_L_1 = t1.prel_to_type_left_;
-  const std::vector<bool>& nodeType_L_2 = t2.prel_to_type_left_;
-  const std::vector<bool>& nodeType_R_1 = t1.prel_to_type_right_;
-  const std::vector<bool>& nodeType_R_2 = t2.prel_to_type_right_;
+  const std::vector<int> &pre2size1 = t1.prel_to_size_;
+  const std::vector<int> &pre2size2 = t2.prel_to_size_;
+  const std::vector<long long int> &pre2descSum1 = t1.prel_to_cost_all_;
+  const std::vector<long long int> &pre2descSum2 = t2.prel_to_cost_all_;
+  const std::vector<long long int> &pre2krSum1 = t1.prel_to_cost_left_;
+  const std::vector<long long int> &pre2krSum2 = t2.prel_to_cost_left_;
+  const std::vector<long long int> &pre2revkrSum1 = t1.prel_to_cost_right_;
+  const std::vector<long long int> &pre2revkrSum2 = t2.prel_to_cost_right_;
+  const std::vector<int> &preL_to_preR_1 = t1.prel_to_prer_;
+  const std::vector<int> &preL_to_preR_2 = t2.prel_to_prer_;
+  const std::vector<int> &preR_to_preL_1 = t1.prer_to_prel_;
+  const std::vector<int> &preR_to_preL_2 = t2.prer_to_prel_;
+  const std::vector<int> &pre2parent1 = t1.prel_to_parent_;
+  const std::vector<int> &pre2parent2 = t2.prel_to_parent_;
+  const std::vector<bool> &nodeType_L_1 = t1.prel_to_type_left_;
+  const std::vector<bool> &nodeType_L_2 = t2.prel_to_type_left_;
+  const std::vector<bool> &nodeType_R_1 = t1.prel_to_type_right_;
+  const std::vector<bool> &nodeType_R_2 = t2.prel_to_type_right_;
 
-  const std::vector<int>& preL_to_postL_1 = t1.prel_to_postl_;
-  const std::vector<int>& preL_to_postL_2 = t2.prel_to_postl_;
+  const std::vector<int> &preL_to_postL_1 = t1.prel_to_postl_;
+  const std::vector<int> &preL_to_postL_2 = t2.prel_to_postl_;
 
-  const std::vector<int>& postL_to_preL_1 = t1.postl_to_prel_;
-  const std::vector<int>& postL_to_preL_2 = t2.postl_to_prel_;
+  const std::vector<int> &postL_to_preL_1 = t1.postl_to_prel_;
+  const std::vector<int> &postL_to_preL_2 = t2.postl_to_prel_;
 
   int size_v = -1;
   int parent_v_preL = -1;
@@ -112,7 +113,7 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
   std::stack<std::shared_ptr<std::vector<long long int>>> rowsToReuse_R;
   std::stack<std::shared_ptr<std::vector<long long int>>> rowsToReuse_I;
 
-  for(int v = 0; v < size1; ++v) {
+  for (int v = 0; v < size1; ++v) {
     v_in_preL = postL_to_preL_1[v];
 
     is_v_leaf = t1.prel_to_size_[v_in_preL] == 1;
@@ -126,18 +127,22 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
     strategypointer_v = v_in_preL;
 
     size_v = pre2size1[v_in_preL];
-    leftPath_v = static_cast<double>(-(preR_to_preL_1[preL_to_preR_1[v_in_preL] + size_v - 1] + 1));// this is the left path's ID which is the leftmost leaf node: l-r_preorder(r-l_preorder(v) + |Fv| - 1)
-    rightPath_v = static_cast<double>(v_in_preL + size_v - 1 + 1); // this is the right path's ID which is the rightmost leaf node: l-r_preorder(v) + |Fv| - 1
+    leftPath_v = static_cast<double>(-(preR_to_preL_1[preL_to_preR_1[v_in_preL] + size_v - 1] +
+                                       1)); // this is the left path's ID which is the leftmost leaf
+                                            // node: l-r_preorder(r-l_preorder(v) + |Fv| - 1)
+    rightPath_v = static_cast<double>(v_in_preL + size_v - 1 +
+                                      1); // this is the right path's ID which is the rightmost leaf
+                                          // node: l-r_preorder(v) + |Fv| - 1
 
     krSum_v = pre2krSum1[v_in_preL];
     revkrSum_v = pre2revkrSum1[v_in_preL];
     descSum_v = pre2descSum1[v_in_preL];
 
-    if(is_v_leaf) {
+    if (is_v_leaf) {
       cost1_L[v] = leafRow;
       cost1_R[v] = leafRow;
       cost1_I[v] = leafRow;
-      for(int i = 0; i < size2; ++i) {
+      for (int i = 0; i < size2; ++i) {
         // strategypointer_v[postL_to_preL_2[i]] = v_in_preL;
         strategy.at(strategypointer_v, postL_to_preL_2[i]) = static_cast<double>(v_in_preL);
       }
@@ -147,7 +152,7 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
     cost_Rpointer_v = cost1_R[v];
     cost_Ipointer_v = cost1_I[v];
 
-    if(parent_v_preL != -1 && cost1_L[parent_v_postL] == nullptr) {
+    if (parent_v_preL != -1 && cost1_L[parent_v_postL] == nullptr) {
       if (rowsToReuse_L.empty()) {
         cost1_L[parent_v_postL] = std::make_shared<std::vector<long long int>>(size2);
         cost1_R[parent_v_postL] = std::make_shared<std::vector<long long int>>(size2);
@@ -171,15 +176,15 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
     }
 
     // Arrays.fill(cost2_L, 0L);
-    std::fill(cost2_L.begin(),cost2_L.end(), 0);
+    std::fill(cost2_L.begin(), cost2_L.end(), 0);
     // Arrays.fill(cost2_R, 0L);
-    std::fill(cost2_R.begin(),cost2_R.end(), 0);
+    std::fill(cost2_R.begin(), cost2_R.end(), 0);
     // Arrays.fill(cost2_I, 0L);
-    std::fill(cost2_I.begin(),cost2_I.end(), 0);
+    std::fill(cost2_I.begin(), cost2_I.end(), 0);
     // Arrays.fill(cost2_path, 0);
-    std::fill(cost2_path.begin(),cost2_path.end(), 0);
+    std::fill(cost2_path.begin(), cost2_path.end(), 0);
 
-    for(int w = 0; w < size2; ++w) {
+    for (int w = 0; w < size2; ++w) {
       w_in_preL = postL_to_preL_2[w];
 
       parent_w_preL = pre2parent2[w_in_preL];
@@ -227,7 +232,8 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
         // std::cout << "tmpCost [4] = " << tmpCost << std::endl;
         if (tmpCost < minCost) {
           minCost = tmpCost;
-          strategyPath = static_cast<double>(-(preR_to_preL_2[preL_to_preR_2[w_in_preL] + size_w - 1] + pathIDOffset + 1.0));
+          strategyPath = static_cast<double>(
+              -(preR_to_preL_2[preL_to_preR_2[w_in_preL] + size_w - 1] + pathIDOffset + 1.0));
           // std::cout << "strategyPath [4] = " << strategyPath << std::endl;
         }
         tmpCost = size_w * revkrSum_v + cost2_R[w];
@@ -254,7 +260,8 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
         if (tmpCost < (*cost1_I[parent_v_postL])[w]) {
           (*cost_Ipointer_parent_v)[w] = tmpCost;
           // strategypointer_parent_v[w_in_preL] = strategypointer_v[w_in_preL];
-          strategy.at(strategypointer_parent_v, w_in_preL) = strategy.read_at(strategypointer_v, w_in_preL);
+          strategy.at(strategypointer_parent_v, w_in_preL) =
+              strategy.read_at(strategypointer_v, w_in_preL);
         }
         if (nodeType_R_1[v_in_preL]) {
           (*cost_Ipointer_parent_v)[w] += (*cost_Rpointer_parent_v)[w];
@@ -285,7 +292,8 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
       }
       // strategypointer_v[w_in_preL] = strategyPath;
       strategy.at(strategypointer_v, w_in_preL) = strategyPath;
-      // std::cout << "strategy[" << strategypointer_v << "," << w_in_preL << "] = " << strategy.read_at(0, 0) << std::endl;
+      // std::cout << "strategy[" << strategypointer_v << "," << w_in_preL << "] = " <<
+      // strategy.read_at(0, 0) << std::endl;
     }
 
     if (!(t1.prel_to_size_[v_in_preL] == 1)) {
@@ -300,15 +308,16 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
       rowsToReuse_I.push(cost1_I[v]);
       // NOTE: The pointers under cost1_L[v] do not have to be nulled.
     }
-
   }
-  
+
   // std::cout << "strategy[0][0] = " << strategy.read_at(0, 0) << std::endl;
   return strategy;
 }
 
 template <typename CostModel, typename TreeIndex>
-data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_opt_strategy_postR(const TreeIndex& t1, const TreeIndex& t2) {
+data_structures::Matrix<double>
+APTEDTreeIndex<CostModel, TreeIndex>::compute_opt_strategy_postR(const TreeIndex &t1,
+                                                                 const TreeIndex &t2) {
   const int size1 = t1.tree_size_;
   const int size2 = t2.tree_size_;
   data_structures::Matrix<double> strategy(size1, size2);
@@ -316,7 +325,7 @@ data_structures::Matrix<double> APTEDTreeIndex<CostModel, TreeIndex>::compute_op
 }
 
 template <typename CostModel, typename TreeIndex>
-void APTEDTreeIndex<CostModel, TreeIndex>::ted_init(const TreeIndex& t1, const TreeIndex& t2) {
+void APTEDTreeIndex<CostModel, TreeIndex>::ted_init(const TreeIndex &t1, const TreeIndex &t2) {
   // Reset the subproblems counter.
   subproblem_counter_ = 0;
   // Initialize arrays.
@@ -333,10 +342,10 @@ void APTEDTreeIndex<CostModel, TreeIndex>::ted_init(const TreeIndex& t1, const T
   // int parent_x = -1;
   // int parent_y = -1;
   // Loop over the nodes in reversed left-to-right preorder.
-  for(int x = 0; x < t1.tree_size_; ++x) {
+  for (int x = 0; x < t1.tree_size_; ++x) {
     size_x = t1.prel_to_size_[x];
     // parent_x = ni_1.preL_to_parent_[x];
-    for(int y = 0; y < t2.tree_size_; ++y) {
+    for (int y = 0; y < t2.tree_size_; ++y) {
       size_y = t2.prel_to_size_[y];
       // parent_y = ni_2.preL_to_parent_[y];
       // Set values in delta based on the sums of deletion and insertion
@@ -355,9 +364,8 @@ void APTEDTreeIndex<CostModel, TreeIndex>::ted_init(const TreeIndex& t1, const T
 }
 
 template <typename CostModel, typename TreeIndex>
-double APTEDTreeIndex<CostModel, TreeIndex>::gted(const TreeIndex& t1,
-    int t1_current_subtree, const TreeIndex& t2,
-    int t2_current_subtree) {
+double APTEDTreeIndex<CostModel, TreeIndex>::gted(const TreeIndex &t1, int t1_current_subtree,
+                                                  const TreeIndex &t2, int t2_current_subtree) {
   const int currentSubtree1 = t1_current_subtree;
   const int currentSubtree2 = t2_current_subtree;
   const int subtreeSize1 = t1.prel_to_size_[currentSubtree1];
@@ -370,7 +378,8 @@ double APTEDTreeIndex<CostModel, TreeIndex>::gted(const TreeIndex& t1,
   // Use spf1.
   if ((subtreeSize1 == 1 || subtreeSize2 == 1)) {
     result = spf1(t1, currentSubtree1, t2, currentSubtree2);
-    // std::cerr << "spf1(" << currentSubtree1 << "," << currentSubtree2 << ") = " << result << std::endl;
+    // std::cerr << "spf1(" << currentSubtree1 << "," << currentSubtree2 << ") = " << result <<
+    // std::endl;
     return result;
   }
 
@@ -381,15 +390,16 @@ double APTEDTreeIndex<CostModel, TreeIndex>::gted(const TreeIndex& t1,
   int pathIDOffset = t1.tree_size_;
 
   int parent = -1;
-  if(currentPathNode < pathIDOffset) {
-    strategyPathType = get_strategy_path_type(strategyPathID, pathIDOffset, currentSubtree1, subtreeSize1);
+  if (currentPathNode < pathIDOffset) {
+    strategyPathType =
+        get_strategy_path_type(strategyPathID, pathIDOffset, currentSubtree1, subtreeSize1);
     parent = t1.prel_to_parent_[currentPathNode];
-    while(parent >= currentSubtree1) {
-      auto& ai = t1.prel_to_children_[parent];
+    while (parent >= currentSubtree1) {
+      auto &ai = t1.prel_to_children_[parent];
       int k = ai.size();
-      for(int i = 0; i < k; ++i) {
+      for (int i = 0; i < k; ++i) {
         int child = ai[i];
-        if(child != currentPathNode) {
+        if (child != currentPathNode) {
           // t1.set_current_node(child);
           gted(t1, child, t2, t2_current_subtree);
         }
@@ -406,31 +416,35 @@ double APTEDTreeIndex<CostModel, TreeIndex>::gted(const TreeIndex& t1,
     // [1, Section 3.4].
     if (strategyPathType == 0) {
       result = spfL(t1, t1_current_subtree, t2, t2_current_subtree, false);
-      // std::cerr << "spfL(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result << std::endl;
+      // std::cerr << "spfL(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result
+      // << std::endl;
       return result;
     }
     if (strategyPathType == 1) {
       result = spfR(t1, t1_current_subtree, t2, t2_current_subtree, false);
-      // std::cerr << "spfR(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result << std::endl;
+      // std::cerr << "spfR(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result
+      // << std::endl;
       return result;
     }
-    result = spfA(t1, t1_current_subtree, t2, t2_current_subtree,
-        std::abs(strategyPathID) - 1, strategyPathType, false);
-    // std::cerr << "spfA(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result << std::endl;
+    result = spfA(t1, t1_current_subtree, t2, t2_current_subtree, std::abs(strategyPathID) - 1,
+                  strategyPathType, false);
+    // std::cerr << "spfA(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result
+    // << std::endl;
     return result;
   }
 
   currentPathNode -= pathIDOffset;
-  strategyPathType = get_strategy_path_type(strategyPathID, pathIDOffset, currentSubtree2, subtreeSize2);
+  strategyPathType =
+      get_strategy_path_type(strategyPathID, pathIDOffset, currentSubtree2, subtreeSize2);
   parent = t2.prel_to_parent_[currentPathNode];
-  while(parent >= currentSubtree2) {
+  while (parent >= currentSubtree2) {
     // std::cerr << "parent = " << parent << std::endl;
     // std::cerr << "# parent's children = " << t2.prel_to_children_[parent].size() << std::endl;
-    auto& ai1 = t2.prel_to_children_[parent];
+    auto &ai1 = t2.prel_to_children_[parent];
     int l = ai1.size();
-    for(int j = 0; j < l; ++j) {
+    for (int j = 0; j < l; ++j) {
       int child = ai1[j];
-      if(child != currentPathNode) {
+      if (child != currentPathNode) {
         // t2.set_current_node(child);
         gted(t1, t1_current_subtree, t2, child);
       }
@@ -447,23 +461,26 @@ double APTEDTreeIndex<CostModel, TreeIndex>::gted(const TreeIndex& t1,
   // [1, Section 3.4].
   if (strategyPathType == 0) {
     result = spfL(t2, t2_current_subtree, t1, t1_current_subtree, true);
-    // std::cerr << "spfL(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result << std::endl;
+    // std::cerr << "spfL(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result
+    // << std::endl;
     return result;
   }
   if (strategyPathType == 1) {
     result = spfR(t2, t2_current_subtree, t1, t1_current_subtree, true);
-    // std::cerr << "spfR(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result << std::endl;
+    // std::cerr << "spfR(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result
+    // << std::endl;
     return result;
   }
   result = spfA(t2, t2_current_subtree, t1, t1_current_subtree,
-      std::abs(strategyPathID) - pathIDOffset - 1, strategyPathType, true);
-  // std::cerr << "spfA(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result << std::endl;
+                std::abs(strategyPathID) - pathIDOffset - 1, strategyPathType, true);
+  // std::cerr << "spfA(" << t1_current_subtree << "," << t2_current_subtree << ") = " << result <<
+  // std::endl;
   return result;
 }
 
 template <typename CostModel, typename TreeIndex>
-double APTEDTreeIndex<CostModel, TreeIndex>::spf1(const TreeIndex& t1,
-    int subtreeRootNode1, const TreeIndex& t2, int subtreeRootNode2) {
+double APTEDTreeIndex<CostModel, TreeIndex>::spf1(const TreeIndex &t1, int subtreeRootNode1,
+                                                  const TreeIndex &t2, int subtreeRootNode2) {
   int subtreeSize1 = t1.prel_to_size_[subtreeRootNode1];
   int subtreeSize2 = t2.prel_to_size_[subtreeRootNode2];
   if (subtreeSize1 == 1 && subtreeSize2 == 1) {
@@ -513,22 +530,21 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spf1(const TreeIndex& t1,
 }
 
 template <typename CostModel, typename TreeIndex>
-double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
-    int t1_current_subtree, const TreeIndex& t2,
-    int t2_current_subtree, int pathID, int pathType,
-    bool treesSwapped) {
-  const std::vector<int>& it2labels = t2.prel_to_label_id_;
+double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex &t1, int t1_current_subtree,
+                                                  const TreeIndex &t2, int t2_current_subtree,
+                                                  int pathID, int pathType, bool treesSwapped) {
+  const std::vector<int> &it2labels = t2.prel_to_label_id_;
   // const node::Node<Label>& lFNode;
-  const std::vector<int>& it1sizes = t1.prel_to_size_;
-  const std::vector<int>& it2sizes = t2.prel_to_size_;
-  const std::vector<int>& it1parents = t1.prel_to_parent_;
-  const std::vector<int>& it2parents = t2.prel_to_parent_;
-  const std::vector<int>& it1preL_to_preR = t1.prel_to_prer_;
-  const std::vector<int>& it2preL_to_preR = t2.prel_to_prer_;
-  const std::vector<int>& it1preR_to_preL = t1.prer_to_prel_;
-  const std::vector<int>& it2preR_to_preL = t2.prer_to_prel_;
-  const int currentSubtreePreL1 = t1_current_subtree;//t1.get_current_node();
-  const int currentSubtreePreL2 = t2_current_subtree;//t2.get_current_node();
+  const std::vector<int> &it1sizes = t1.prel_to_size_;
+  const std::vector<int> &it2sizes = t2.prel_to_size_;
+  const std::vector<int> &it1parents = t1.prel_to_parent_;
+  const std::vector<int> &it2parents = t2.prel_to_parent_;
+  const std::vector<int> &it1preL_to_preR = t1.prel_to_prer_;
+  const std::vector<int> &it2preL_to_preR = t2.prel_to_prer_;
+  const std::vector<int> &it1preR_to_preL = t1.prer_to_prel_;
+  const std::vector<int> &it2preR_to_preL = t2.prer_to_prel_;
+  const int currentSubtreePreL1 = t1_current_subtree; // t1.get_current_node();
+  const int currentSubtreePreL2 = t2_current_subtree; // t2.get_current_node();
 
   // Variables to incrementally sum up the forest sizes.
   int currentForestSize1 = 0;
@@ -541,11 +557,11 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
 
   const int subtreeSize2 = t2.prel_to_size_[currentSubtreePreL2];
   const int subtreeSize1 = t1.prel_to_size_[currentSubtreePreL1];
-  data_structures::Matrix<double> t(subtreeSize2+1, subtreeSize2+1);
-  data_structures::Matrix<double> s(subtreeSize1+1, subtreeSize2+1);
-  
+  data_structures::Matrix<double> t(subtreeSize2 + 1, subtreeSize2 + 1);
+  data_structures::Matrix<double> s(subtreeSize1 + 1, subtreeSize2 + 1);
+
   // std::vector<double> q_(std::max(input_size_1_, input_size_2_) + 1);
-  
+
   double minCost = -1;
   // sp1, sp2 and sp3 correspond to three elements of the minimum in the
   // recursive formula [1, Figure 12].
@@ -559,22 +575,21 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
   int it1PreRoff = it1preL_to_preR[endPathNode];
   int it2PreRoff = it2preL_to_preR[it2PreLoff];
   // variable declarations which were inside the loops
-  bool leftPart,rightPart,fForestIsTree,lFIsConsecutiveNodeOfCurrentPathNode,
-    lFIsLeftSiblingOfCurrentPathNode, rFIsConsecutiveNodeOfCurrentPathNode,
-    rFIsRightSiblingOfCurrentPathNode;
-  
-  int parent_of_endPathNode, startPathNode_in_preR, rGminus1_in_preL,
-    rGlast, lGfirst, lGminus1_in_preR, parent_of_rG_in_preL, lFSubtreeSize,
-    lFlast, lGlast, rGfirst, lF_in_preR, rFSubtreeSize, parent_of_lG,
-    parent_of_lG_in_preR, rFlast, endPathNode_in_preR,
-    parent_of_endPathNode_in_preR, lFfirst, rFfirst, rG_in_preL, rF_in_preL,
-    rGfirst_in_preL;
+  bool leftPart, rightPart, fForestIsTree, lFIsConsecutiveNodeOfCurrentPathNode,
+      lFIsLeftSiblingOfCurrentPathNode, rFIsConsecutiveNodeOfCurrentPathNode,
+      rFIsRightSiblingOfCurrentPathNode;
 
-  std::size_t sp1spointer,sp2spointer,sp3spointer,sp3deltapointer,swritepointer,sp1tpointer,sp3tpointer;
-  
+  int parent_of_endPathNode, startPathNode_in_preR, rGminus1_in_preL, rGlast, lGfirst,
+      lGminus1_in_preR, parent_of_rG_in_preL, lFSubtreeSize, lFlast, lGlast, rGfirst, lF_in_preR,
+      rFSubtreeSize, parent_of_lG, parent_of_lG_in_preR, rFlast, endPathNode_in_preR,
+      parent_of_endPathNode_in_preR, lFfirst, rFfirst, rG_in_preL, rF_in_preL, rGfirst_in_preL;
+
+  std::size_t sp1spointer, sp2spointer, sp3spointer, sp3deltapointer, swritepointer, sp1tpointer,
+      sp3tpointer;
+
   // These variables store the id of the source (which array) of looking up
   // elements of the minimum in the recursive formula [1, Figures 12,13].
-  int sp1source,sp3source;
+  int sp1source, sp3source;
   // Loop A [1, Algorithm 3] - walk up the path.
   while (endPathNode >= currentSubtreePreL1) {
     it1PreLoff = endPathNode;
@@ -582,9 +597,12 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
     rFlast = -1; // is only reset here
     lFlast = -1; // is only reset here
     endPathNode_in_preR = it1preL_to_preR[endPathNode];
-    startPathNode_in_preR = startPathNode == -1 ? std::numeric_limits<int>::max() : it1preL_to_preR[startPathNode];
+    startPathNode_in_preR =
+        startPathNode == -1 ? std::numeric_limits<int>::max() : it1preL_to_preR[startPathNode];
     parent_of_endPathNode = it1parents[endPathNode];
-    parent_of_endPathNode_in_preR = parent_of_endPathNode == -1 ? std::numeric_limits<int>::max() : it1preL_to_preR[parent_of_endPathNode];
+    parent_of_endPathNode_in_preR = parent_of_endPathNode == -1
+                                        ? std::numeric_limits<int>::max()
+                                        : it1preL_to_preR[parent_of_endPathNode];
     // TODO: Overflow problem again if startPathNode = max.
     // TODO: Double check what to do if the endPathNode is a leaf.
     if (startPathNode - endPathNode > 1) {
@@ -614,8 +632,8 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
       lFlast = rightPart ? endPathNode + 1 : endPathNode;
       fn_[fn_.size() - 1] = -1;
       for (int i = currentSubtreePreL2; i < currentSubtreePreL2 + subtreeSize2; ++i) {
-          fn_[i] = -1;
-          ft_[i] = -1;
+        fn_[i] = -1;
+        ft_[i] = -1;
       }
       // Store the current size and cost of forest in F.
       tmpForestSize1 = currentForestSize1;
@@ -624,19 +642,21 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
       for (int rG = rGfirst; rG >= rGlast; --rG) {
         lGfirst = it2preR_to_preL[rG];
         rG_in_preL = it2preR_to_preL[rG];
-        rGminus1_in_preL = rG <= it2preL_to_preR[currentSubtreePreL2] ?
-          std::numeric_limits<int>::max() : it2preR_to_preL[rG - 1];
+        rGminus1_in_preL = rG <= it2preL_to_preR[currentSubtreePreL2]
+                               ? std::numeric_limits<int>::max()
+                               : it2preR_to_preL[rG - 1];
         parent_of_rG_in_preL = it2parents[rG_in_preL];
         // This if statement decides on the last lG node for Loop D [1, Algorithm 3];
-        if (pathType == 1){ // Right path.
-          // `rGminus1_in_preL == parent_of_rG_in_preL` checks if rG is the rightmost child of its parent
+        if (pathType == 1) { // Right path.
+          // `rGminus1_in_preL == parent_of_rG_in_preL` checks if rG is the rightmost child of its
+          // parent
           if (lGfirst == currentSubtreePreL2 || rGminus1_in_preL != parent_of_rG_in_preL) {
             lGlast = lGfirst;
           } else {
-            lGlast = it2parents[lGfirst]+1;
+            lGlast = it2parents[lGfirst] + 1;
           }
         } else {
-          lGlast = lGfirst == currentSubtreePreL2 ? lGfirst : currentSubtreePreL2+1;
+          lGlast = lGfirst == currentSubtreePreL2 ? lGfirst : currentSubtreePreL2 + 1;
         }
         updateFnArray(t2.prel_to_ln_[lGfirst], lGfirst, currentSubtreePreL2);
         updateFtArray(t2.prel_to_ln_[lGfirst], lGfirst);
@@ -653,30 +673,39 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
           const int lFNode_label = t1.prel_to_label_id_[lF];
           // Increment size and cost of F forest by node lF.
           ++currentForestSize1;
-          currentForestCost1 += (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label)); // TODO: USE COST MODEL - sum up deletion cost of a forest.
+          currentForestCost1 +=
+              (treesSwapped
+                   ? c_.ins(lFNode_label)
+                   : c_.del(
+                         lFNode_label)); // TODO: USE COST MODEL - sum up deletion cost of a forest.
           // Reset size and cost of forest in G to subtree G_lGfirst.
           currentForestSize2 = it2sizes[lGfirst];
-          currentForestCost2 = (treesSwapped ? t2.prel_to_subtree_del_cost_[lGfirst] : t2.prel_to_subtree_ins_cost_[lGfirst]); // TODO: USE COST MODEL - reset to subtree insertion cost.
+          currentForestCost2 =
+              (treesSwapped
+                   ? t2.prel_to_subtree_del_cost_[lGfirst]
+                   : t2.prel_to_subtree_ins_cost_[lGfirst]); // TODO: USE COST MODEL - reset to
+                                                             // subtree insertion cost.
           lF_in_preR = it1preL_to_preR[lF];
           fForestIsTree = lF_in_preR == rF;
           lFSubtreeSize = it1sizes[lF];
           lFIsConsecutiveNodeOfCurrentPathNode = startPathNode - lF == 1;
           lFIsLeftSiblingOfCurrentPathNode = lF + lFSubtreeSize == startPathNode;
-          
+
           // TODO: Move these to where matrix accessed.
-          sp1spointer = (lF + 1) - it1PreLoff;//s[(lF + 1) - it1PreLoff];
-          sp2spointer = lF - it1PreLoff;//s[lF - it1PreLoff];
-          sp3spointer = 0;//s[0];
+          sp1spointer = (lF + 1) - it1PreLoff; // s[(lF + 1) - it1PreLoff];
+          sp2spointer = lF - it1PreLoff;       // s[lF - it1PreLoff];
+          sp3spointer = 0;                     // s[0];
           // TODO: Be careful with 0 in the line below.
-          sp3deltapointer = treesSwapped ? 0 : lF;//treesSwapped ? null : delta[lF];
-          swritepointer = lF - it1PreLoff;//s[lF - it1PreLoff];
-          
-          sp1source = 1; // Search sp1 value in s array by default.
-          sp3source = 1; // Search second part of sp3 value in s array by default.
-          if (fForestIsTree) { // F_{lF,rF} is a tree.
+          sp3deltapointer = treesSwapped ? 0 : lF; // treesSwapped ? null : delta[lF];
+          swritepointer = lF - it1PreLoff;         // s[lF - it1PreLoff];
+
+          sp1source = 1;              // Search sp1 value in s array by default.
+          sp3source = 1;              // Search second part of sp3 value in s array by default.
+          if (fForestIsTree) {        // F_{lF,rF} is a tree.
             if (lFSubtreeSize == 1) { // F_{lF,rF} is a single node.
               sp1source = 3;
-            } else if (lFIsConsecutiveNodeOfCurrentPathNode) { // F_{lF,rF}-lF is the path node subtree.
+            } else if (lFIsConsecutiveNodeOfCurrentPathNode) { // F_{lF,rF}-lF is the path node
+                                                               // subtree.
               sp1source = 2;
             }
             sp3 = 0;
@@ -685,36 +714,50 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
             if (lFIsConsecutiveNodeOfCurrentPathNode) {
               sp1source = 2;
             }
-            sp3 = currentForestCost1 - (treesSwapped ? t1.prel_to_subtree_ins_cost_[lF] : t1.prel_to_subtree_del_cost_[lF]); // TODO: USE COST MODEL - Delete F_{lF,rF}-F_lF.
+            sp3 = currentForestCost1 -
+                  (treesSwapped ? t1.prel_to_subtree_ins_cost_[lF]
+                                : t1.prel_to_subtree_del_cost_[lF]); // TODO: USE COST MODEL -
+                                                                     // Delete F_{lF,rF}-F_lF.
             if (lFIsLeftSiblingOfCurrentPathNode) {
               sp3source = 3;
             }
           }
           if (sp3source == 1) {
             // TODO: Move these to where matrix accessed.
-            sp3spointer = (lF + lFSubtreeSize) - it1PreLoff;//s[(lF + lFSubtreeSize) - it1PreLoff];
+            sp3spointer = (lF + lFSubtreeSize) - it1PreLoff; // s[(lF + lFSubtreeSize) -
+                                                             // it1PreLoff];
           }
           // Go to first lG.
           int lG = lGfirst;
           // currentForestSize2++;
-          // sp1, sp2, sp3 -- Done here for the first node in Loop D. It differs for consecutive nodes.
-          // sp1 -- START
-          switch(sp1source) {
-            case 1: sp1 = s.read_at(sp1spointer, lG - it2PreLoff); break;
-            case 2: sp1 = t.read_at(lG - it2PreLoff, rG - it2PreRoff); break;
-            case 3: sp1 = currentForestCost2; break; // TODO: USE COST MODEL - Insert G_{lG,rG}.
+          // sp1, sp2, sp3 -- Done here for the first node in Loop D. It differs for consecutive
+          // nodes. sp1 -- START
+          switch (sp1source) {
+          case 1:
+            sp1 = s.read_at(sp1spointer, lG - it2PreLoff);
+            break;
+          case 2:
+            sp1 = t.read_at(lG - it2PreLoff, rG - it2PreRoff);
+            break;
+          case 3:
+            sp1 = currentForestCost2;
+            break; // TODO: USE COST MODEL - Insert G_{lG,rG}.
           }
-          sp1 += (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label));// TODO: USE COST MODEL - Delete lF, leftmost root node in F_{lF,rF}.
+          sp1 += (treesSwapped ? c_.ins(lFNode_label)
+                               : c_.del(lFNode_label)); // TODO: USE COST MODEL - Delete lF,
+                                                        // leftmost root node in F_{lF,rF}.
           // sp1 -- END
           minCost = sp1; // Start with sp1 as minimal value.
           // sp2 -- START
           if (currentForestSize2 == 1) { // G_{lG,rG} is a single node.
-            sp2 = currentForestCost1; // TODO: USE COST MODEL - Delete F_{lF,rF}.
-          } else { // G_{lG,rG} is a tree.
+            sp2 = currentForestCost1;    // TODO: USE COST MODEL - Delete F_{lF,rF}.
+          } else {                       // G_{lG,rG} is a tree.
             sp2 = q_[lF];
           }
-          sp2 += (treesSwapped ? c_.del(it2labels[lG]) : c_.ins(it2labels[lG]));// TODO: USE COST MODEL - Insert lG, leftmost root node in G_{lG,rG}.
-          if (sp2 < minCost) { // Check if sp2 is minimal value.
+          sp2 += (treesSwapped ? c_.del(it2labels[lG])
+                               : c_.ins(it2labels[lG])); // TODO: USE COST MODEL - Insert lG,
+                                                         // leftmost root node in G_{lG,rG}.
+          if (sp2 < minCost) {                           // Check if sp2 is minimal value.
             minCost = sp2;
           }
           // sp2 -- END
@@ -723,8 +766,12 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
             // TODO: Matrix pointer here.
             sp3 += treesSwapped ? delta_.read_at(lG, lF) : delta_.read_at(sp3deltapointer, lG);
             if (sp3 < minCost) {
-              sp3 += (treesSwapped ? c_.ren(it2labels[lG], lFNode_label) : c_.ren(lFNode_label, it2labels[lG])); // TODO: USE COST MODEL - Rename the leftmost root nodes in F_{lF,rF} and G_{lG,rG}.
-              if(sp3 < minCost) {
+              sp3 += (treesSwapped
+                          ? c_.ren(it2labels[lG], lFNode_label)
+                          : c_.ren(lFNode_label,
+                                   it2labels[lG])); // TODO: USE COST MODEL - Rename the leftmost
+                                                    // root nodes in F_{lF,rF} and G_{lG,rG}.
+              if (sp3 < minCost) {
                 minCost = sp3;
               }
             }
@@ -740,29 +787,53 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
             // Increment size and cost of G forest by node lG.
             ++currentForestSize2;
             currentForestCost2 += (treesSwapped ? c_.del(it2labels[lG]) : c_.ins(it2labels[lG]));
-            switch(sp1source) {
-              // TODO: Matrix pointer here.
-              case 1: sp1 = s.read_at(sp1spointer, lG - it2PreLoff) + (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label)); break; // TODO: USE COST MODEL - Delete lF, leftmost root node in F_{lF,rF}.
-              case 2: sp1 = t.read_at(lG - it2PreLoff, rG - it2PreRoff) + (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label)); break; // TODO: USE COST MODEL - Delete lF, leftmost root node in F_{lF,rF}.
-              case 3: sp1 = currentForestCost2 + (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label)); break; // TODO: USE COST MODEL - Insert G_{lG,rG} and elete lF, leftmost root node in F_{lF,rF}.
+            switch (sp1source) {
+            // TODO: Matrix pointer here.
+            case 1:
+              sp1 = s.read_at(sp1spointer, lG - it2PreLoff) +
+                    (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label));
+              break; // TODO: USE COST MODEL - Delete lF, leftmost root node in F_{lF,rF}.
+            case 2:
+              sp1 = t.read_at(lG - it2PreLoff, rG - it2PreRoff) +
+                    (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label));
+              break; // TODO: USE COST MODEL - Delete lF, leftmost root node in F_{lF,rF}.
+            case 3:
+              sp1 =
+                  currentForestCost2 + (treesSwapped ? c_.ins(lFNode_label) : c_.del(lFNode_label));
+              break; // TODO: USE COST MODEL - Insert G_{lG,rG} and elete lF, leftmost root node in
+                     // F_{lF,rF}.
             }
             // TODO: Matrix pointer here.
-            sp2 = s.read_at(sp2spointer, fn_[lG] - it2PreLoff) + (treesSwapped ? c_.del(it2labels[lG]) : c_.ins(it2labels[lG])); // TODO: USE COST MODEL - Insert lG, leftmost root node in G_{lG,rG}.
+            sp2 = s.read_at(sp2spointer, fn_[lG] - it2PreLoff) +
+                  (treesSwapped ? c_.del(it2labels[lG])
+                                : c_.ins(it2labels[lG])); // TODO: USE COST MODEL - Insert lG,
+                                                          // leftmost root node in G_{lG,rG}.
             minCost = sp1;
-            if(sp2 < minCost) {
+            if (sp2 < minCost) {
               minCost = sp2;
             }
             // TODO: Matrix pointer here.
             sp3 = treesSwapped ? delta_.read_at(lG, lF) : delta_.read_at(sp3deltapointer, lG);
             if (sp3 < minCost) {
-              switch(sp3source) {
+              switch (sp3source) {
                 // TODO: Matrix pointer here.
-                  case 1: sp3 += s.read_at(sp3spointer, fn_[(lG + it2sizes[lG]) - 1] - it2PreLoff); break;
-                  case 2: sp3 += currentForestCost2 - (treesSwapped ? t2.prel_to_subtree_del_cost_[lG] : t2.prel_to_subtree_ins_cost_[lG]); break; // TODO: USE COST MODEL - Insert G_{lG,rG}-G_lG.
-                  case 3: sp3 += t.read_at(fn_[(lG + it2sizes[lG]) - 1] - it2PreLoff, rG - it2PreRoff); break;
+              case 1:
+                sp3 += s.read_at(sp3spointer, fn_[(lG + it2sizes[lG]) - 1] - it2PreLoff);
+                break;
+              case 2:
+                sp3 += currentForestCost2 - (treesSwapped ? t2.prel_to_subtree_del_cost_[lG]
+                                                          : t2.prel_to_subtree_ins_cost_[lG]);
+                break; // TODO: USE COST MODEL - Insert G_{lG,rG}-G_lG.
+              case 3:
+                sp3 += t.read_at(fn_[(lG + it2sizes[lG]) - 1] - it2PreLoff, rG - it2PreRoff);
+                break;
               }
               if (sp3 < minCost) {
-                sp3 += (treesSwapped ? c_.ren(it2labels[lG], lFNode_label) : c_.ren(lFNode_label, it2labels[lG])); // TODO: USE COST MODEL - Rename the leftmost root nodes in F_{lF,rF} and G_{lG,rG}.
+                sp3 += (treesSwapped
+                            ? c_.ren(it2labels[lG], lFNode_label)
+                            : c_.ren(lFNode_label,
+                                     it2labels[lG])); // TODO: USE COST MODEL - Rename the leftmost
+                                                      // root nodes in F_{lF,rF} and G_{lG,rG}.
                 if (sp3 < minCost) {
                   minCost = sp3;
                 }
@@ -774,8 +845,9 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
             ++subproblem_counter_;
           }
         }
-        // `rGminus1_in_preL == parent_of_rG_in_preL` checks if rG is the rightmost child of its parent
-        // 
+        // `rGminus1_in_preL == parent_of_rG_in_preL` checks if rG is the rightmost child of its
+        // parent
+        //
         // NOTE: rG not only has to be rightmost child of its parent, but also
         //       the parent has to be within the current subtree - it is dealt
         //       by setting `rGminus1_in_preL = max`, and then
@@ -815,7 +887,8 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
       }
     }
     // Deal with nodes to the right of the path.
-    if (pathType == 0 || (pathType == 2 && rightPart) || (pathType == 2 && !leftPart && !rightPart)) {
+    if (pathType == 0 || (pathType == 2 && rightPart) ||
+        (pathType == 2 && !leftPart && !rightPart)) {
       if (startPathNode == -1) {
         lFfirst = endPathNode;
         rFfirst = it1preL_to_preR[endPathNode];
@@ -828,7 +901,7 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
       lGfirst = (lGlast + subtreeSize2) - 1;
       rFlast = it1preL_to_preR[endPathNode];
       fn_[fn_.size() - 1] = -1;
-      for (int i = currentSubtreePreL2; i < currentSubtreePreL2 + subtreeSize2; ++i){
+      for (int i = currentSubtreePreL2; i < currentSubtreePreL2 + subtreeSize2; ++i) {
         fn_[i] = -1;
         ft_[i] = -1;
       }
@@ -841,8 +914,8 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
         updateFnArray(t2.prer_to_ln_[rGfirst], rGfirst, it2preL_to_preR[currentSubtreePreL2]);
         updateFtArray(t2.prer_to_ln_[rGfirst], rGfirst);
         int lF = lFfirst;
-        lGminus1_in_preR = lG <= currentSubtreePreL2 ?
-          std::numeric_limits<int>::max() : it2preL_to_preR[lG - 1];
+        lGminus1_in_preR =
+            lG <= currentSubtreePreL2 ? std::numeric_limits<int>::max() : it2preL_to_preR[lG - 1];
         parent_of_lG = it2parents[lG];
         parent_of_lG_in_preR = parent_of_lG == -1 ? -1 : it2preL_to_preR[parent_of_lG];
         // Reset size and cost of forest if F.
@@ -854,11 +927,12 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
           } else if (t2.prel_to_children_[parent_of_lG][0] != lG) {
             rGlast = rGfirst;
           } else {
-            rGlast = it2preL_to_preR[parent_of_lG]+1;
+            rGlast = it2preL_to_preR[parent_of_lG] + 1;
           }
         } else {
-          rGlast = rGfirst == it2preL_to_preR[currentSubtreePreL2] ?
-              rGfirst : it2preL_to_preR[currentSubtreePreL2];
+          rGlast = rGfirst == it2preL_to_preR[currentSubtreePreL2]
+                       ? rGfirst
+                       : it2preL_to_preR[currentSubtreePreL2];
         }
         // Loop C' [1, Algorithm 3] - for all nodes to the right of the path node.
         for (int rF = rFfirst; rF >= rFlast; --rF) {
@@ -868,10 +942,17 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
           rF_in_preL = it1preR_to_preL[rF];
           // Increment size and cost of F forest by node rF.
           ++currentForestSize1;
-          currentForestCost1 += (treesSwapped ? c_.ins(t1.prel_to_label_id_[rF_in_preL]) : c_.del(t1.prel_to_label_id_[rF_in_preL])); // TODO: USE COST MODEL - sum up deletion cost of a forest.
+          currentForestCost1 +=
+              (treesSwapped
+                   ? c_.ins(t1.prel_to_label_id_[rF_in_preL])
+                   : c_.del(t1.prel_to_label_id_[rF_in_preL])); // TODO: USE COST MODEL - sum up
+                                                                // deletion cost of a forest.
           // Reset size and cost of G forest to G_lG.
           currentForestSize2 = it2sizes[lG];
-          currentForestCost2 = (treesSwapped ? t2.prel_to_subtree_del_cost_[lG] : t2.prel_to_subtree_ins_cost_[lG]); // TODO: USE COST MODEL - reset to subtree insertion cost.
+          currentForestCost2 =
+              (treesSwapped ? t2.prel_to_subtree_del_cost_[lG]
+                            : t2.prel_to_subtree_ins_cost_[lG]); // TODO: USE COST MODEL - reset to
+                                                                 // subtree insertion cost.
           rFSubtreeSize = it1sizes[rF_in_preL];
           if (startPathNode > 0) {
             rFIsConsecutiveNodeOfCurrentPathNode = startPathNode_in_preR - rF == 1;
@@ -882,14 +963,15 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
           }
           fForestIsTree = rF_in_preL == lF;
           const int rFNode_label = t1.prel_to_label_id_[rF_in_preL];
-          sp1spointer = (rF + 1) - it1PreRoff;//s[(rF + 1) - it1PreRoff];
-          sp2spointer = rF - it1PreRoff;//s[rF - it1PreRoff];
-          sp3spointer = 0;//s[0];
+          sp1spointer = (rF + 1) - it1PreRoff; // s[(rF + 1) - it1PreRoff];
+          sp2spointer = rF - it1PreRoff;       // s[rF - it1PreRoff];
+          sp3spointer = 0;                     // s[0];
           // TODO: Be careful with 0 in the line below.
-          sp3deltapointer = treesSwapped ? 0 : rF_in_preL;//treesSwapped ? null : delta[rF_in_preL];
-          swritepointer = rF - it1PreRoff;//s[rF - it1PreRoff];
-          sp1tpointer = lG - it2PreLoff;//t[lG - it2PreLoff];
-          sp3tpointer = lG - it2PreLoff;//t[lG - it2PreLoff];
+          sp3deltapointer =
+              treesSwapped ? 0 : rF_in_preL; // treesSwapped ? null : delta[rF_in_preL];
+          swritepointer = rF - it1PreRoff;   // s[rF - it1PreRoff];
+          sp1tpointer = lG - it2PreLoff;     // t[lG - it2PreLoff];
+          sp3tpointer = lG - it2PreLoff;     // t[lG - it2PreLoff];
           sp1source = 1;
           sp3source = 1;
           if (fForestIsTree) {
@@ -904,16 +986,21 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
             if (rFIsConsecutiveNodeOfCurrentPathNode) {
               sp1source = 2;
             }
-            sp3 = currentForestCost1 - (treesSwapped ? t1.prel_to_subtree_ins_cost_[rF_in_preL] : t1.prel_to_subtree_del_cost_[rF_in_preL]); // TODO: USE COST MODEL - Delete F_{lF,rF}-F_rF.
+            sp3 =
+                currentForestCost1 -
+                (treesSwapped ? t1.prel_to_subtree_ins_cost_[rF_in_preL]
+                              : t1.prel_to_subtree_del_cost_[rF_in_preL]); // TODO: USE COST MODEL -
+                                                                           // Delete F_{lF,rF}-F_rF.
             if (rFIsRightSiblingOfCurrentPathNode) {
               sp3source = 3;
             }
           }
           if (sp3source == 1) {
-            sp3spointer = (rF + rFSubtreeSize) - it1PreRoff;//s[(rF + rFSubtreeSize) - it1PreRoff];
+            sp3spointer = (rF + rFSubtreeSize) - it1PreRoff; // s[(rF + rFSubtreeSize) -
+                                                             // it1PreRoff];
           }
           if (currentForestSize2 == 1) {
-            sp2 = currentForestCost1;// TODO: USE COST MODEL - Delete F_{lF,rF}.
+            sp2 = currentForestCost1; // TODO: USE COST MODEL - Delete F_{lF,rF}.
           } else {
             sp2 = q_[rF];
           }
@@ -921,20 +1008,31 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
           rGfirst_in_preL = it2preR_to_preL[rGfirst];
           ++currentForestSize2;
           switch (sp1source) {
-            case 1: sp1 = s.read_at(sp1spointer, rG - it2PreRoff); break;
-            case 2: sp1 = t.read_at(sp1tpointer, rG - it2PreRoff); break;
-            case 3: sp1 = currentForestCost2; break; // TODO: USE COST MODEL - Insert G_{lG,rG}.
+          case 1:
+            sp1 = s.read_at(sp1spointer, rG - it2PreRoff);
+            break;
+          case 2:
+            sp1 = t.read_at(sp1tpointer, rG - it2PreRoff);
+            break;
+          case 3:
+            sp1 = currentForestCost2;
+            break; // TODO: USE COST MODEL - Insert G_{lG,rG}.
           }
-          sp1 += (treesSwapped ? c_.ins(rFNode_label) : c_.del(rFNode_label)); // TODO: USE COST MODEL - Delete rF.
+          sp1 += (treesSwapped ? c_.ins(rFNode_label)
+                               : c_.del(rFNode_label)); // TODO: USE COST MODEL - Delete rF.
           minCost = sp1;
-          sp2 += (treesSwapped ? c_.del(it2labels[rGfirst_in_preL]) : c_.ins(it2labels[rGfirst_in_preL])); // TODO: USE COST MODEL - Insert rG.
+          sp2 += (treesSwapped
+                      ? c_.del(it2labels[rGfirst_in_preL])
+                      : c_.ins(it2labels[rGfirst_in_preL])); // TODO: USE COST MODEL - Insert rG.
           if (sp2 < minCost) {
             minCost = sp2;
           }
           if (sp3 < minCost) {
-            sp3 += treesSwapped ? delta_.read_at(rGfirst_in_preL, rF_in_preL) : delta_.read_at(sp3deltapointer, rGfirst_in_preL);
+            sp3 += treesSwapped ? delta_.read_at(rGfirst_in_preL, rF_in_preL)
+                                : delta_.read_at(sp3deltapointer, rGfirst_in_preL);
             if (sp3 < minCost) {
-              sp3 += (treesSwapped ? c_.ren(it2labels[rGfirst_in_preL], rFNode_label) : c_.ren(rFNode_label, it2labels[rGfirst_in_preL]));
+              sp3 += (treesSwapped ? c_.ren(it2labels[rGfirst_in_preL], rFNode_label)
+                                   : c_.ren(rFNode_label, it2labels[rGfirst_in_preL]));
               if (sp3 < minCost) {
                 minCost = sp3;
               }
@@ -948,26 +1046,53 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
             rG_in_preL = it2preR_to_preL[rG];
             // Increment size and cost of G forest by node rG.
             ++currentForestSize2;
-            currentForestCost2 += (treesSwapped ? c_.del(it2labels[rG_in_preL]) : c_.ins(it2labels[rG_in_preL]));
+            currentForestCost2 +=
+                (treesSwapped ? c_.del(it2labels[rG_in_preL]) : c_.ins(it2labels[rG_in_preL]));
             switch (sp1source) {
-              case 1: sp1 = s.read_at(sp1spointer, rG - it2PreRoff) + (treesSwapped ? c_.ins(rFNode_label) : c_.del(rFNode_label)); break; // TODO: USE COST MODEL - Delete rF.
-              case 2: sp1 = t.read_at(sp1tpointer, rG - it2PreRoff) + (treesSwapped ? c_.ins(rFNode_label) : c_.del(rFNode_label)); break; // TODO: USE COST MODEL - Delete rF.
-              case 3: sp1 = currentForestCost2 + (treesSwapped ? c_.ins(rFNode_label) : c_.del(rFNode_label)); break; // TODO: USE COST MODEL - Insert G_{lG,rG} and delete rF.
+            case 1:
+              sp1 = s.read_at(sp1spointer, rG - it2PreRoff) +
+                    (treesSwapped ? c_.ins(rFNode_label) : c_.del(rFNode_label));
+              break; // TODO: USE COST MODEL - Delete rF.
+            case 2:
+              sp1 = t.read_at(sp1tpointer, rG - it2PreRoff) +
+                    (treesSwapped ? c_.ins(rFNode_label) : c_.del(rFNode_label));
+              break; // TODO: USE COST MODEL - Delete rF.
+            case 3:
+              sp1 =
+                  currentForestCost2 + (treesSwapped ? c_.ins(rFNode_label) : c_.del(rFNode_label));
+              break; // TODO: USE COST MODEL - Insert G_{lG,rG} and delete rF.
             }
-            sp2 = s.read_at(sp2spointer, fn_[rG] - it2PreRoff) + (treesSwapped ? c_.del(it2labels[rG_in_preL]) : c_.ins(it2labels[rG_in_preL])); // TODO: USE COST MODEL - Insert rG.
+            sp2 =
+                s.read_at(sp2spointer, fn_[rG] - it2PreRoff) +
+                (treesSwapped ? c_.del(it2labels[rG_in_preL])
+                              : c_.ins(it2labels[rG_in_preL])); // TODO: USE COST MODEL - Insert rG.
             minCost = sp1;
             if (sp2 < minCost) {
               minCost = sp2;
             }
-            sp3 = treesSwapped ? delta_.read_at(rG_in_preL, rF_in_preL) : delta_.read_at(sp3deltapointer, rG_in_preL);
+            sp3 = treesSwapped ? delta_.read_at(rG_in_preL, rF_in_preL)
+                               : delta_.read_at(sp3deltapointer, rG_in_preL);
             if (sp3 < minCost) {
               switch (sp3source) {
-                case 1: sp3 += s.read_at(sp3spointer, fn_[(rG + it2sizes[rG_in_preL]) - 1] - it2PreRoff); break;
-                case 2: sp3 += currentForestCost2 - (treesSwapped ? t2.prel_to_subtree_del_cost_[rG_in_preL] : t2.prel_to_subtree_ins_cost_[rG_in_preL]); break; // TODO: USE COST MODEL - Insert G_{lG,rG}-G_rG.
-                case 3: sp3 += t.read_at(sp3tpointer, fn_[(rG + it2sizes[rG_in_preL]) - 1] - it2PreRoff); break;
+              case 1:
+                sp3 += s.read_at(sp3spointer, fn_[(rG + it2sizes[rG_in_preL]) - 1] - it2PreRoff);
+                break;
+              case 2:
+                sp3 +=
+                    currentForestCost2 - (treesSwapped ? t2.prel_to_subtree_del_cost_[rG_in_preL]
+                                                       : t2.prel_to_subtree_ins_cost_[rG_in_preL]);
+                break; // TODO: USE COST MODEL - Insert G_{lG,rG}-G_rG.
+              case 3:
+                sp3 += t.read_at(sp3tpointer, fn_[(rG + it2sizes[rG_in_preL]) - 1] - it2PreRoff);
+                break;
               }
               if (sp3 < minCost) {
-                sp3 += (treesSwapped ? c_.ren(it2labels[rG_in_preL], rFNode_label) : c_.ren(rFNode_label, it2labels[rG_in_preL])); // TODO: USE COST MODEL - Rename rF to rG.
+                sp3 +=
+                    (treesSwapped
+                         ? c_.ren(it2labels[rG_in_preL], rFNode_label)
+                         : c_.ren(
+                               rFNode_label,
+                               it2labels[rG_in_preL])); // TODO: USE COST MODEL - Rename rF to rG.
                 if (sp3 < minCost) {
                   minCost = sp3;
                 }
@@ -981,16 +1106,21 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
         if (lG > currentSubtreePreL2 && lG - 1 == parent_of_lG) {
           if (rightPart) {
             if (treesSwapped) {
-              delta_.at(parent_of_lG, endPathNode) = s.read_at((rFlast + 1) - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
+              delta_.at(parent_of_lG, endPathNode) =
+                  s.read_at((rFlast + 1) - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
             } else {
-              delta_.at(endPathNode, parent_of_lG) = s.read_at((rFlast + 1) - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
+              delta_.at(endPathNode, parent_of_lG) =
+                  s.read_at((rFlast + 1) - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
             }
           }
-          if (endPathNode > 0 && endPathNode == parent_of_endPathNode + 1 && endPathNode_in_preR == parent_of_endPathNode_in_preR + 1) {
+          if (endPathNode > 0 && endPathNode == parent_of_endPathNode + 1 &&
+              endPathNode_in_preR == parent_of_endPathNode_in_preR + 1) {
             if (treesSwapped) {
-              delta_.at(parent_of_lG, parent_of_endPathNode) = s.read_at(rFlast - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
+              delta_.at(parent_of_lG, parent_of_endPathNode) =
+                  s.read_at(rFlast - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
             } else {
-              delta_.at(parent_of_endPathNode, parent_of_lG) = s.read_at(rFlast - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
+              delta_.at(parent_of_endPathNode, parent_of_lG) =
+                  s.read_at(rFlast - it1PreRoff, (lGminus1_in_preR + 1) - it2PreRoff);
             }
           }
           for (int rF = rFfirst; rF >= rFlast; --rF) {
@@ -1012,9 +1142,9 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfA(const TreeIndex& t1,
 }
 
 template <typename CostModel, typename TreeIndex>
-double APTEDTreeIndex<CostModel, TreeIndex>::spfL(const TreeIndex& t1,
-    int t1_current_subtree, const TreeIndex& t2,
-    int t2_current_subtree, bool treesSwapped) {
+double APTEDTreeIndex<CostModel, TreeIndex>::spfL(const TreeIndex &t1, int t1_current_subtree,
+                                                  const TreeIndex &t2, int t2_current_subtree,
+                                                  bool treesSwapped) {
   // Initialise the array to store the keyroot nodes in the right-hand input
   // subtree.
   std::vector<int> keyRoots(t2.prel_to_size_[t2_current_subtree]);
@@ -1028,22 +1158,26 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfL(const TreeIndex& t1,
   // than the number of keyroot nodes.
   int firstKeyRoot = computeKeyRoots(t2, t2_current_subtree, pathID, keyRoots, 0);
   // Initialise an array to store intermediate distances for subforest pairs.
-  data_structures::Matrix<double> forestdist(t1.prel_to_size_[t1_current_subtree]+1, t2.prel_to_size_[t2_current_subtree]+1);
+  data_structures::Matrix<double> forestdist(t1.prel_to_size_[t1_current_subtree] + 1,
+                                             t2.prel_to_size_[t2_current_subtree] + 1);
   // Compute the distances between pairs of keyroot nodes. In the left-hand
   // input subtree only the root is the keyroot. Thus, we compute the distance
   // between the left-hand input subtree and all keyroot nodes in the
   // right-hand input subtree.
-  for (int i = firstKeyRoot-1; i >= 0; --i) {
+  for (int i = firstKeyRoot - 1; i >= 0; --i) {
     treeEditDist(t1, t2, t1_current_subtree, keyRoots[i], forestdist, treesSwapped);
   }
   // Return the distance between the input subtrees.
-  // std::cout << "spfL = " << forestdist.read_at(ni_1.preL_to_size_[ni_1.get_current_node()], ni_2.preL_to_size_[ni_2.get_current_node()]) << std::endl;
-  return forestdist.read_at(t1.prel_to_size_[t1_current_subtree], t2.prel_to_size_[t2_current_subtree]);
+  // std::cout << "spfL = " << forestdist.read_at(ni_1.preL_to_size_[ni_1.get_current_node()],
+  // ni_2.preL_to_size_[ni_2.get_current_node()]) << std::endl;
+  return forestdist.read_at(t1.prel_to_size_[t1_current_subtree],
+                            t2.prel_to_size_[t2_current_subtree]);
 }
 
 template <typename CostModel, typename TreeIndex>
-int APTEDTreeIndex<CostModel, TreeIndex>::computeKeyRoots(const TreeIndex& t2,
-    int subtreeRootNode, int pathID, std::vector<int>& keyRoots, int index) {
+int APTEDTreeIndex<CostModel, TreeIndex>::computeKeyRoots(const TreeIndex &t2, int subtreeRootNode,
+                                                          int pathID, std::vector<int> &keyRoots,
+                                                          int index) {
   // The subtreeRootNode is a keyroot node. Add it to keyRoots.
   keyRoots[index] = subtreeRootNode;
   // Increment the index to know where to store the next keyroot node.
@@ -1056,8 +1190,10 @@ int APTEDTreeIndex<CostModel, TreeIndex>::computeKeyRoots(const TreeIndex& t2,
     // For each sibling to the right of pathNode, execute this method recursively.
     // Each right sibling of pathNode is a keyroot node.
     for (int child : t2.prel_to_children_[parent]) {
-      // Execute computeKeyRoots recursively for the new subtree rooted at child and child's leftmost leaf node.
-      if (child != pathNode) index = computeKeyRoots(t2, child, t2.prel_to_lld_[child], keyRoots, index);
+      // Execute computeKeyRoots recursively for the new subtree rooted at child and child's
+      // leftmost leaf node.
+      if (child != pathNode)
+        index = computeKeyRoots(t2, child, t2.prel_to_lld_[child], keyRoots, index);
     }
     // Walk up.
     pathNode = parent;
@@ -1066,9 +1202,10 @@ int APTEDTreeIndex<CostModel, TreeIndex>::computeKeyRoots(const TreeIndex& t2,
 }
 
 template <typename CostModel, typename TreeIndex>
-void APTEDTreeIndex<CostModel, TreeIndex>::treeEditDist(const TreeIndex& t1,
-    const TreeIndex& t2, int it1subtree, int it2subtree,
-    data_structures::Matrix<double>& forestdist, bool treesSwapped) {
+void APTEDTreeIndex<CostModel, TreeIndex>::treeEditDist(const TreeIndex &t1, const TreeIndex &t2,
+                                                        int it1subtree, int it2subtree,
+                                                        data_structures::Matrix<double> &forestdist,
+                                                        bool treesSwapped) {
   // Translate input subtree root nodes to left-to-right postorder.
   int i = t1.prel_to_postl_[it1subtree];
   int j = t2.prel_to_postl_[it2subtree];
@@ -1087,10 +1224,18 @@ void APTEDTreeIndex<CostModel, TreeIndex>::treeEditDist(const TreeIndex& t1,
   // relevant subforest.
   forestdist.at(0, 0) = 0;
   for (int i1 = 1; i1 <= i - ioff; ++i1) {
-    forestdist.at(i1, 0) = forestdist.read_at(i1 - 1, 0) + (treesSwapped ? c_.ins(t1.postl_to_label_id_[i1 + ioff]) : c_.del(t1.postl_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
+    forestdist.at(i1, 0) =
+        forestdist.read_at(i1 - 1, 0) +
+        (treesSwapped
+             ? c_.ins(t1.postl_to_label_id_[i1 + ioff])
+             : c_.del(t1.postl_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
   }
   for (int j1 = 1; j1 <= j - joff; ++j1) {
-    forestdist.at(0, j1) = forestdist.read_at(0, j1 - 1) + (treesSwapped ? c_.del(t2.postl_to_label_id_[j1 + joff]) : c_.ins(t2.postl_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
+    forestdist.at(0, j1) =
+        forestdist.read_at(0, j1 - 1) +
+        (treesSwapped
+             ? c_.del(t2.postl_to_label_id_[j1 + joff])
+             : c_.ins(t2.postl_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
   }
   // Fill in the remaining costs.
   for (int i1 = 1; i1 <= i - ioff; ++i1) {
@@ -1098,21 +1243,39 @@ void APTEDTreeIndex<CostModel, TreeIndex>::treeEditDist(const TreeIndex& t1,
       // Increment the number of subproblems.
       ++subproblem_counter_;
       // Calculate partial distance values for this subproblem.
-      double u = (treesSwapped ? c_.ren(t2.postl_to_label_id_[j1 + joff], t1.postl_to_label_id_[i1 + ioff]) : c_.ren(t1.postl_to_label_id_[i1 + ioff], t2.postl_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - rename i1 to j1.
-      da = forestdist.read_at(i1 - 1, j1) + (treesSwapped ? c_.ins(t1.postl_to_label_id_[i1 + ioff]) : c_.del(t1.postl_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
-      db = forestdist.read_at(i1, j1 - 1) + (treesSwapped ? c_.del(t2.postl_to_label_id_[j1 + joff]) : c_.ins(t2.postl_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
+      double u =
+          (treesSwapped
+               ? c_.ren(t2.postl_to_label_id_[j1 + joff], t1.postl_to_label_id_[i1 + ioff])
+               : c_.ren(
+                     t1.postl_to_label_id_[i1 + ioff],
+                     t2.postl_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - rename i1 to j1.
+      da = forestdist.read_at(i1 - 1, j1) +
+           (treesSwapped
+                ? c_.ins(t1.postl_to_label_id_[i1 + ioff])
+                : c_.del(t1.postl_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
+      db = forestdist.read_at(i1, j1 - 1) +
+           (treesSwapped
+                ? c_.del(t2.postl_to_label_id_[j1 + joff])
+                : c_.ins(t2.postl_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
       // If current subforests are subtrees.
-      if (t1.postl_to_lld_[i1 + ioff] == t1.postl_to_lld_[i] && t2.postl_to_lld_[j1 + joff] == t2.postl_to_lld_[j]) {
+      if (t1.postl_to_lld_[i1 + ioff] == t1.postl_to_lld_[i] &&
+          t2.postl_to_lld_[j1 + joff] == t2.postl_to_lld_[j]) {
         dc = forestdist.read_at(i1 - 1, j1 - 1) + u;
         // Store the relevant distance value in delta array.
         if (treesSwapped) {
-          delta_.at(t2.postl_to_prel_[j1 + joff], t1.postl_to_prel_[i1 + ioff]) = forestdist.read_at(i1 - 1, j1 - 1);
+          delta_.at(t2.postl_to_prel_[j1 + joff], t1.postl_to_prel_[i1 + ioff]) =
+              forestdist.read_at(i1 - 1, j1 - 1);
         } else {
-          delta_.at(t1.postl_to_prel_[i1 + ioff], t2.postl_to_prel_[j1 + joff]) = forestdist.read_at(i1 - 1, j1 - 1);
+          delta_.at(t1.postl_to_prel_[i1 + ioff], t2.postl_to_prel_[j1 + joff]) =
+              forestdist.read_at(i1 - 1, j1 - 1);
         }
       } else {
-        dc = forestdist.read_at(t1.postl_to_lld_[i1 + ioff] - 1 - ioff, t2.postl_to_lld_[j1 + joff] - 1 - joff) +
-          (treesSwapped ? delta_.read_at(t2.postl_to_prel_[j1 + joff], t1.postl_to_prel_[i1 + ioff]) : delta_.read_at(t1.postl_to_prel_[i1 + ioff], t2.postl_to_prel_[j1 + joff])) + u;
+        dc = forestdist.read_at(t1.postl_to_lld_[i1 + ioff] - 1 - ioff,
+                                t2.postl_to_lld_[j1 + joff] - 1 - joff) +
+             (treesSwapped
+                  ? delta_.read_at(t2.postl_to_prel_[j1 + joff], t1.postl_to_prel_[i1 + ioff])
+                  : delta_.read_at(t1.postl_to_prel_[i1 + ioff], t2.postl_to_prel_[j1 + joff])) +
+             u;
       }
       // Calculate final minimum.
       forestdist.at(i1, j1) = da >= db ? db >= dc ? dc : db : da >= dc ? dc : da;
@@ -1121,9 +1284,9 @@ void APTEDTreeIndex<CostModel, TreeIndex>::treeEditDist(const TreeIndex& t1,
 }
 
 template <typename CostModel, typename TreeIndex>
-double APTEDTreeIndex<CostModel, TreeIndex>::spfR(const TreeIndex& t1,
-    int t1_current_subtree, const TreeIndex& t2,
-    int t2_current_subtree, bool treesSwapped) {
+double APTEDTreeIndex<CostModel, TreeIndex>::spfR(const TreeIndex &t1, int t1_current_subtree,
+                                                  const TreeIndex &t2, int t2_current_subtree,
+                                                  bool treesSwapped) {
   // Initialise the array to store the keyroot nodes in the right-hand input
   // subtree.
   std::vector<int> revKeyRoots(t2.prel_to_size_[t2_current_subtree]);
@@ -1137,23 +1300,27 @@ double APTEDTreeIndex<CostModel, TreeIndex>::spfR(const TreeIndex& t1,
   // than the number of keyroot nodes.
   int firstKeyRoot = computeRevKeyRoots(t2, t2_current_subtree, pathID, revKeyRoots, 0);
   // Initialise an array to store intermediate distances for subforest pairs.
-  data_structures::Matrix<double> forestdist(t1.prel_to_size_[t1_current_subtree]+1, t2.prel_to_size_[t2_current_subtree]+1);
+  data_structures::Matrix<double> forestdist(t1.prel_to_size_[t1_current_subtree] + 1,
+                                             t2.prel_to_size_[t2_current_subtree] + 1);
   // Compute the distances between pairs of keyroot nodes. In the left-hand
   // input subtree only the root is the keyroot. Thus, we compute the distance
   // between the left-hand input subtree and all keyroot nodes in the
   // right-hand input subtree.
-  for (int i = firstKeyRoot-1; i >= 0; --i) {
+  for (int i = firstKeyRoot - 1; i >= 0; --i) {
     revTreeEditDist(t1, t2, t1_current_subtree, revKeyRoots[i], forestdist, treesSwapped);
   }
   // Return the distance between the input subtrees.
-  // std::cout << "spfR = " << forestdist.read_at(ni_1.preL_to_size_[ni_1.get_current_node()], ni_2.preL_to_size_[ni_2.get_current_node()]) << std::endl;
-  return forestdist.read_at(t1.prel_to_size_[t1_current_subtree], t2.prel_to_size_[t2_current_subtree]);
+  // std::cout << "spfR = " << forestdist.read_at(ni_1.preL_to_size_[ni_1.get_current_node()],
+  // ni_2.preL_to_size_[ni_2.get_current_node()]) << std::endl;
+  return forestdist.read_at(t1.prel_to_size_[t1_current_subtree],
+                            t2.prel_to_size_[t2_current_subtree]);
 }
 
 template <typename CostModel, typename TreeIndex>
-int APTEDTreeIndex<CostModel, TreeIndex>::computeRevKeyRoots(
-    const TreeIndex& t2, int subtreeRootNode, int pathID,
-    std::vector<int>& revKeyRoots, int index) {
+int APTEDTreeIndex<CostModel, TreeIndex>::computeRevKeyRoots(const TreeIndex &t2,
+                                                             int subtreeRootNode, int pathID,
+                                                             std::vector<int> &revKeyRoots,
+                                                             int index) {
   // The subtreeRootNode is a keyroot node. Add it to keyRoots.
   revKeyRoots[index] = subtreeRootNode;
   // Increment the index to know where to store the next keyroot node.
@@ -1166,7 +1333,8 @@ int APTEDTreeIndex<CostModel, TreeIndex>::computeRevKeyRoots(
     // For each sibling to the left of pathNode, execute this method recursively.
     // Each left sibling of pathNode is a keyroot node.
     for (int child : t2.prel_to_children_[parent]) {
-      // Execute computeRevKeyRoots recursively for the new subtree rooted at child and child's rightmost leaf node.
+      // Execute computeRevKeyRoots recursively for the new subtree rooted at child and child's
+      // rightmost leaf node.
       if (child != pathNode) {
         index = computeRevKeyRoots(t2, child, t2.prel_to_rld_[child], revKeyRoots, index);
       }
@@ -1178,9 +1346,9 @@ int APTEDTreeIndex<CostModel, TreeIndex>::computeRevKeyRoots(
 }
 
 template <typename CostModel, typename TreeIndex>
-void APTEDTreeIndex<CostModel, TreeIndex>::revTreeEditDist(const TreeIndex& t1,
-    const TreeIndex& t2, int it1subtree, int it2subtree,
-    data_structures::Matrix<double>& forestdist, bool treesSwapped) {
+void APTEDTreeIndex<CostModel, TreeIndex>::revTreeEditDist(
+    const TreeIndex &t1, const TreeIndex &t2, int it1subtree, int it2subtree,
+    data_structures::Matrix<double> &forestdist, bool treesSwapped) {
   // Translate input subtree root nodes to right-to-left postorder.
   int i = t1.prel_to_postr_[it1subtree];
   int j = t2.prel_to_postr_[it2subtree];
@@ -1197,12 +1365,20 @@ void APTEDTreeIndex<CostModel, TreeIndex>::revTreeEditDist(const TreeIndex& t1,
   float dc = 0;
   // Initialize forestdist array with deletion and insertion costs of each
   // relevant subforest.
-  forestdist.at(0,0) = 0;
+  forestdist.at(0, 0) = 0;
   for (int i1 = 1; i1 <= i - ioff; ++i1) {
-    forestdist.at(i1, 0) = forestdist.read_at(i1 - 1, 0) + (treesSwapped ? c_.ins(t1.postr_to_label_id_[i1 + ioff]) : c_.del(t1.postr_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
+    forestdist.at(i1, 0) =
+        forestdist.read_at(i1 - 1, 0) +
+        (treesSwapped
+             ? c_.ins(t1.postr_to_label_id_[i1 + ioff])
+             : c_.del(t1.postr_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
   }
   for (int j1 = 1; j1 <= j - joff; ++j1) {
-    forestdist.at(0, j1) = forestdist.read_at(0, j1 - 1) + (treesSwapped ? c_.del(t2.postr_to_label_id_[j1 + joff]) : c_.ins(t2.postr_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
+    forestdist.at(0, j1) =
+        forestdist.read_at(0, j1 - 1) +
+        (treesSwapped
+             ? c_.del(t2.postr_to_label_id_[j1 + joff])
+             : c_.ins(t2.postr_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
   }
   // Fill in the remaining costs.
   for (int i1 = 1; i1 <= i - ioff; ++i1) {
@@ -1210,21 +1386,39 @@ void APTEDTreeIndex<CostModel, TreeIndex>::revTreeEditDist(const TreeIndex& t1,
       // Increment the number of subproblems.
       ++subproblem_counter_;
       // Calculate partial distance values for this subproblem.
-      float u = (treesSwapped ? c_.ren(t2.postr_to_label_id_[j1 + joff], t1.postr_to_label_id_[i1 + ioff]) : c_.ren(t1.postr_to_label_id_[i1 + ioff], t2.postr_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - rename i1 to j1.
-      da = forestdist.read_at(i1 - 1, j1) + (treesSwapped ? c_.ins(t1.postr_to_label_id_[i1 + ioff]) : c_.del(t1.postr_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
-      db = forestdist.read_at(i1, j1 - 1) + (treesSwapped ? c_.del(t2.postr_to_label_id_[j1 + joff]) : c_.ins(t2.postr_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
+      float u =
+          (treesSwapped
+               ? c_.ren(t2.postr_to_label_id_[j1 + joff], t1.postr_to_label_id_[i1 + ioff])
+               : c_.ren(
+                     t1.postr_to_label_id_[i1 + ioff],
+                     t2.postr_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - rename i1 to j1.
+      da = forestdist.read_at(i1 - 1, j1) +
+           (treesSwapped
+                ? c_.ins(t1.postr_to_label_id_[i1 + ioff])
+                : c_.del(t1.postr_to_label_id_[i1 + ioff])); // TODO: USE COST MODEL - delete i1.
+      db = forestdist.read_at(i1, j1 - 1) +
+           (treesSwapped
+                ? c_.del(t2.postr_to_label_id_[j1 + joff])
+                : c_.ins(t2.postr_to_label_id_[j1 + joff])); // TODO: USE COST MODEL - insert j1.
       // If current subforests are subtrees.
-      if (t1.postr_to_rld_[i1 + ioff] == t1.postr_to_rld_[i] && t2.postr_to_rld_[j1 + joff] == t2.postr_to_rld_[j]) {
+      if (t1.postr_to_rld_[i1 + ioff] == t1.postr_to_rld_[i] &&
+          t2.postr_to_rld_[j1 + joff] == t2.postr_to_rld_[j]) {
         dc = forestdist.read_at(i1 - 1, j1 - 1) + u;
         // Store the relevant distance value in delta array.
         if (treesSwapped) {
-          delta_.at(t2.postr_to_prel_[j1+joff], t1.postr_to_prel_[i1+ioff]) = forestdist.read_at(i1 - 1, j1 - 1);
+          delta_.at(t2.postr_to_prel_[j1 + joff], t1.postr_to_prel_[i1 + ioff]) =
+              forestdist.read_at(i1 - 1, j1 - 1);
         } else {
-          delta_.at(t1.postr_to_prel_[i1+ioff], t2.postr_to_prel_[j1+joff]) = forestdist.read_at(i1 - 1, j1 - 1);
+          delta_.at(t1.postr_to_prel_[i1 + ioff], t2.postr_to_prel_[j1 + joff]) =
+              forestdist.read_at(i1 - 1, j1 - 1);
         }
       } else {
-        dc = forestdist.read_at(t1.postr_to_rld_[i1 + ioff] - 1 - ioff, t2.postr_to_rld_[j1 + joff] - 1 - joff) +
-          (treesSwapped ? delta_.read_at(t2.postr_to_prel_[j1 + joff], t1.postr_to_prel_[i1 + ioff]) : delta_.read_at(t1.postr_to_prel_[i1 + ioff], t2.postr_to_prel_[j1 + joff])) + u;
+        dc = forestdist.read_at(t1.postr_to_rld_[i1 + ioff] - 1 - ioff,
+                                t2.postr_to_rld_[j1 + joff] - 1 - joff) +
+             (treesSwapped
+                  ? delta_.read_at(t2.postr_to_prel_[j1 + joff], t1.postr_to_prel_[i1 + ioff])
+                  : delta_.read_at(t1.postr_to_prel_[i1 + ioff], t2.postr_to_prel_[j1 + joff])) +
+             u;
       }
       // Calculate final minimum.
       forestdist.at(i1, j1) = da >= db ? db >= dc ? dc : db : da >= dc ? dc : da;
@@ -1233,11 +1427,11 @@ void APTEDTreeIndex<CostModel, TreeIndex>::revTreeEditDist(const TreeIndex& t1,
   }
 }
 
-
 template <typename CostModel, typename TreeIndex>
-int APTEDTreeIndex<CostModel, TreeIndex>::get_strategy_path_type(
-    int pathIDWithPathIDOffset, int pathIDOffset, int currentRootNodePreL,
-    int currentSubtreeSize) {
+int APTEDTreeIndex<CostModel, TreeIndex>::get_strategy_path_type(int pathIDWithPathIDOffset,
+                                                                 int pathIDOffset,
+                                                                 int currentRootNodePreL,
+                                                                 int currentSubtreeSize) {
   // if (Integer.signum(pathIDWithPathIDOffset) == -1) {
   if (pathIDWithPathIDOffset < 0) {
     return 0;
@@ -1253,8 +1447,8 @@ int APTEDTreeIndex<CostModel, TreeIndex>::get_strategy_path_type(
 }
 
 template <typename CostModel, typename TreeIndex>
-void APTEDTreeIndex<CostModel, TreeIndex>::updateFnArray(int lnForNode,
-    int node, int currentSubtreePreL) {
+void APTEDTreeIndex<CostModel, TreeIndex>::updateFnArray(int lnForNode, int node,
+                                                         int currentSubtreePreL) {
   if (lnForNode >= currentSubtreePreL) {
     fn_[node] = fn_[lnForNode];
     fn_[lnForNode] = node;
@@ -1265,10 +1459,9 @@ void APTEDTreeIndex<CostModel, TreeIndex>::updateFnArray(int lnForNode,
 }
 
 template <typename CostModel, typename TreeIndex>
-void APTEDTreeIndex<CostModel, TreeIndex>::updateFtArray(int lnForNode,
-    int node) {
+void APTEDTreeIndex<CostModel, TreeIndex>::updateFtArray(int lnForNode, int node) {
   ft_[node] = lnForNode;
-  if(fn_[node] > -1) {
+  if (fn_[node] > -1) {
     ft_[fn_[node]] = node;
   }
 }

@@ -33,11 +33,11 @@
 
 #pragma once
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <random>
 #include "../parser/bracket_notation_parser.h"
+#include <iostream>
+#include <random>
+#include <string>
+#include <vector>
 
 namespace tree_generator {
 
@@ -57,7 +57,7 @@ public:
   /// \param ratio = |alphabet| / tree_size.
   /// \return Vector of random string labels.
   std::vector<std::string> generate_random_alphabet(unsigned int tree_size,
-      unsigned int label_length, double ratio);
+                                                    unsigned int label_length, double ratio);
   /// Modifies a tree passed in bracket notation with the given number of edit
   /// operations.
   /// Currently, rename and deletion is implemented.
@@ -71,7 +71,8 @@ public:
   /// \param tree_size Number of nodes in the tree.
   /// \param num_edits Number of edit operations to apply.
   /// \return A modified tree in bracket notation.
-  std::string modify_tree(std::string& tree_string, int tree_size, int num_edits);
+  std::string modify_tree(std::string &tree_string, int tree_size, int num_edits);
+
 private:
   /// Structure brackets for representing nodes relationships.
   const std::string kLeftBracket = "{";
@@ -83,4 +84,4 @@ private:
 // Implementation details
 #include "simple_tree_generator_impl.h"
 
-};
+}; // namespace tree_generator

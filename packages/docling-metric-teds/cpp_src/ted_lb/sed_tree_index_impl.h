@@ -24,11 +24,11 @@
 #pragma once
 
 template <typename CostModel, typename TreeIndex>
-double SEDTreeIndex<CostModel, TreeIndex>::ted(const TreeIndex& t1, const TreeIndex& t2) {
-      
+double SEDTreeIndex<CostModel, TreeIndex>::ted(const TreeIndex &t1, const TreeIndex &t2) {
+
   // Reset subproblem counter.
   subproblem_counter_ = 0;
-  
+
   // TODO: Swap input trees for memory optimisation, as below.
   // if (x.length() > y.length()) {
   //   String tmp = x;
@@ -37,10 +37,10 @@ double SEDTreeIndex<CostModel, TreeIndex>::ted(const TreeIndex& t1, const TreeIn
   // }
   const int kT1Size = t1.tree_size_;
   const int kT2Size = t2.tree_size_;
-  
+
   std::vector<double> cp(kT2Size + 1);
   std::vector<double> cc(kT2Size + 1);
-  
+
   // Edit distance on postorder traversal.
   for (int j = 0; j <= kT2Size; ++j) {
     cp[j] = j;
@@ -51,16 +51,12 @@ double SEDTreeIndex<CostModel, TreeIndex>::ted(const TreeIndex& t1, const TreeIn
       ++subproblem_counter_;
       unsigned int c1 = t1.postl_to_label_id_[i - 1];
       unsigned int c2 = t2.postl_to_label_id_[j - 1];
-      cc[j] = std::min({
-          cp[j - 1] + ((c1 == c2) ? 0 : 1),
-          cc[j - 1] + 1,
-          cp[j] + 1
-          });
+      cc[j] = std::min({cp[j - 1] + ((c1 == c2) ? 0 : 1), cc[j - 1] + 1, cp[j] + 1});
     }
     std::swap(cp, cc);
   }
   double sed_post = cp[kT2Size];
-  
+
   // Edit distance on preorder traversal.
   for (int j = 0; j <= kT2Size; ++j) {
     cp[j] = j;
@@ -71,15 +67,11 @@ double SEDTreeIndex<CostModel, TreeIndex>::ted(const TreeIndex& t1, const TreeIn
       ++subproblem_counter_;
       unsigned int c1 = t1.prel_to_label_id_[i - 1];
       unsigned int c2 = t2.prel_to_label_id_[j - 1];
-      cc[j] = std::min({
-          cp[j - 1] + ((c1 == c2) ? 0 : 1),
-          cc[j - 1] + 1,
-          cp[j] + 1
-          });
+      cc[j] = std::min({cp[j - 1] + ((c1 == c2) ? 0 : 1), cc[j - 1] + 1, cp[j] + 1});
     }
     std::swap(cp, cc);
   }
   double sed_pre = cp[kT2Size];
-  
+
   return std::max(sed_post, sed_pre); // note: cc is asigned to cp, cc is overwritten!
 }

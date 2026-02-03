@@ -35,52 +35,52 @@ HJoinTI<Label, VerificationAlgorithm>::HJoinTI() {
 
 template <typename Label, typename VerificationAlgorithm>
 void HJoinTI<Label, VerificationAlgorithm>::execute_join(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& label_histogram_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& degree_histogram_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& leaf_distance_histogram_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result,
+    std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &label_histogram_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &degree_histogram_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &leaf_distance_histogram_collection,
+    std::vector<std::pair<int, int>> &candidates, std::vector<join::JoinResultElement> &join_result,
     const double distance_threshold) {
 
   // Convert trees to leaf distance, label, and degree histograms.
-  convert_trees_to_histograms(trees_collection, label_histogram_collection, degree_histogram_collection, leaf_distance_histogram_collection);
+  convert_trees_to_histograms(trees_collection, label_histogram_collection,
+                              degree_histogram_collection, leaf_distance_histogram_collection);
 
   // Retrieves candidates from the candidate index.
-  retrieve_candidates(label_histogram_collection, degree_histogram_collection, leaf_distance_histogram_collection, candidates, distance_threshold);
+  retrieve_candidates(label_histogram_collection, degree_histogram_collection,
+                      leaf_distance_histogram_collection, candidates, distance_threshold);
 
   // Verify all computed join candidates and return the join result.
   verify_candidates(trees_collection, candidates, join_result, distance_threshold);
 }
 
-
 template <typename Label, typename VerificationAlgorithm>
 void HJoinTI<Label, VerificationAlgorithm>::convert_trees_to_histograms(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& label_histogram_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& degree_histogram_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& leaf_distance_histogram_collection) {
+    std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &label_histogram_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &degree_histogram_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &leaf_distance_histogram_collection) {
 
   // Convert trees to histograms and get the result.
   histogram_converter::Converter<Label> hc;
-  hc.create_histogram(trees_collection, label_histogram_collection, degree_histogram_collection, leaf_distance_histogram_collection);
+  hc.create_histogram(trees_collection, label_histogram_collection, degree_histogram_collection,
+                      leaf_distance_histogram_collection);
   il_size_ = hc.get_number_of_labels();
 }
 
 template <typename Label, typename VerificationAlgorithm>
 void HJoinTI<Label, VerificationAlgorithm>::retrieve_candidates(
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& label_histogram_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& degree_histogram_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& leaf_distance_histogram_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    const double distance_threshold) {
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &label_histogram_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &degree_histogram_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &leaf_distance_histogram_collection,
+    std::vector<std::pair<int, int>> &candidates, const double distance_threshold) {
 
   // Initialize candidate index.
   histo_candidate_index::CandidateIndex c_index;
 
   // Retrieve candidates from the candidate index.
-  c_index.lookup(label_histogram_collection, degree_histogram_collection, leaf_distance_histogram_collection, 
-      candidates, il_size_, distance_threshold);
+  c_index.lookup(label_histogram_collection, degree_histogram_collection,
+                 leaf_distance_histogram_collection, candidates, il_size_, distance_threshold);
 
   // Copy the number of pre-candidates.
   pre_candidates_ = c_index.get_number_of_pre_candidates();
@@ -90,10 +90,8 @@ void HJoinTI<Label, VerificationAlgorithm>::retrieve_candidates(
 
 template <typename Label, typename VerificationAlgorithm>
 void HJoinTI<Label, VerificationAlgorithm>::verify_candidates(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result,
-    const double distance_threshold) {
+    std::vector<node::Node<Label>> &trees_collection, std::vector<std::pair<int, int>> &candidates,
+    std::vector<join::JoinResultElement> &join_result, const double distance_threshold) {
 
   label::LabelDictionary<Label> ld;
   typename VerificationAlgorithm::AlgsCostModel cm(ld);
@@ -102,11 +100,11 @@ void HJoinTI<Label, VerificationAlgorithm>::verify_candidates(
   typename VerificationAlgorithm::AlgsTreeIndex ti_2;
 
   // Verify each pair in the candidate set
-  for(const auto& pair: candidates) {
+  for (const auto &pair : candidates) {
     node::index_tree(ti_1, trees_collection[pair.first], ld, cm);
     node::index_tree(ti_2, trees_collection[pair.second], ld, cm);
     double ted_value = ted_algorithm.ted_k(ti_1, ti_2, distance_threshold);
-    if(ted_value <= distance_threshold)
+    if (ted_value <= distance_threshold)
       join_result.emplace_back(pair.first, pair.second, ted_value);
     // Sum up all number of subproblems
     sum_subproblem_counter_ += ted_algorithm.get_subproblem_count();
@@ -114,8 +112,7 @@ void HJoinTI<Label, VerificationAlgorithm>::verify_candidates(
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int
-    HJoinTI<Label, VerificationAlgorithm>::get_number_of_pre_candidates() const {
+long long int HJoinTI<Label, VerificationAlgorithm>::get_number_of_pre_candidates() const {
   return pre_candidates_;
 }
 
@@ -125,7 +122,6 @@ long long int HJoinTI<Label, VerificationAlgorithm>::get_subproblem_count() cons
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int
-    HJoinTI<Label, VerificationAlgorithm>::get_number_of_il_lookups() const {
+long long int HJoinTI<Label, VerificationAlgorithm>::get_number_of_il_lookups() const {
   return il_lookups_;
 }

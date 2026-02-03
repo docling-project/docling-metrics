@@ -21,16 +21,16 @@
 
 #pragma once
 
-#include <vector>
 #include "../../node/node.h"
 #include "../../node/tree_indexer.h"
 #include "../lookup_result_element.h"
 #include <iostream>
+#include <vector>
 
 namespace lookup {
 
 /**
- * Implements a scan lookup algorithm for a given verification and upper bound 
+ * Implements a scan lookup algorithm for a given verification and upper bound
  * algorithm.
  */
 template <typename Label, typename VerificationAlgorithm, typename UpperBound>
@@ -38,7 +38,7 @@ class VerificationUBkScan {
 
 public:
   VerificationUBkScan();
-  
+
   /// Executes the lookup algorithm.
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -46,16 +46,16 @@ public:
    *                           differs two trees in the lookup's result set.
    * \return A vector with the lookup result.
    */
-  std::vector<lookup::LookupResultElement> execute_lookup(
-      std::vector<node::Node<Label>>& trees_collection,
-      unsigned int query_tree_id, const double distance_threshold);
-  
+  std::vector<lookup::LookupResultElement>
+  execute_lookup(std::vector<node::Node<Label>> &trees_collection, unsigned int query_tree_id,
+                 const double distance_threshold);
+
   /// Returns the summed subproblem count of JEDI algorithm executions.
   /**
    * \return sum_subproblem_counter_
    */
   long long int get_subproblem_count() const;
-  
+
   /// Returns the number of verifications.
   /**
    * \return verfications_
@@ -72,12 +72,11 @@ private:
 /**
  * Implements a scan lookup algorithm for a given verification.
  */
-template <typename Label, typename VerificationAlgorithm>
-class VerificationScan {
+template <typename Label, typename VerificationAlgorithm> class VerificationScan {
 
 public:
   VerificationScan();
-  
+
   /// Executes the lookup algorithm.
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -85,16 +84,16 @@ public:
    *                           differs two trees in the lookup's result set.
    * \return A vector with the lookup result.
    */
-  std::vector<lookup::LookupResultElement> execute_lookup(
-      std::vector<node::Node<Label>>& trees_collection,
-      unsigned int query_tree_id, const double distance_threshold);
-  
+  std::vector<lookup::LookupResultElement>
+  execute_lookup(std::vector<node::Node<Label>> &trees_collection, unsigned int query_tree_id,
+                 const double distance_threshold);
+
   /// Returns the summed subproblem count of JEDI algorithm executions.
   /**
    * \return sum_subproblem_counter_
    */
   long long int get_subproblem_count() const;
-  
+
   /// Returns the number of verifications.
   /**
    * \return verfications_
@@ -111,4 +110,4 @@ private:
 // Implementation details.
 #include "scan_impl.h"
 
-}
+} // namespace lookup

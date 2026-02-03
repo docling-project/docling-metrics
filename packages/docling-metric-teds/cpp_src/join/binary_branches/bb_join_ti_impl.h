@@ -35,10 +35,9 @@ BBJoinTI<Label, VerificationAlgorithm>::BBJoinTI() {
 
 template <typename Label, typename VerificationAlgorithm>
 void BBJoinTI<Label, VerificationAlgorithm>::execute_join(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result,
+    std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection,
+    std::vector<std::pair<int, int>> &candidates, std::vector<join::JoinResultElement> &join_result,
     const double distance_threshold) {
 
   // Convert trees to binary branch histograms.
@@ -51,11 +50,10 @@ void BBJoinTI<Label, VerificationAlgorithm>::execute_join(
   verify_candidates(trees_collection, candidates, join_result, distance_threshold);
 }
 
-
 template <typename Label, typename VerificationAlgorithm>
 void BBJoinTI<Label, VerificationAlgorithm>::convert_trees_to_histograms(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection) {
+    std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection) {
 
   // Convert trees to binary branch histograms and get the result.
   bin_branch_histogram_converter::Converter<Label> bbhc;
@@ -65,9 +63,8 @@ void BBJoinTI<Label, VerificationAlgorithm>::convert_trees_to_histograms(
 
 template <typename Label, typename VerificationAlgorithm>
 void BBJoinTI<Label, VerificationAlgorithm>::retrieve_candidates(
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    const double distance_threshold) {
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection,
+    std::vector<std::pair<int, int>> &candidates, const double distance_threshold) {
 
   // Initialize candidate index.
   bb_candidate_index::CandidateIndex c_index;
@@ -83,10 +80,8 @@ void BBJoinTI<Label, VerificationAlgorithm>::retrieve_candidates(
 
 template <typename Label, typename VerificationAlgorithm>
 void BBJoinTI<Label, VerificationAlgorithm>::verify_candidates(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result,
-    const double distance_threshold) {
+    std::vector<node::Node<Label>> &trees_collection, std::vector<std::pair<int, int>> &candidates,
+    std::vector<join::JoinResultElement> &join_result, const double distance_threshold) {
 
   label::LabelDictionary<Label> ld;
   typename VerificationAlgorithm::AlgsCostModel cm(ld);
@@ -95,11 +90,11 @@ void BBJoinTI<Label, VerificationAlgorithm>::verify_candidates(
   typename VerificationAlgorithm::AlgsTreeIndex ti_2;
 
   // Verify each pair in the candidate set
-  for(const auto& pair: candidates) {
+  for (const auto &pair : candidates) {
     node::index_tree(ti_1, trees_collection[pair.first], ld, cm);
     node::index_tree(ti_2, trees_collection[pair.second], ld, cm);
     double ted_value = ted_algorithm.ted_k(ti_1, ti_2, distance_threshold);
-    if(ted_value <= distance_threshold)
+    if (ted_value <= distance_threshold)
       join_result.emplace_back(pair.first, pair.second, ted_value);
     // Sum up all number of subproblems
     sum_subproblem_counter_ += ted_algorithm.get_subproblem_count();
@@ -107,8 +102,7 @@ void BBJoinTI<Label, VerificationAlgorithm>::verify_candidates(
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int
-    BBJoinTI<Label, VerificationAlgorithm>::get_number_of_pre_candidates() const {
+long long int BBJoinTI<Label, VerificationAlgorithm>::get_number_of_pre_candidates() const {
   return pre_candidates_;
 }
 
@@ -118,7 +112,6 @@ long long int BBJoinTI<Label, VerificationAlgorithm>::get_subproblem_count() con
 }
 
 template <typename Label, typename VerificationAlgorithm>
-long long int
-    BBJoinTI<Label, VerificationAlgorithm>::get_number_of_il_lookups() const {
+long long int BBJoinTI<Label, VerificationAlgorithm>::get_number_of_il_lookups() const {
   return il_lookups_;
 }

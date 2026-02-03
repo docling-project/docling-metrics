@@ -24,20 +24,21 @@
 #pragma once
 
 template <typename CostModel, typename TreeIndex>
-double TouzetDepthPruningTreeIndex<CostModel, TreeIndex>::tree_dist(
-    const TreeIndex& t1, const TreeIndex& t2, const int x,
-    const int y, const int k, const int e) {
+double TouzetDepthPruningTreeIndex<CostModel, TreeIndex>::tree_dist(const TreeIndex &t1,
+                                                                    const TreeIndex &t2,
+                                                                    const int x, const int y,
+                                                                    const int k, const int e) {
   int x_size = t1.postl_to_size_[x];
   int y_size = t2.postl_to_size_[y];
-  
+
   // std::cout << "TouzetDepthPruningTreeIndex::tree_dist" << std::endl;
-  
+
   // Calculates offsets that let us translate i and j to correct postorder ids.
   int x_off = x - x_size;
   int y_off = y - y_size;
 
   // Initial cases.
-  fd_.at(0, 0) = 0.0; // (0,0) is always within e-strip.
+  fd_.at(0, 0) = 0.0;                              // (0,0) is always within e-strip.
   for (int j = 1; j <= std::min(y_size, e); ++j) { // i = 0; only j that are within e-strip.
     fd_.at(0, j) = fd_.read_at(0, j - 1) + c_.ins(t2.postl_to_label_id_[j + y_off]);
   }
@@ -86,7 +87,8 @@ double TouzetDepthPruningTreeIndex<CostModel, TreeIndex>::tree_dist(
     if (i - e - 1 >= 1) { // First j that is outside e-strip.
       fd_.at(i, i - e - 1) = std::numeric_limits<double>::infinity();
     }
-    for (int j = std::max(1, i - e); j <= std::min(i + e, y_size); ++j) { // only (i,j) that are in e-strip
+    for (int j = std::max(1, i - e); j <= std::min(i + e, y_size);
+         ++j) { // only (i,j) that are in e-strip
       // The td(x_size-1, y_size-1) is computed differently.
       // TODO: This condition is evaluated too often but passes only on the
       //       last i and j.
@@ -99,7 +101,7 @@ double TouzetDepthPruningTreeIndex<CostModel, TreeIndex>::tree_dist(
       } else {
         candidate_result = std::numeric_limits<double>::infinity();
         candidate_result = std::min(candidate_result, fd_.read_at(i, j - 1) +
-            c_.ins(t2.postl_to_label_id_[j + y_off]));
+                                                          c_.ins(t2.postl_to_label_id_[j + y_off]));
         double td_read = td_.read_at(i + x_off, j + y_off);
         double fd_read = 0.0;
         // If one of the forests is a tree, look up the vlaues in fd_.
@@ -107,12 +109,15 @@ double TouzetDepthPruningTreeIndex<CostModel, TreeIndex>::tree_dist(
         if (i - t1.postl_to_size_[i + x_off] != 0 || j - t2.postl_to_size_[j + y_off] != 0) {
           // If the values to read are outside of the band, they exceed
           // the threshold or are not present in the band-matrix.
-          if (j - t2.postl_to_size_[j + y_off] < std::max(0, i - t1.postl_to_size_[i + x_off] - e - 1)) {
+          if (j - t2.postl_to_size_[j + y_off] <
+              std::max(0, i - t1.postl_to_size_[i + x_off] - e - 1)) {
             fd_read = std::numeric_limits<double>::infinity();
-          } else if (std::min(i - t1.postl_to_size_[i + x_off] + e + 1, y_size) < j - t2.postl_to_size_[j + y_off]) {
+          } else if (std::min(i - t1.postl_to_size_[i + x_off] + e + 1, y_size) <
+                     j - t2.postl_to_size_[j + y_off]) {
             fd_read = std::numeric_limits<double>::infinity();
           } else {
-            fd_read = fd_.read_at(i - t1.postl_to_size_[i + x_off], j - t2.postl_to_size_[j + y_off]);
+            fd_read =
+                fd_.read_at(i - t1.postl_to_size_[i + x_off], j - t2.postl_to_size_[j + y_off]);
           }
         }
         candidate_result = std::min(candidate_result, fd_read + td_read);
@@ -121,11 +126,10 @@ double TouzetDepthPruningTreeIndex<CostModel, TreeIndex>::tree_dist(
         // thus it has to be verified separately.
         // NOTE: For i=1 there may be an out of bound exception for depth
         //       lookup.
-        if (i == 1 || (i > 1 && t1.postl_to_depth_.at(i - 1 + x_off) - t1.postl_to_depth_[x] <= e + 1)) {
+        if (i == 1 ||
+            (i > 1 && t1.postl_to_depth_.at(i - 1 + x_off) - t1.postl_to_depth_[x] <= e + 1)) {
           candidate_result = std::min(
-            candidate_result,
-            fd_.read_at(i - 1, j) + c_.del(t1.postl_to_label_id_[i + x_off])
-          );
+              candidate_result, fd_.read_at(i - 1, j) + c_.del(t1.postl_to_label_id_[i + x_off]));
         }
 
         // None of the values in fd_ can be greater than e-value for this
@@ -156,14 +160,18 @@ double TouzetDepthPruningTreeIndex<CostModel, TreeIndex>::tree_dist(
       ++max_depth_it;
     }
   }
-  
+
   ++subproblem_counter_;
   // QUESTION: Is it possible that for some e-value an infinity should be
   //           returned, because the last subproblem is too far away?
   candidate_result = std::min({
-    fd_.read_at(x_size - 1, y_size) + c_.del(t1.postl_to_label_id_[x]),                 // Delete root in source subtree.
-    fd_.read_at(x_size, y_size - 1) + c_.ins(t2.postl_to_label_id_[y]),                 // Insert root in destination subtree.
-    fd_.read_at(x_size - 1, y_size - 1) + c_.ren(t1.postl_to_label_id_[x], t2.postl_to_label_id_[y]) // Rename root nodes of the subtrees.
+      fd_.read_at(x_size - 1, y_size) +
+          c_.del(t1.postl_to_label_id_[x]), // Delete root in source subtree.
+      fd_.read_at(x_size, y_size - 1) +
+          c_.ins(t2.postl_to_label_id_[y]), // Insert root in destination subtree.
+      fd_.read_at(x_size - 1, y_size - 1) +
+          c_.ren(t1.postl_to_label_id_[x],
+                 t2.postl_to_label_id_[y]) // Rename root nodes of the subtrees.
   });
   // The distance between two subtrees cannot be greater than e-value for these
   // subtrees.

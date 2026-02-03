@@ -40,4 +40,4 @@ struct InvertedListElement {
 
 candidate_index::InvertedListElement::InvertedListElement() {}
 
-}
+} // namespace candidate_index

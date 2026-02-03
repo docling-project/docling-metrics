@@ -21,12 +21,12 @@
 
 #pragma once
 
-#include <vector>
-#include <cmath>
-#include "../node/node.h"
 #include "../label/label_dictionary.h"
+#include "../node/node.h"
 #include "../node/tree_indexer.h"
 #include "../ted/ted_algorithm.h"
+#include <cmath>
+#include <vector>
 
 namespace ted_lb {
 
@@ -34,7 +34,7 @@ namespace ted_lb {
  * Implements the label intersection lower bound for trees.
  */
 template <typename CostModel, typename TreeIndex>
-class LabelIntersection : public ted::TEDAlgorithm<CostModel, TreeIndex>{
+class LabelIntersection : public ted::TEDAlgorithm<CostModel, TreeIndex> {
 
   // Base class members made visible for this class.
   using ted::TEDAlgorithm<CostModel, TreeIndex>::TEDAlgorithm;
@@ -43,10 +43,10 @@ class LabelIntersection : public ted::TEDAlgorithm<CostModel, TreeIndex>{
 
 public:
   /// This function computes the label intersection.
-  double ted(const TreeIndex& t1, const TreeIndex& t2);
+  double ted(const TreeIndex &t1, const TreeIndex &t2);
 };
 
 // Implementation details.
 #include "label_intersection_impl.h"
 
-}
+} // namespace ted_lb

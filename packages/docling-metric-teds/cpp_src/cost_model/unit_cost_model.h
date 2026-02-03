@@ -1,5 +1,5 @@
 // The MIT License (MIT)
-// Copyright (c) 2017 Mateusz Pawlik, Nikolaus Augsten, Daniel Kocher, and 
+// Copyright (c) 2017 Mateusz Pawlik, Nikolaus Augsten, Daniel Kocher, and
 // Thomas Huetter.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,18 +24,17 @@
 
 #pragma once
 
-#include <limits>
-#include "../node/node.h"
 #include "../label/label_dictionary.h"
+#include "../node/node.h"
+#include <limits>
 
 namespace cost_model {
 
 // TODO: Deprecated. Substitute with UnitCostModelLD.
-template <class Label>
-struct UnitCostModel {
-    int ren(const node::Node<Label>& node1, const node::Node<Label>& node2) const;
-    int del(const node::Node<Label>& node) const;
-    int ins(const node::Node<Label>& node) const;
+template <class Label> struct UnitCostModel {
+  int ren(const node::Node<Label> &node1, const node::Node<Label> &node2) const;
+  int del(const node::Node<Label> &node) const;
+  int ins(const node::Node<Label> &node) const;
 };
 
 /// Represents the unit cost model to be used for the distance computation.
@@ -48,14 +47,13 @@ struct UnitCostModel {
  * - ins(label_id): cost of inserting node with label_id.
  * All three cost functions must return a double.
  */
-template <typename Label>
-struct UnitCostModelLD {
+template <typename Label> struct UnitCostModelLD {
   /// Label dictionary in case the labels are needed for cost calculations.
-  const label::LabelDictionary<Label>& ld_;
-  
+  const label::LabelDictionary<Label> &ld_;
+
   /// Constructor. Takes a LabelDictionary.
-  UnitCostModelLD(label::LabelDictionary<Label>& ld);
-  
+  UnitCostModelLD(label::LabelDictionary<Label> &ld);
+
   /// Basic rename cost function (unit cost model).
   /**
    * \param label_id_1 Source label id.
@@ -63,14 +61,14 @@ struct UnitCostModelLD {
    * \return Double cost of renaming label_id_1 to label_id_1.
    */
   double ren(const int label_id_1, const int label_id_2) const;
-  
+
   /// Basic delete cost function.
   /**
    * \param label_id Label id to be deleted.
    * \return Double cost of deleting a node with label_id.
    */
   double del(const int label_id) const;
-  
+
   /// Basic insert cost function.
   /**
    * \param label_id Label id to be inserted.
@@ -89,15 +87,14 @@ struct UnitCostModelLD {
  * - ins(label_id): cost of inserting node with label_id.
  * All three cost functions must return a double.
  */
-template <typename Label>
-struct UnitCostModelJSON {
+template <typename Label> struct UnitCostModelJSON {
   /// Label dictionary in case the labels are needed for cost calculations for
   /// JSON documents.
-  const label::LabelDictionary<Label>& ld_;
-  
+  const label::LabelDictionary<Label> &ld_;
+
   /// Constructor. Takes a LabelDictionary.
-  UnitCostModelJSON(label::LabelDictionary<Label>& ld);
-  
+  UnitCostModelJSON(label::LabelDictionary<Label> &ld);
+
   /// Basic rename cost function (unit cost model).
   /**
    * \param label_id_1 Source label id.
@@ -105,14 +102,14 @@ struct UnitCostModelJSON {
    * \return Double cost of renaming label_id_1 to label_id_1.
    */
   double ren(const int label_id_1, const int label_id_2) const;
-  
+
   /// Basic delete cost function.
   /**
    * \param label_id Label id to be deleted.
    * \return Double cost of deleting a node with label_id.
    */
   double del(const int label_id) const;
-  
+
   /// Basic insert cost function.
   /**
    * \param label_id Label id to be inserted.
@@ -124,4 +121,4 @@ struct UnitCostModelJSON {
 // Implementational details
 #include "unit_cost_model_impl.h"
 
-}
+} // namespace cost_model

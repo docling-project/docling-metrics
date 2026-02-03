@@ -28,8 +28,7 @@ NaiveJoinTI<Label, VerificationAlgorithm>::NaiveJoinTI() {}
 
 template <typename Label, typename VerificationAlgorithm>
 std::vector<join::JoinResultElement> NaiveJoinTI<Label, VerificationAlgorithm>::execute_join(
-    std::vector<node::Node<Label>>& trees_collection, 
-    const double distance_threshold) {
+    std::vector<node::Node<Label>> &trees_collection, const double distance_threshold) {
 
   label::LabelDictionary<Label> ld;
   typename VerificationAlgorithm::AlgsCostModel cm(ld);
@@ -49,7 +48,7 @@ std::vector<join::JoinResultElement> NaiveJoinTI<Label, VerificationAlgorithm>::
     j = i;
     node::index_tree(ti_1, *it_i, ld, cm);
     // Start the inner loop with the tree just iafter it_i.
-    for (auto it_j = it_i+1; it_j != trees_collection.end(); ++it_j) {
+    for (auto it_j = it_i + 1; it_j != trees_collection.end(); ++it_j) {
       ++j;
       node::index_tree(ti_2, *it_j, ld, cm);
       ted_value = ted_algorithm.ted_k(ti_1, ti_2, distance_threshold);

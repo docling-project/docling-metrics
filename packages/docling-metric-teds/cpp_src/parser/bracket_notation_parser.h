@@ -45,21 +45,20 @@
 
 #pragma once
 
-#include "../node/node.h"
 #include "../label/string_label.h"
+#include "../node/node.h"
 
 #include <cstring>
-#include <iostream>
 #include <fstream>
-#include <string>
+#include <iostream>
 #include <regex>
+#include <string>
 
 namespace parser {
 
-template <class Label>
-class BracketNotationParser {
+template <class Label> class BracketNotationParser {
 
-// Member functions
+  // Member functions
 public:
   /// Takes the string of a tree in bracket notation, parses it to the Node
   /// structure with StringLabels, and returns the root.
@@ -67,7 +66,7 @@ public:
   /// \param tree_string The string holding the tree in bracket notation.
   ///
   /// \return Root of the parsed tree.
-  node::Node<Label> parse_single(const std::string& tree_string);
+  node::Node<Label> parse_single(const std::string &tree_string);
 
   /// Takes a file with one tree (in bracket notation) per line and parses it
   /// to a vector of Node objects with StringLabels.
@@ -77,14 +76,14 @@ public:
   ///
   /// \param trees_collection Container to store all trees.
   /// \param file_path The path to the file with set of trees.
-  void parse_collection(std::vector<node::Node<Label>>& trees_collection,
-      const std::string& file_path);
+  void parse_collection(std::vector<node::Node<Label>> &trees_collection,
+                        const std::string &file_path);
 
   /// Generates the tokens for the input string.
   ///
   /// \param tree_string The string holding the tree in bracket notation.
   /// \return Vector with all tokens.
-  std::vector<std::string> get_tokens(const std::string& tree_string);
+  std::vector<std::string> get_tokens(const std::string &tree_string);
 
   /// Validates the bracket notation input.
   ///
@@ -93,8 +92,8 @@ public:
   ///
   /// \param tree_string Tree in bracket notation.
   /// \return True if the input is correct and false otherwise.
-  bool validate_input(const std::string& tree_string) const;
-// Member variables
+  bool validate_input(const std::string &tree_string) const;
+  // Member variables
 private:
   /// A stack to store nodes on a path to the root from the current node in the
   /// parsing process. Needed for maintaining correct parent-child relationships
@@ -120,4 +119,4 @@ private:
 // Implementation details
 #include "bracket_notation_parser_impl.h"
 
-}
+} // namespace parser

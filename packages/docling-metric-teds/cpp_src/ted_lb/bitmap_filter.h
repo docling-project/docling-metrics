@@ -21,13 +21,12 @@
 
 #pragma once
 
-#include <vector>
-#include <cmath>
-#include "../node/node.h"
 #include "../label/label_dictionary.h"
+#include "../node/node.h"
 #include "../node/tree_indexer.h"
 #include "../ted/ted_algorithm.h"
-
+#include <cmath>
+#include <vector>
 
 namespace ted_lb {
 
@@ -35,7 +34,7 @@ namespace ted_lb {
  * Implements the bitmap filter lower bound for dpjed.
  */
 template <typename CostModel, typename TreeIndex>
-class BitmapFilter : public ted::TEDAlgorithm<CostModel, TreeIndex>{
+class BitmapFilter : public ted::TEDAlgorithm<CostModel, TreeIndex> {
 
   // Base class members made visible for this class.
   using ted::TEDAlgorithm<CostModel, TreeIndex>::TEDAlgorithm;
@@ -44,34 +43,34 @@ class BitmapFilter : public ted::TEDAlgorithm<CostModel, TreeIndex>{
 
 public:
   /// This function computes the label intersection.
-  double ted(const TreeIndex& t1, const TreeIndex& t2);
+  double ted(const TreeIndex &t1, const TreeIndex &t2);
 
   /// Implements ted2 function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Computes the bitmap filter with bit set generation for any tree.
-  double ted2(const TreeIndex& t1, const TreeIndex& t2, const unsigned int size);
+  double ted2(const TreeIndex &t1, const TreeIndex &t2, const unsigned int size);
 
   /// Implements ted2 function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Computes the bitmap filter with bit set generation and optimizations for JSON trees.
-  double ted3(const TreeIndex& t1, const TreeIndex& t2, const unsigned int size);
+  double ted3(const TreeIndex &t1, const TreeIndex &t2, const unsigned int size);
 
   /// Implements ted2 function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Computes the bitmap filter with bit xor generation for any tree.
-  double ted4(const TreeIndex& t1, const TreeIndex& t2, const unsigned int size);
+  double ted4(const TreeIndex &t1, const TreeIndex &t2, const unsigned int size);
 
   /// Implements ted2 function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Computes the bitmap filter with bit xor generation and optimizations for JSON trees.
-  double ted5(const TreeIndex& t1, const TreeIndex& t2, const unsigned int size);
+  double ted5(const TreeIndex &t1, const TreeIndex &t2, const unsigned int size);
 
   /// Implements ted2 function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Computes the bitmap filter with bit next generation for any tree.
-  double ted6(const TreeIndex& t1, const TreeIndex& t2, const unsigned int size);
+  double ted6(const TreeIndex &t1, const TreeIndex &t2, const unsigned int size);
 
   /// Implements ted2 function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Computes the bitmap filter with bit next generation and optimizations for JSON trees.
-  double ted7(const TreeIndex& t1, const TreeIndex& t2, const unsigned int size);
+  double ted7(const TreeIndex &t1, const TreeIndex &t2, const unsigned int size);
 };
 
 // Implementation details.
 #include "bitmap_filter_impl.h"
 
-}
+} // namespace ted_lb

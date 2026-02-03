@@ -22,47 +22,46 @@
 /// \file lookup/index/two_stage_inv_list.h
 ///
 /// \details
-/// Implements a two-stage candidate index. Level 1 is the label of a node, 
-/// level 2 is the position in the global token frequency order for a certain 
+/// Implements a two-stage candidate index. Level 1 is the label of a node,
+/// level 2 is the position in the global token frequency order for a certain
 /// tree.
 
 #pragma once
 
-#include <cmath>
-#include <climits>
-#include <algorithm>
-#include <vector>
-#include <map>
-#include <unordered_set>
-#include <queue>
 #include "../../node/node.h"
 #include "inverted_list_element.h"
 #include "label_set_element.h"
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <map>
+#include <queue>
+#include <unordered_set>
+#include <vector>
 
 namespace lookup {
 
 class TwoStageInvertedList {
-// Member functions.
+  // Member functions.
 public:
   /// Constructor.
   TwoStageInvertedList(long int labels);
-  /// Builds an inverted list index on the labels and the positions of a given 
-  /// label set collection. 
+  /// Builds an inverted list index on the labels and the positions of a given
+  /// label set collection.
   ///
   /// \param sets_collection Label set collection.
   /// \param join_candidates Resultset that contains all join candidates.
   /// \param distance_threshold Given similarity threshold.
-  void build(std::vector<std::pair<int, 
-      std::vector<label_set_converter_index::LabelSetElement>>>& sets_collection);
-  /// Returns a set of candidates (set IDs) that have a common element in the 
-  /// prefix. 
+  void build(std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>
+                 &sets_collection);
+  /// Returns a set of candidates (set IDs) that have a common element in the
+  /// prefix.
   ///
   /// \param label_id ID of the current node.
   /// \param postorder_id Postorder ID of the current node.
   /// \param distance_threshold Given similarity threshold.
-  void lookup(long int& q_label_id, long int descendants, long int ancestors, 
-    int& q_tree_size, std::unordered_set<long int>& candidates, 
-    const double distance_threshold);
+  void lookup(long int &q_label_id, long int descendants, long int ancestors, int &q_tree_size,
+              std::unordered_set<long int> &candidates, const double distance_threshold);
   long int get_number_of_pre_candidates() const;
   /// Sets the number of precandidates.
   void set_number_of_pre_candidates(const long int pc);
@@ -72,7 +71,7 @@ public:
   long int get_number_of_il_lookups() const;
   /// Sets the number of index lookups.
   void set_number_of_il_lookups(const long int il);
-// Member variables.
+  // Member variables.
 private:
   /// Number of precandidates.
   long int pre_candidates_;
@@ -87,4 +86,4 @@ private:
 // Implementation details.
 #include "two_stage_inverted_list_impl.h"
 
-}
+} // namespace lookup

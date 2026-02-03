@@ -21,15 +21,15 @@
 
 #pragma once
 
-#include <vector>
-#include <iostream>
-#include <memory>
-#include <cmath>
-#include "../node/node.h"
 #include "../data_structures/matrix.h"
 #include "../label/label_dictionary.h"
+#include "../node/node.h"
 #include "../node/tree_indexer.h"
 #include "../ted/ted_algorithm.h"
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 namespace ted_ub {
 
@@ -50,11 +50,11 @@ class CTEDTreeIndex : public ted::TEDAlgorithm<CostModel, TreeIndex> {
 public:
   /// Implements ted function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Complexity: O(n^2) time and space.
-  double ted(const TreeIndex& t1, const TreeIndex& t2);
+  double ted(const TreeIndex &t1, const TreeIndex &t2);
 
   /// Implements ted function from the TEDAlgorithm<CostModel, TreeIndex> class.
   /// Complexity: O(n*tau) time and space.
-  double ted_k(const TreeIndex& t1, const TreeIndex& t2, const double threshold);
+  double ted_k(const TreeIndex &t1, const TreeIndex &t2, const double threshold);
 
 private:
   /// Matrix storing subtree distances.
@@ -68,4 +68,4 @@ private:
 // Implementation details.
 #include "cted_tree_index_impl.h"
 
-}
+} // namespace ted_ub

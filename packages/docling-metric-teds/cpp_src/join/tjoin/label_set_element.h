@@ -22,7 +22,7 @@
 /// \file join/tjoin/label_set_element.h
 ///
 /// \details
-/// Structure a label set element. Containing the id, number of nodes per label, 
+/// Structure a label set element. Containing the id, number of nodes per label,
 /// number of nodes until the actual element and positional information per node.
 
 #pragma once
@@ -46,22 +46,19 @@ struct StructuralVector {
   /// Constructor.
   StructuralVector();
   /// Constructor.
-  StructuralVector(int postorder_id, 
-          int number_nodes_left, int number_nodes_right, 
-          int number_nodes_ancestor, int number_nodes_descendant);
+  StructuralVector(int postorder_id, int number_nodes_left, int number_nodes_right,
+                   int number_nodes_ancestor, int number_nodes_descendant);
 };
 
 label_set_converter::StructuralVector::StructuralVector() {}
 
-label_set_converter::StructuralVector::StructuralVector(
-  int postorder_id, int number_nodes_left, 
-  int number_nodes_right, int number_nodes_ancestor, int number_nodes_descendant)
-    : postorder_id(postorder_id),
-      number_nodes_left(number_nodes_left), 
-      number_nodes_right(number_nodes_right),
-      number_nodes_ancestor(number_nodes_ancestor), 
+label_set_converter::StructuralVector::StructuralVector(int postorder_id, int number_nodes_left,
+                                                        int number_nodes_right,
+                                                        int number_nodes_ancestor,
+                                                        int number_nodes_descendant)
+    : postorder_id(postorder_id), number_nodes_left(number_nodes_left),
+      number_nodes_right(number_nodes_right), number_nodes_ancestor(number_nodes_ancestor),
       number_nodes_descendant(number_nodes_descendant) {}
-
 
 /// This is an element holding relevant data of a set.
 struct LabelSetElement {
@@ -78,8 +75,8 @@ struct LabelSetElement {
   /// Constructor.
   LabelSetElement(int id, int weight);
   /// Constructor.
-  LabelSetElement(int id, int weight, 
-      std::vector<label_set_converter::StructuralVector> &&struct_vect);
+  LabelSetElement(int id, int weight,
+                  std::vector<label_set_converter::StructuralVector> &&struct_vect);
 };
 
 label_set_converter::LabelSetElement::LabelSetElement() {}
@@ -87,7 +84,7 @@ label_set_converter::LabelSetElement::LabelSetElement() {}
 label_set_converter::LabelSetElement::LabelSetElement(int id, int weight)
     : id(id), weight(weight) {}
 
-label_set_converter::LabelSetElement::LabelSetElement(int id, int weight, 
-      std::vector<label_set_converter::StructuralVector> &&struct_vect)
+label_set_converter::LabelSetElement::LabelSetElement(
+    int id, int weight, std::vector<label_set_converter::StructuralVector> &&struct_vect)
     : id(id), weight(weight), struct_vect(std::move(struct_vect)) {}
-}
+} // namespace label_set_converter

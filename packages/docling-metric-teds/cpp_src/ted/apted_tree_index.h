@@ -21,17 +21,16 @@
 
 #pragma once
 
-#include <vector>
-#include <stack>
-#include <memory>
-#include "../node/node.h"
 #include "../data_structures/matrix.h"
-#include <iostream>
-#include <limits>
-#include <cstdlib>
+#include "../node/node.h"
 #include "../node/tree_indexer.h"
 #include "ted_algorithm.h"
+#include <cstdlib>
 #include <iostream>
+#include <limits>
+#include <memory>
+#include <stack>
+#include <vector>
 
 namespace ted {
 
@@ -61,44 +60,39 @@ class APTEDTreeIndex : public TEDAlgorithm<CostModel, TreeIndex> {
 
 public:
   /// Implements ted function from the TEDAlgorithm<CostModel, TreeIndex> class.
-  double ted(const TreeIndex& t1, const TreeIndex& t2);
-
+  double ted(const TreeIndex &t1, const TreeIndex &t2);
 
 private:
-  data_structures::Matrix<double> compute_opt_strategy_postL(const TreeIndex& t1, const TreeIndex& t2);
-  data_structures::Matrix<double> compute_opt_strategy_postR(const TreeIndex& t1, const TreeIndex& t2);
-  void ted_init(const TreeIndex& t1, const TreeIndex& t2);
-  double gted(const TreeIndex& t1, int t1_current_subtree,
-      const TreeIndex& t2, int t2_current_subtree);
-  
-  double spf1(const TreeIndex& t1, int subtreeRootNode1, const TreeIndex& t2,
-      int subtreeRootNode2);
-  
-  double spfA(const TreeIndex& t1, int t1_current_subtree,
-      const TreeIndex& t2, int t2_current_subtree, int pathID,
-      int pathType, bool treesSwapped);
-  
-  double spfL(const TreeIndex& t1, int t1_current_subtree,
-      const TreeIndex& t2, int t2_current_subtree, bool treesSwapped);
-  int computeKeyRoots(const TreeIndex& t2, int subtreeRootNode, int pathID,
-      std::vector<int>& keyRoots, int index);
-  void treeEditDist(const TreeIndex& t1, const TreeIndex& t2, int it1subtree,
-      int it2subtree, data_structures::Matrix<double>& forestdist,
-      bool treesSwapped);
-  
-  double spfR(const TreeIndex& t1, int t1_current_subtree,
-      const TreeIndex& t2, int t2_current_subtree, bool treesSwapped);
-  int computeRevKeyRoots(const TreeIndex& t2, int subtreeRootNode, int pathID,
-      std::vector<int>& revKeyRoots, int index);
-  void revTreeEditDist(const TreeIndex& t1, const TreeIndex& t2, int it1subtree,
-      int it2subtree, data_structures::Matrix<double>& forestdist,
-      bool treesSwapped);
-  
-  int get_strategy_path_type(int pathIDWithPathIDOffset,
-      int pathIDOffset, int currentRootNodePreL,
-      int currentSubtreeSize);
-  void updateFnArray(int lnForNode, int node,
-      int currentSubtreePreL);
+  data_structures::Matrix<double> compute_opt_strategy_postL(const TreeIndex &t1,
+                                                             const TreeIndex &t2);
+  data_structures::Matrix<double> compute_opt_strategy_postR(const TreeIndex &t1,
+                                                             const TreeIndex &t2);
+  void ted_init(const TreeIndex &t1, const TreeIndex &t2);
+  double gted(const TreeIndex &t1, int t1_current_subtree, const TreeIndex &t2,
+              int t2_current_subtree);
+
+  double spf1(const TreeIndex &t1, int subtreeRootNode1, const TreeIndex &t2, int subtreeRootNode2);
+
+  double spfA(const TreeIndex &t1, int t1_current_subtree, const TreeIndex &t2,
+              int t2_current_subtree, int pathID, int pathType, bool treesSwapped);
+
+  double spfL(const TreeIndex &t1, int t1_current_subtree, const TreeIndex &t2,
+              int t2_current_subtree, bool treesSwapped);
+  int computeKeyRoots(const TreeIndex &t2, int subtreeRootNode, int pathID,
+                      std::vector<int> &keyRoots, int index);
+  void treeEditDist(const TreeIndex &t1, const TreeIndex &t2, int it1subtree, int it2subtree,
+                    data_structures::Matrix<double> &forestdist, bool treesSwapped);
+
+  double spfR(const TreeIndex &t1, int t1_current_subtree, const TreeIndex &t2,
+              int t2_current_subtree, bool treesSwapped);
+  int computeRevKeyRoots(const TreeIndex &t2, int subtreeRootNode, int pathID,
+                         std::vector<int> &revKeyRoots, int index);
+  void revTreeEditDist(const TreeIndex &t1, const TreeIndex &t2, int it1subtree, int it2subtree,
+                       data_structures::Matrix<double> &forestdist, bool treesSwapped);
+
+  int get_strategy_path_type(int pathIDWithPathIDOffset, int pathIDOffset, int currentRootNodePreL,
+                             int currentSubtreeSize);
+  void updateFnArray(int lnForNode, int node, int currentSubtreePreL);
   void updateFtArray(int lnForNode, int node);
 
   /// Matrix storing subtree distances.
@@ -107,17 +101,16 @@ private:
   // data_structures::Matrix<double> s_;
   // /// Matrix storing subforest distances.
   // data_structures::Matrix<double> t_;
-  
+
   std::vector<double> q_;
 
   // TODO: I don't really remember what are these arrays exactly for.
   //       Java documentation says `Do not use it [1, Section 8.4]`.
   std::vector<int> fn_;
   std::vector<int> ft_;
-
 };
 
 // Implementation details.
 #include "apted_tree_index_impl.h"
 
-}
+} // namespace ted

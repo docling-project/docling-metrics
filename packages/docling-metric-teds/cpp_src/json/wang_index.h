@@ -22,22 +22,22 @@
 /// \file json/wang_index.h
 ///
 /// \details
-/// Contains the declaration of the JEDI-Order class. Computes the JEDI-Order 
-/// by using the algorithm by Lusheng Wang and Kaizhong Zhang. “Space efficient 
-/// algorithms for ordered tree comparison”. In: Algorithmica 51.3 (2008). 
+/// Contains the declaration of the JEDI-Order class. Computes the JEDI-Order
+/// by using the algorithm by Lusheng Wang and Kaizhong Zhang. “Space efficient
+/// algorithms for ordered tree comparison”. In: Algorithmica 51.3 (2008).
 /// Complexity: O(|T1||T2|) time and O(log(|T1|)|T2|) memory.
 
 #pragma once
 
-#include <vector>
-#include <iostream>
-#include <memory>
-#include <cmath>
-#include "../node/node.h"
 #include "../data_structures/matrix.h"
 #include "../label/label_dictionary.h"
+#include "../node/node.h"
 #include "../node/tree_indexer.h"
 #include "jedi_algorithm.h"
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 namespace json {
 
@@ -52,13 +52,13 @@ class WangTreeIndex : public json::JEDIAlgorithm<CostModel, TreeIndex> {
   using json::JEDIAlgorithm<CostModel, TreeIndex>::c_;
 
 public:
-  /// Implements jedi function from the JEDIAlgorithm<CostModel, TreeIndex> 
+  /// Implements jedi function from the JEDIAlgorithm<CostModel, TreeIndex>
   /// class.
-  double jedi(const TreeIndex& t1, const TreeIndex& t2);
+  double jedi(const TreeIndex &t1, const TreeIndex &t2);
 
-  /// Implements ted function from the JEDIAlgorithm<CostModel, TreeIndex> class 
+  /// Implements ted function from the JEDIAlgorithm<CostModel, TreeIndex> class
   /// leveraging a given threshold.
-  double jedi_k(const TreeIndex& t1, const TreeIndex& t2, const double threshold);
+  double jedi_k(const TreeIndex &t1, const TreeIndex &t2, const double threshold);
 
 private:
   // Costs to delete T1[i].
@@ -90,4 +90,4 @@ private:
 // Implementation details.
 #include "wang_index_impl.h"
 
-}
+} // namespace json

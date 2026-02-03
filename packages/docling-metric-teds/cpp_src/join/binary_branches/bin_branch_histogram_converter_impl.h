@@ -22,21 +22,20 @@
 /// \file join/binary_branches/bin_branch_histogram_converter_impl.h
 ///
 /// \details
-/// Implements an algorithm that converts a collection of trees into a collection 
-/// of binary branch histograms. 
+/// Implements an algorithm that converts a collection of trees into a collection
+/// of binary branch histograms.
 
 #pragma once
 
-template<typename Label>
-Converter<Label>::Converter() {}
+template <typename Label> Converter<Label>::Converter() {}
 
-template<typename Label>
+template <typename Label>
 void Converter<Label>::create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection) {
+    const std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection) {
 
   // for each tree in the tree collection
-  for (const auto& tree: trees_collection) {
+  for (const auto &tree : trees_collection) {
     // stores the number of nodes per binary branch
     std::unordered_map<int, int> bb_histogram;
     // stores the number of nodes per binary branch
@@ -48,19 +47,18 @@ void Converter<Label>::create_histogram(
   }
 }
 
-template<typename Label>
-void Converter<Label>::create_bin_branch_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::string& right_sibling_label, 
-    std::unordered_map<int, int>& bb_histogram, 
-    int& tree_size) {
+template <typename Label>
+void Converter<Label>::create_bin_branch_histrogram(const node::Node<Label> &tree_node,
+                                                    std::string &right_sibling_label,
+                                                    std::unordered_map<int, int> &bb_histogram,
+                                                    int &tree_size) {
 
-  auto& children = tree_node.get_children();
+  auto &children = tree_node.get_children();
   int nr_of_children = children.size();
   std::string bb_string = tree_node.label().to_string();
 
   // append left most child label
-  if(nr_of_children > 0)
+  if (nr_of_children > 0)
     bb_string += children[0].label().to_string();
   else
     bb_string += empty_string_;
@@ -68,10 +66,10 @@ void Converter<Label>::create_bin_branch_histrogram(
   bb_string += right_sibling_label;
 
   // lookup binary branch in bb_map
-  typename std::unordered_map<std::string, int>::const_iterator 
-                              bb_in_map = bb_id_map_.find(bb_string);
+  typename std::unordered_map<std::string, int>::const_iterator bb_in_map =
+      bb_id_map_.find(bb_string);
   // if binary branch not in map
-  if(bb_in_map == bb_id_map_.end())
+  if (bb_in_map == bb_id_map_.end())
     // add binary branch id to map
     bb_id_map_[bb_string] = bb_id_++;
 
@@ -81,15 +79,12 @@ void Converter<Label>::create_bin_branch_histrogram(
   // do recursively for all children
   for (int i = 0; i < nr_of_children; i++) {
     std::string rs_string = empty_string_;
-    if(i < nr_of_children - 1)
-      rs_string = children[i+1].label().to_string();
+    if (i < nr_of_children - 1)
+      rs_string = children[i + 1].label().to_string();
     create_bin_branch_histrogram(children[i], rs_string, bb_histogram, tree_size);
   }
   // increase tree size
   ++tree_size;
 }
 
-template<typename Label>
-int Converter<Label>::get_number_of_bb() const {
-  return bb_id_;
-}
+template <typename Label> int Converter<Label>::get_number_of_bb() const { return bb_id_; }

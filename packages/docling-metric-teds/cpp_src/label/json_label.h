@@ -23,7 +23,7 @@
 ///
 /// \details
 /// Contains the declaration of the JSONLabel class (represents string and type
-/// data which is associated with a JSON Node). 
+/// data which is associated with a JSON Node).
 
 #pragma once
 
@@ -39,30 +39,31 @@ namespace label {
 /// nothing else.
 ///
 /// \remark
-/// During the parsing process, the types keys and values cannot 
+/// During the parsing process, the types keys and values cannot
 class JSONLabel {
 public:
-  JSONLabel(const std::string& label);
+  JSONLabel(const std::string &label);
 
   /// Operator overloadings.
   /// @{
-  bool operator==(const JSONLabel& other) const;
+  bool operator==(const JSONLabel &other) const;
   /// @}
 
   /// Return the type field of the label.
   unsigned int get_type() const;
 
   /// Return the label field of the label.
-  const std::string& get_label() const;
+  const std::string &get_label() const;
 
   /// Generates a string representation of the label.
   ///
   /// \return String representation of the label.
-  const std::string& to_string() const;
+  const std::string &to_string() const;
+
 private:
   /// The label associated with a node.
   std::string label_{};
-  /// The type associated with a node. An object is encoded as 0, an array as 
+  /// The type associated with a node. An object is encoded as 0, an array as
   /// 1, a key as 2, and a value as 3.
   unsigned int type_{};
 };
@@ -74,15 +75,14 @@ private:
 
 // Custom specialization of std::hash - injected in namespace std.
 // This is needed for LabelDictionary.
-namespace std
-{
-  template<> struct hash<label::JSONLabel> {
-    typedef label::JSONLabel argument_type;
-    typedef std::size_t result_type;
-    result_type operator()(argument_type const& s) const noexcept {
-        result_type const h ( std::hash<std::string>{}(s.to_string() + "hash" + 
-            std::to_string(s.get_type())) );
-        return h;
-    }
-  };
-}
+namespace std {
+template <> struct hash<label::JSONLabel> {
+  typedef label::JSONLabel argument_type;
+  typedef std::size_t result_type;
+  result_type operator()(argument_type const &s) const noexcept {
+    result_type const h(
+        std::hash<std::string>{}(s.to_string() + "hash" + std::to_string(s.get_type())));
+    return h;
+  }
+};
+} // namespace std

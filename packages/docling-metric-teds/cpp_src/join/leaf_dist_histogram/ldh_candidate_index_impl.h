@@ -22,8 +22,8 @@
 /// \file join/leaf_dist_histogram/ldh_candidate_index_impl.h
 ///
 /// \details
-/// Implements a candidate index that efficiently and effectively returns tree 
-/// pairs that satisfy the leaf distance histogram lower bound by Kailing et al. 
+/// Implements a candidate index that efficiently and effectively returns tree
+/// pairs that satisfy the leaf distance histogram lower bound by Kailing et al.
 
 #pragma once
 
@@ -33,12 +33,11 @@ CandidateIndex::CandidateIndex() {
 }
 
 void CandidateIndex::lookup(
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection,
-    std::vector<std::pair<int, int>>& join_candidates,
-    const int il_size,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection,
+    std::vector<std::pair<int, int>> &join_candidates, const int il_size,
     const double distance_threshold) {
   // inverted list index
-  std::vector<std::vector<std::pair<int, int>>> il_index(il_size+1);
+  std::vector<std::vector<std::pair<int, int>>> il_index(il_size + 1);
   // id of the tree that is currently processed
   int current_tree_id = 0;
   // overlap count for all trees
@@ -46,12 +45,12 @@ void CandidateIndex::lookup(
   // store ids of all tree with an overlap, called pre candidates
 
   // iterate through all histograms in the given collection
-  for (auto& histogram: histogram_collection) {
+  for (auto &histogram : histogram_collection) {
     std::vector<int> pre_candidates;
-    for (auto& element: histogram.second) {
-      for (auto& il_entry: il_index[element.first]) {
+    for (auto &element : histogram.second) {
+      for (auto &il_entry : il_index[element.first]) {
         int intersection = std::min(element.second, il_entry.second);
-        if(intersection_cnt[il_entry.first] == 0 && intersection != 0)
+        if (intersection_cnt[il_entry.first] == 0 && intersection != 0)
           pre_candidates.push_back(il_entry.first);
         intersection_cnt[il_entry.first] += intersection;
       }
@@ -63,9 +62,10 @@ void CandidateIndex::lookup(
     pre_candidates_ += pre_candidates.size();
 
     // verify all pre candidates
-    for(int pre_cand_id: pre_candidates) {
-      if(histogram_collection[current_tree_id].first + histogram_collection[pre_cand_id].first - 
-          (2 * intersection_cnt[pre_cand_id]) <= distance_threshold)
+    for (int pre_cand_id : pre_candidates) {
+      if (histogram_collection[current_tree_id].first + histogram_collection[pre_cand_id].first -
+              (2 * intersection_cnt[pre_cand_id]) <=
+          distance_threshold)
         join_candidates.emplace_back(current_tree_id, pre_cand_id);
       // reset intersection counter
       intersection_cnt[pre_cand_id] = 0;
@@ -74,15 +74,8 @@ void CandidateIndex::lookup(
   }
 }
 
-long int CandidateIndex::get_number_of_pre_candidates() const {
-  return pre_candidates_;
-}
+long int CandidateIndex::get_number_of_pre_candidates() const { return pre_candidates_; }
 
-void CandidateIndex::set_number_of_pre_candidates(
-    const long int pc) {
-  pre_candidates_ = pc;
-}
+void CandidateIndex::set_number_of_pre_candidates(const long int pc) { pre_candidates_ = pc; }
 
-long int CandidateIndex::get_number_of_il_lookups() const {
-  return il_lookups_;
-}
+long int CandidateIndex::get_number_of_il_lookups() const { return il_lookups_; }

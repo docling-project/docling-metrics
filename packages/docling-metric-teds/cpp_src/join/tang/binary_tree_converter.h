@@ -22,22 +22,21 @@
 /// \file join/tang/binary_tree_converter.h
 ///
 /// \details
-/// Takes a collection of trees and and converts them into a collection of binary  
-/// trees. Knuth's algorithm is applied to create a left child - right ancestor 
-/// (LC-RS) binary tree. 
+/// Takes a collection of trees and and converts them into a collection of binary
+/// trees. Knuth's algorithm is applied to create a left child - right ancestor
+/// (LC-RS) binary tree.
 
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-#include "../../node/binary_node.h"
 #include "../../label/string_label.h"
+#include "../../node/binary_node.h"
+#include <unordered_map>
+#include <vector>
 
 namespace binary_tree_converter {
 
-template <typename Label>
-class Converter {
-// Member functions.
+template <typename Label> class Converter {
+  // Member functions.
 public:
   /// Constructor.
   Converter();
@@ -45,22 +44,21 @@ public:
   ///
   /// \param tree_collection A collection of trees.
   /// \param binary_trees_collection A collection of binary trees.
-  void convert(std::vector<node::Node<Label>>& trees_collection,
-      std::vector<node::BinaryNode<Label>>& binary_trees_collection);
-// Member functions.
+  void convert(std::vector<node::Node<Label>> &trees_collection,
+               std::vector<node::BinaryNode<Label>> &binary_trees_collection);
+  // Member functions.
 private:
   /// Recursively transforms a tree into a binary tree.
   ///
-  /// \param tree_node Current node of the original tree. 
+  /// \param tree_node Current node of the original tree.
   ///                  Initially, the root node of the original tree.
-  /// \param binary_tree_node Current node of the binary tree. 
+  /// \param binary_tree_node Current node of the binary tree.
   ///                         Initially, the root node of the binary tree.
-  void create_binary_tree(const node::Node<Label>& tree_node,
-      node::BinaryNode<Label>& binary_tree_node);
+  void create_binary_tree(const node::Node<Label> &tree_node,
+                          node::BinaryNode<Label> &binary_tree_node);
 };
 
 // Implementation details.
 #include "binary_tree_converter_impl.h"
 
-}
-
+} // namespace binary_tree_converter

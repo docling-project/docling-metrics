@@ -26,27 +26,25 @@
 /// The R-tree part from [2] is not included.
 ///
 /// [1] Guha et al. Approximate XML joins. ACM SIGMOD. 2002.
-/// [2] Guha et al. Integrating XML data sources using approximate joins. 
+/// [2] Guha et al. Integrating XML data sources using approximate joins.
 ///     ACM TODS. 2006.
 
 #pragma once
 
-#include <vector>
-#include <random>
-#include "../join_result_element.h"
 #include "../../node/node.h"
 #include "../../ted/apted_tree_index.h"
 #include "../../ted_lb/sed_tree_index.h"
 #include "../../ted_ub/cted_tree_index.h"
-
+#include "../join_result_element.h"
+#include <random>
+#include <vector>
 
 #include <iostream>
 
 namespace join {
 
-template <typename Label, typename VerificationAlgorithm>
-class GuhaJoinTI {
-// Member functions.
+template <typename Label, typename VerificationAlgorithm> class GuhaJoinTI {
+  // Member functions.
 public:
   /// Constructor.
   GuhaJoinTI();
@@ -66,12 +64,10 @@ public:
   /// \param join_result Output vector to stor partial join results (pairs of
   ///        tree IDs that passed an upper bound filter).
   /// \param distance_threshold Join similarity threshold.
-  void execute_rsb_join(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, int>>& candidates,
-      std::vector<join::JoinResultElement>& join_result,
-      const double distance_threshold
-  );
+  void execute_rsb_join(std::vector<node::Node<Label>> &trees_collection,
+                        std::vector<std::pair<int, int>> &candidates,
+                        std::vector<join::JoinResultElement> &join_result,
+                        const double distance_threshold);
   /// Implements the original RSC algorithm.
   /// 1. Computes reference set.
   /// 2. Computes SED and CTED from each tree to the reference set.
@@ -84,23 +80,19 @@ public:
   /// \param join_result Output vector to stor partial join results (pairs of
   ///        tree IDs that passed an upper bound filter).
   /// \param distance_threshold Join similarity threshold.
-  void execute_rsc_join(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, int>>& candidates,
-      std::vector<join::JoinResultElement>& join_result,
-      const double distance_threshold
-  );
+  void execute_rsc_join(std::vector<node::Node<Label>> &trees_collection,
+                        std::vector<std::pair<int, int>> &candidates,
+                        std::vector<join::JoinResultElement> &join_result,
+                        const double distance_threshold);
   /// Computes TED from each tree in trees_collection to all in reference_set,
   /// and stores the values in ted_vectors.
   ///
   /// \param trees_collection Input dataset to a join.
   /// \param reference_set Reference set with tree IDs.
   /// \param ted_vectors Output vector.
-  void compute_vectors(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<int>& reference_set,
-    std::vector<std::vector<double>>& ted_vectors
-  );
+  void compute_vectors(std::vector<node::Node<Label>> &trees_collection,
+                       std::vector<int> &reference_set,
+                       std::vector<std::vector<double>> &ted_vectors);
   /// Computes SED and CTED from each tree in trees_collection to all in
   /// reference_set, and stores the values in lb_vectors and ub_vectors,
   /// respectively.
@@ -109,12 +101,10 @@ public:
   /// \param reference_set Reference set with tree IDs.
   /// \param lb_vectors Output vector for SED values.
   /// \param ub_vectors Output vector for CTED values.
-  void compute_vectors(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<int>& reference_set,
-    std::vector<std::vector<double>>& lb_vectors,
-    std::vector<std::vector<double>>& ub_vectors
-  );
+  void compute_vectors(std::vector<node::Node<Label>> &trees_collection,
+                       std::vector<int> &reference_set,
+                       std::vector<std::vector<double>> &lb_vectors,
+                       std::vector<std::vector<double>> &ub_vectors);
   /// Retrieves the candidates based on metric lower and upper bounds using
   /// vectors with TED values.
   ///
@@ -123,12 +113,10 @@ public:
   ///        tree IDs that passed an upper bound filter).
   /// \param distance_threshold Join similarity threshold.
   /// \param ted_vectors Vectors with TED values.
-  void retrieve_metric_candidates(
-      std::vector<std::pair<int, int>>& candidates,
-      std::vector<join::JoinResultElement>& join_result,
-      const double distance_threshold,
-      std::vector<std::vector<double>>& ted_vectors
-  );
+  void retrieve_metric_candidates(std::vector<std::pair<int, int>> &candidates,
+                                  std::vector<join::JoinResultElement> &join_result,
+                                  const double distance_threshold,
+                                  std::vector<std::vector<double>> &ted_vectors);
   /// Retrieves the candidates based on metric lower and upper bounds using
   /// vectors with SED and CTED values.
   ///
@@ -139,13 +127,11 @@ public:
   /// \param distance_threshold Join similarity threshold.
   /// \param lb_vectors Vectors with SED values.
   /// \param ub_vectors Vectors with CTED values.
-  void retrieve_metric_candidates(
-      std::vector<std::pair<int, int>>& candidates,
-      std::vector<join::JoinResultElement>& join_result,
-      const double distance_threshold,
-      std::vector<std::vector<double>>& lb_vectors,
-      std::vector<std::vector<double>>& ub_vectors
-  );
+  void retrieve_metric_candidates(std::vector<std::pair<int, int>> &candidates,
+                                  std::vector<join::JoinResultElement> &join_result,
+                                  const double distance_threshold,
+                                  std::vector<std::vector<double>> &lb_vectors,
+                                  std::vector<std::vector<double>> &ub_vectors);
   /// Refines the join candidates by computing SED and CTED.
   ///
   /// \param trees_collection Input dataset to a join.
@@ -153,12 +139,10 @@ public:
   /// \param join_result Output vector to stor partial join results (pairs of
   ///        tree IDs that passed an upper bound filter).
   /// \param distance_threshold Join similarity threshold.
-  void retrieve_sc_candidates(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, int>>& candidates,
-      std::vector<join::JoinResultElement>& join_result,
-      const double distance_threshold
-  );
+  void retrieve_sc_candidates(std::vector<node::Node<Label>> &trees_collection,
+                              std::vector<std::pair<int, int>> &candidates,
+                              std::vector<join::JoinResultElement> &join_result,
+                              const double distance_threshold);
   /// Verifies the jon candidates by computing APTED.
   ///
   /// \param trees_collection Input dataset to a join.
@@ -166,12 +150,10 @@ public:
   /// \param join_result Output vector to stor partial join results (pairs of
   ///        tree IDs that passed an upper bound filter).
   /// \param distance_threshold Join similarity threshold.
-  void verify_candidates(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, int>>& candidates,
-      std::vector<join::JoinResultElement>& join_result, 
-      const double distance_threshold
-  );
+  void verify_candidates(std::vector<node::Node<Label>> &trees_collection,
+                         std::vector<std::pair<int, int>> &candidates,
+                         std::vector<join::JoinResultElement> &join_result,
+                         const double distance_threshold);
   /// Computes the reference set if the number of elements is not known.
   /// Implements the original method by Guha.
   ///
@@ -183,28 +165,24 @@ public:
   /// \param trees_collection Input dataset to a join.
   /// \param distance_threshold Join similarity threshold.
   /// \return Reference set as a vector of tree IDs.
-  std::vector<int> get_reference_set(
-    std::vector<node::Node<Label>>& trees_collection,
-    const double distance_threshold
-  );
+  std::vector<int> get_reference_set(std::vector<node::Node<Label>> &trees_collection,
+                                     const double distance_threshold);
   /// Chooses k trees from trees_collection at random.
-  /// 
+  ///
   /// NOTE: It was the first and easiest way to get a reference set.
   ///
   /// \param trees_collection Input dataset to a join.
   /// \param k Size of reference set.
   /// \return Reference set as a vector of tree IDs.
-  std::vector<int> get_random_reference_set(
-    std::vector<node::Node<Label>>& trees_collection,
-    int k
-  );
+  std::vector<int> get_random_reference_set(std::vector<node::Node<Label>> &trees_collection,
+                                            int k);
   /// Computes the metric upper bound using either TED or CTED values.
-  double u_t(std::vector<double>& v_1, std::vector<double>& v_2);
+  double u_t(std::vector<double> &v_1, std::vector<double> &v_2);
   /// Computes the metric upper bound using TED values.
-  double l_t(std::vector<double>& v_1, std::vector<double>& v_2);
+  double l_t(std::vector<double> &v_1, std::vector<double> &v_2);
   /// Computes the metric upper bound using SED and CTED values.
-  double l_t(std::vector<double>& lb_v_i, std::vector<double>& ub_v_i,
-      std::vector<double>& lb_v_j, std::vector<double>& ub_v_j);
+  double l_t(std::vector<double> &lb_v_i, std::vector<double> &ub_v_i, std::vector<double> &lb_v_j,
+             std::vector<double> &ub_v_j);
   /// Returns the number of candidates resulting from metric lower bound.
   long long int get_l_t_candidates() const;
   /// Returns the number of candidates resulting from SED lower bound.
@@ -213,6 +191,7 @@ public:
   long long int get_u_t_result_pairs() const;
   /// Returns the number of result set pairs comming from CTED upper bound.
   long long int get_cted_result_pairs() const;
+
 private:
   /// LabelDictionary for using with LGMTreeIndex and VerificationAlgorithm.
   label::LabelDictionary<Label> ld_;
@@ -229,4 +208,4 @@ private:
 // Implementation details.
 #include "guha_join_ti_impl.h"
 
-}
+} // namespace join

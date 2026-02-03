@@ -22,41 +22,40 @@
 /// \file join/tjoin/candidate_index.h
 ///
 /// \details
-/// Implements a candidate index that efficiently and effectively returns tree 
-/// pairs that satisfy the structural filter. 
+/// Implements a candidate index that efficiently and effectively returns tree
+/// pairs that satisfy the structural filter.
 
 #pragma once
 
-#include <cmath>
-#include <climits>
-#include <algorithm>
-#include <vector>
-#include <unordered_map>
-#include <queue>
 #include "../../node/node.h"
 #include "inverted_list_element.h"
-#include "set_data.h"
 #include "label_set_element.h"
+#include "set_data.h"
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <queue>
+#include <unordered_map>
+#include <vector>
 
 namespace candidate_index {
 
 class CandidateIndex {
-// Member functions.
+  // Member functions.
 public:
   /// Constructor.
   CandidateIndex();
-  /// Returns a set of candidates that satisfy the structural filter. 
+  /// Returns a set of candidates that satisfy the structural filter.
   ///
   /// \param sets_collection Collection of all sets.
   /// \param join_candidates Resultset that contains all join candidates.
-  /// \param number_of_labels Number of all different labels in all sets. 
+  /// \param number_of_labels Number of all different labels in all sets.
   ///        Needed to allocate the inverted list index.
   /// \param distance_threshold Given similarity threshold.
-  void lookup(
-      std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>& sets_collection,
-      std::vector<std::pair<int, int>>& join_candidates,
-      const int number_of_labels, 
-      const double distance_threshold);
+  void lookup(std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>
+                  &sets_collection,
+              std::vector<std::pair<int, int>> &join_candidates, const int number_of_labels,
+              const double distance_threshold);
   /// Returns the resultset.
   ///
   /// \return Pairs in the resultset.
@@ -75,25 +74,24 @@ public:
   ///
   /// \return The number of lookups in the inverted list.
   long int get_number_of_il_lookups() const;
-// Member variables.
+  // Member variables.
 private:
   /// Number of precandidates.
   long int pre_candidates_;
   /// Number of lookups in the inverted list.
   long int il_lookups_;
-// Member functions.
+  // Member functions.
 private:
-  /// Given two sets of nodes, the structural mapping identifies the number of 
+  /// Given two sets of nodes, the structural mapping identifies the number of
   /// tau-valid node pairs.
   ///
   /// \param sv_r All nodes with a specific label in set r.
   /// \param sv_s All nodes with a specific label in set s.
   /// \param distance_threshold Given distance threshold.
   /// \return number of tau-valid node pairs in sv_r and sv_s.
-  int structural_mapping(
-    label_set_converter::LabelSetElement& sv_r, 
-    label_set_converter::LabelSetElement& sv_s,
-    const double distance_threshold);
+  int structural_mapping(label_set_converter::LabelSetElement &sv_r,
+                         label_set_converter::LabelSetElement &sv_s,
+                         const double distance_threshold);
   /// Verify for a given candidate pair r and s if it passes the structural filter.
   ///
   /// \param r First set of the candidate pair.
@@ -104,13 +102,12 @@ private:
   /// \param ps Position after prefix or overlap of s.
   /// \param distance_threshold Given similarity threshold.
   /// \return Returns true if r and s satisfy the structural filter.
-  bool structural_filter(std::vector<label_set_converter::LabelSetElement>& r, 
-      std::vector<label_set_converter::LabelSetElement>& s, 
-      const double t, int olap, int pr, int ps, 
-      int distance_threshold, int maxr, int maxs);
+  bool structural_filter(std::vector<label_set_converter::LabelSetElement> &r,
+                         std::vector<label_set_converter::LabelSetElement> &s, const double t,
+                         int olap, int pr, int ps, int distance_threshold, int maxr, int maxs);
 };
 
 // Implementation details.
 #include "candidate_index_impl.h"
 
-}
+} // namespace candidate_index

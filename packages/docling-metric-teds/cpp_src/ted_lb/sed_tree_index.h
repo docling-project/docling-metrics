@@ -21,12 +21,12 @@
 
 #pragma once
 
-#include <vector>
-#include <cmath>
-#include "../node/node.h"
 #include "../label/label_dictionary.h"
+#include "../node/node.h"
 #include "../node/tree_indexer.h"
 #include "../ted/ted_algorithm.h"
+#include <cmath>
+#include <vector>
 
 namespace ted_lb {
 
@@ -40,7 +40,7 @@ namespace ted_lb {
  * NOTE: only node::TreeIndexSED or its superset can be used with SEDTreeIndex.
  */
 template <typename CostModel, typename TreeIndex = node::TreeIndexSED>
-class SEDTreeIndex : public ted::TEDAlgorithm<CostModel, TreeIndex>{
+class SEDTreeIndex : public ted::TEDAlgorithm<CostModel, TreeIndex> {
 
   // Base class members made visible for this class.
   using ted::TEDAlgorithm<CostModel, TreeIndex>::TEDAlgorithm;
@@ -49,11 +49,10 @@ class SEDTreeIndex : public ted::TEDAlgorithm<CostModel, TreeIndex>{
 
 public:
   /// Implements ted function from the TEDAlgorithm<CostModel, TreeIndex> class.
-  double ted(const TreeIndex& t1, const TreeIndex& t2);
-
+  double ted(const TreeIndex &t1, const TreeIndex &t2);
 };
 
 // Implementation details.
 #include "sed_tree_index_impl.h"
 
-}
+} // namespace ted_lb

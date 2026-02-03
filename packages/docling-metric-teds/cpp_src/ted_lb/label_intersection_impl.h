@@ -24,17 +24,15 @@
 #pragma once
 
 template <typename CostModel, typename TreeIndex>
-double LabelIntersection<CostModel, TreeIndex>::ted(
-    const TreeIndex& t1, const TreeIndex& t2) {
-  
+double LabelIntersection<CostModel, TreeIndex>::ted(const TreeIndex &t1, const TreeIndex &t2) {
+
   // Count the number of overlaping labels.
   unsigned long int label_int = 0;
 
   // Verify for each node of the first tree, whether it appears in the second.
-  for (auto& element: t1.inverted_list_label_id_to_postl_) {
+  for (auto &element : t1.inverted_list_label_id_to_postl_) {
     auto tree2 = t2.inverted_list_label_id_to_postl_;
-    std::unordered_map<int,std::vector<int>>::iterator it =
-      tree2.find(element.first);
+    std::unordered_map<int, std::vector<int>>::iterator it = tree2.find(element.first);
     // If the node with a certain label exists in both trees, the smaller
     // number is the intersection for the specific label.
     if (it != tree2.end()) {

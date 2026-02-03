@@ -30,8 +30,9 @@ TwoStageInvertedList::TwoStageInvertedList(long int labels) {
   il_index_.resize(nr_of_labels_);
 }
 
-void TwoStageInvertedList::build(std::vector<std::pair<int, 
-    std::vector<label_set_converter_index::LabelSetElement>>>& sets_collection) {
+void TwoStageInvertedList::build(
+    std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>
+        &sets_collection) {
   long int label_id;
   long int descendants;
   long int ancestors;
@@ -50,15 +51,15 @@ void TwoStageInvertedList::build(std::vector<std::pair<int,
   }
 }
 
-void TwoStageInvertedList::lookup(long int& q_label_id,
-    long int descendants, long int ancestors, int& q_tree_size, 
-    std::unordered_set<long int>& candidates,
-    const double distance_threshold) {
+void TwoStageInvertedList::lookup(long int &q_label_id, long int descendants, long int ancestors,
+                                  int &q_tree_size, std::unordered_set<long int> &candidates,
+                                  const double distance_threshold) {
   // All nodes except the current node, its descendants, and ancestors.
   long int right_left = q_tree_size - descendants - ancestors - 1;
   // Range for descendants stage.
   long int start_desc_range = descendants - distance_threshold;
-  if (start_desc_range < 0) start_desc_range = 0;
+  if (start_desc_range < 0)
+    start_desc_range = 0;
   // Range for ancestor stage.
   long int start_anc_range = 0;
   // Range for right-left stage.
@@ -67,7 +68,7 @@ void TwoStageInvertedList::lookup(long int& q_label_id,
   long int threshold_stage1;
   long int threshold_stage2;
   long int threshold_stage3;
-  // Binary search to first relevant element (threshold range) in 
+  // Binary search to first relevant element (threshold range) in
   // the descandants index layer.
   auto iter_desc = il_index_[q_label_id].element_list.lower_bound(start_desc_range);
   while (iter_desc != il_index_[q_label_id].element_list.end()) {
@@ -78,10 +79,11 @@ void TwoStageInvertedList::lookup(long int& q_label_id,
       ++iter_desc;
       continue;
     }
-    // Binary search to first relevant element (threshold range) in 
+    // Binary search to first relevant element (threshold range) in
     // the ancestor index layer.
     start_anc_range = ancestors - threshold_stage1;
-    if (start_anc_range < 0) start_anc_range = 0;
+    if (start_anc_range < 0)
+      start_anc_range = 0;
     auto iter_anc = iter_desc->second.lower_bound(start_anc_range);
     while (iter_anc != iter_desc->second.end()) {
       threshold_stage2 = threshold_stage1 - std::abs(ancestors - iter_anc->first);
@@ -90,10 +92,11 @@ void TwoStageInvertedList::lookup(long int& q_label_id,
         ++iter_anc;
         continue;
       }
-      // Binary search to first relevant element (threshold range) in 
+      // Binary search to first relevant element (threshold range) in
       // the right-left index layer.
       start_rl_range = right_left - threshold_stage2;
-      if (start_rl_range < 0) start_rl_range = 0;
+      if (start_rl_range < 0)
+        start_rl_range = 0;
       auto iter_rl = iter_anc->second.lower_bound(start_rl_range);
       while (iter_rl != iter_anc->second.end()) {
         threshold_stage3 = threshold_stage2 - std::abs(right_left - iter_rl->first);
@@ -103,7 +106,7 @@ void TwoStageInvertedList::lookup(long int& q_label_id,
           continue;
         }
         // Add all to candidates.
-        for (auto& tree_id : iter_rl->second) {
+        for (auto &tree_id : iter_rl->second) {
           candidates.insert(tree_id);
         }
         ++iter_rl;
@@ -114,18 +117,10 @@ void TwoStageInvertedList::lookup(long int& q_label_id,
   }
 }
 
-long int TwoStageInvertedList::get_number_of_pre_candidates() const {
-  return pre_candidates_;
-}
+long int TwoStageInvertedList::get_number_of_pre_candidates() const { return pre_candidates_; }
 
-void TwoStageInvertedList::set_number_of_pre_candidates(const long int pc) {
-  pre_candidates_ = pc;
-}
+void TwoStageInvertedList::set_number_of_pre_candidates(const long int pc) { pre_candidates_ = pc; }
 
-long int TwoStageInvertedList::get_number_of_il_lookups() const {
-  return il_lookups_;
-}
+long int TwoStageInvertedList::get_number_of_il_lookups() const { return il_lookups_; }
 
-void TwoStageInvertedList::set_number_of_il_lookups(const long int il) {
-  il_lookups_ = il;
-}
+void TwoStageInvertedList::set_number_of_il_lookups(const long int il) { il_lookups_ = il; }

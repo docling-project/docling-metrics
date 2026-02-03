@@ -24,9 +24,8 @@
 #pragma once
 
 template <typename CostModel, typename TreeIndex>
-double ZhangShashaTreeIndex<CostModel, TreeIndex>::ted(
-    const TreeIndex& t1, const TreeIndex& t2) {
-  
+double ZhangShashaTreeIndex<CostModel, TreeIndex>::ted(const TreeIndex &t1, const TreeIndex &t2) {
+
   using data_structures::Matrix;
 
   const int kT1Size = t1.tree_size_;
@@ -34,8 +33,8 @@ double ZhangShashaTreeIndex<CostModel, TreeIndex>::ted(
 
   // NOTE: The default constructor of Matrix is called while constructing ZS-Algorithm.
   // NOTE: Shouldn't we implement Matrix::resize() instead of constructing matrix again?
-  td_ = Matrix<double>(kT1Size+1, kT2Size+1);
-  fd_ = Matrix<double>(kT1Size+1, kT2Size+1);
+  td_ = Matrix<double>(kT1Size + 1, kT2Size + 1);
+  fd_ = Matrix<double>(kT1Size + 1, kT2Size + 1);
 
   // Reset subproblem counter.
   subproblem_counter_ = 0;
@@ -52,13 +51,11 @@ double ZhangShashaTreeIndex<CostModel, TreeIndex>::ted(
 }
 
 template <typename CostModel, typename TreeIndex>
-void ZhangShashaTreeIndex<CostModel, TreeIndex>::forest_distance(
-    const TreeIndex& t1,
-    const TreeIndex& t2,
-    int kr1,
-    int kr2) {
-  const int kKr1Lld = t1.postl_to_lld_[kr1 - 1]+1; // See declaration of t1_lld_.
-  const int kKr2Lld = t2.postl_to_lld_[kr2 - 1]+1;
+void ZhangShashaTreeIndex<CostModel, TreeIndex>::forest_distance(const TreeIndex &t1,
+                                                                 const TreeIndex &t2, int kr1,
+                                                                 int kr2) {
+  const int kKr1Lld = t1.postl_to_lld_[kr1 - 1] + 1; // See declaration of t1_lld_.
+  const int kKr2Lld = t2.postl_to_lld_[kr2 - 1] + 1;
   const int kT1Empty = kKr1Lld - 1;
   const int kT2Empty = kKr2Lld - 1;
   // Distance between two empty forests.
@@ -80,17 +77,24 @@ void ZhangShashaTreeIndex<CostModel, TreeIndex>::forest_distance(
     for (int j = kKr2Lld; j <= kr2; ++j) {
       ++subproblem_counter_;
       // If we have two subtrees.
-      if (t1.postl_to_lld_[i - 1]+1 == kKr1Lld && t2.postl_to_lld_[j - 1]+1 == kKr2Lld) {
+      if (t1.postl_to_lld_[i - 1] + 1 == kKr1Lld && t2.postl_to_lld_[j - 1] + 1 == kKr2Lld) {
         fd_.at(i, j) = std::min(
-            {fd_.at(i - 1, j) + c_.del(t1.postl_to_label_id_[i - 1]), // Delete root node in source subtree.
-             fd_.at(i, j - 1) + c_.ins(t2.postl_to_label_id_[j - 1]), // Insert root node in destination subtree.
-             fd_.at(i - 1, j - 1) + c_.ren(t1.postl_to_label_id_[i - 1], t2.postl_to_label_id_[j - 1])}); // Rename the root nodes.
+            {fd_.at(i - 1, j) +
+                 c_.del(t1.postl_to_label_id_[i - 1]), // Delete root node in source subtree.
+             fd_.at(i, j - 1) +
+                 c_.ins(t2.postl_to_label_id_[j - 1]), // Insert root node in destination subtree.
+             fd_.at(i - 1, j - 1) +
+                 c_.ren(t1.postl_to_label_id_[i - 1],
+                        t2.postl_to_label_id_[j - 1])}); // Rename the root nodes.
         td_.at(i, j) = fd_.at(i, j);
       } else { // We have two forests.
         fd_.at(i, j) = std::min(
-            {fd_.at(i - 1, j) + c_.del(t1.postl_to_label_id_[i - 1]), // Delete rightmost root node in source subforest.
-             fd_.at(i, j - 1) + c_.ins(t2.postl_to_label_id_[j - 1]), // Insert rightmost root node in destination subforest.
-             fd_.at(t1.postl_to_lld_[i - 1]+1 - 1, t2.postl_to_lld_[j - 1]+1 - 1) + td_.at(i, j)}); // Delete the rightmost subtrees + keep the rightmost subtrees.
+            {fd_.at(i - 1, j) + c_.del(t1.postl_to_label_id_[i - 1]), // Delete rightmost root node
+                                                                      // in source subforest.
+             fd_.at(i, j - 1) + c_.ins(t2.postl_to_label_id_[j - 1]), // Insert rightmost root node
+                                                                      // in destination subforest.
+             fd_.at(t1.postl_to_lld_[i - 1] + 1 - 1, t2.postl_to_lld_[j - 1] + 1 - 1) +
+                 td_.at(i, j)}); // Delete the rightmost subtrees + keep the rightmost subtrees.
       }
       // std::cout << "--- fd[" << i << "][" << j << "] = " << fd_.at(i, j) << std::endl;
     }

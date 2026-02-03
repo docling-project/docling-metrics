@@ -24,7 +24,7 @@
 /// \details
 /// This is an implementation of a dictionary for labels. The purpose is to use
 /// it to assign complex labels uniqe integer ids. This makes it more efficient
-/// for equality comparison, indexing, and hashing. 
+/// for equality comparison, indexing, and hashing.
 
 #pragma once
 
@@ -42,8 +42,7 @@ namespace label {
 /// NOTE: Once using LabelDictionary, one has to be careful about with the
 ///       cost model.
 ///
-template <class Label>
-class LabelDictionary {
+template <class Label> class LabelDictionary {
 public:
   /// Constructor.
   LabelDictionary();
@@ -53,21 +52,22 @@ public:
   ///
   /// \param l A label to insert.
   /// \return The id of the given label.
-  int insert(const Label& l);
+  int insert(const Label &l);
   /// Returns the number of labels.
   ///
   /// \return The number of labels.
   int get_number_of_labels();
-  /// Returns the label that is mapped to a certain 
+  /// Returns the label that is mapped to a certain
   ///
   /// \param id A label identifier to lookup.
   /// \return The according label to a given label identifier.
-  const Label& get(const int id) const;
+  const Label &get(const int id) const;
   /// Removes all elements from the dictionary.
   /// Resets labels_count_ to 0;
   void clear();
-  
+
   int size() const;
+
 private:
   /// A hash map that maps labels to unique integer identifiers.
   /// TODO: Write requirements for Label and update them in string_label.

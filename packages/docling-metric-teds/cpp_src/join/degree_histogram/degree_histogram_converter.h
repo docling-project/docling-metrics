@@ -22,52 +22,49 @@
 /// \file join/degree_histogram/degree_histogram_converter.h
 ///
 /// \details
-/// Takes a collection of trees and and converts them into a histogram of degree 
-/// values. The histogram stores the number of nodes with a certain degree value. 
+/// Takes a collection of trees and and converts them into a histogram of degree
+/// values. The histogram stores the number of nodes with a certain degree value.
 
 #pragma once
 
-#include <unordered_map>
-#include "../../node/node.h"
 #include "../../label/string_label.h"
+#include "../../node/node.h"
+#include <unordered_map>
 
 namespace degree_histogram_converter {
 
-template <typename Label>
-class Converter {
-// Member functions.
+template <typename Label> class Converter {
+  // Member functions.
 public:
   /// Constructor.
   Converter();
-  /// Converts a given tree to a histogram. Each element of the vector contains 
+  /// Converts a given tree to a histogram. Each element of the vector contains
   /// a value of the histogram.
   ///
   /// \param tree_collection A collection of trees.
   /// \param histogram_collection A collection of histograms.
-  void create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection);
+  void
+  create_histogram(const std::vector<node::Node<Label>> &trees_collection,
+                   std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection);
   /// Returns the maximum degree of a node in a tree collection.
   ///
   /// \return The the maximum degree of a node in a tree collection.
   int get_maximum_degree() const;
-// Member variables.
+  // Member variables.
 private:
   /// Maximum degree of a node in the tree collection.
   int max_degree_ = 0;
-// Member functions.
+  // Member functions.
 private:
-  /// Recursively transforms a tree into a histogram. Each element holds a value 
+  /// Recursively transforms a tree into a histogram. Each element holds a value
   /// of the histogram.
   ///
   /// \param tree_node Current node of a tree.
   /// \param degree_histogram Vector of histogram values.
-  void create_degree_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::unordered_map<int, int>& degree_histogram, 
-    int& tree_size);
+  void create_degree_histrogram(const node::Node<Label> &tree_node,
+                                std::unordered_map<int, int> &degree_histogram, int &tree_size);
 };
 
 // Implementation details.
 #include "degree_histogram_converter_impl.h"
-}
+} // namespace degree_histogram_converter

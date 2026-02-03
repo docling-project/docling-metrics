@@ -42,7 +42,6 @@ struct SetData {
 
 candidate_index::SetData::SetData() {}
 
-candidate_index::SetData::SetData(int overlap, int prefix)
-    : overlap(overlap), prefix(prefix) {}
+candidate_index::SetData::SetData(int overlap, int prefix) : overlap(overlap), prefix(prefix) {}
 
-}
+} // namespace candidate_index

@@ -22,27 +22,27 @@
 /// \file join/histogram/histo_candidate_index.h
 ///
 /// \details
-/// Implements a candidate index that efficiently and effectively returns tree 
-/// pairs that satisfy the label, leaf distance and degree histogram lower bound 
-/// by Kailing et al and Li et al. 
+/// Implements a candidate index that efficiently and effectively returns tree
+/// pairs that satisfy the label, leaf distance and degree histogram lower bound
+/// by Kailing et al and Li et al.
 
 #pragma once
 
-#include <cmath>
-#include <climits>
-#include <algorithm>
-#include <vector>
-#include <unordered_map>
 #include "../../node/node.h"
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <unordered_map>
+#include <vector>
 
 namespace histo_candidate_index {
 
 class CandidateIndex {
-// Member functions.
+  // Member functions.
 public:
   /// Constructor.
   CandidateIndex();
-  /// Returns a set of candidates that satisfy the histogram lower bound. 
+  /// Returns a set of candidates that satisfy the histogram lower bound.
   ///
   /// \param label_histogram_collection Collection of all label histograms.
   /// \param degree_histogram_collection Collection of all degree histograms.
@@ -51,11 +51,10 @@ public:
   /// \param il_size Size of the inverted list.
   /// \param distance_threshold Given similarity threshold.
   void lookup(
-      std::vector<std::pair<int, std::unordered_map<int, int>>>& label_histogram_collection,
-      std::vector<std::pair<int, std::unordered_map<int, int>>>& degree_histogram_collection,
-      std::vector<std::pair<int, std::unordered_map<int, int>>>& leaf_distance_histogram_collection, 
-      std::vector<std::pair<int, int>>& join_candidates,
-      const int il_size,
+      std::vector<std::pair<int, std::unordered_map<int, int>>> &label_histogram_collection,
+      std::vector<std::pair<int, std::unordered_map<int, int>>> &degree_histogram_collection,
+      std::vector<std::pair<int, std::unordered_map<int, int>>> &leaf_distance_histogram_collection,
+      std::vector<std::pair<int, int>> &join_candidates, const int il_size,
       const double distance_threshold);
   /// Returns the number of precandidates.
   ///
@@ -67,7 +66,7 @@ public:
   ///
   /// \return The number of lookups in the inverted list.
   long int get_number_of_il_lookups() const;
-// Member variables.
+  // Member variables.
 private:
   /// Number of precandidates.
   long int pre_candidates_;
@@ -78,4 +77,4 @@ private:
 // Implementation details.
 #include "histo_candidate_index_impl.h"
 
-}
+} // namespace histo_candidate_index

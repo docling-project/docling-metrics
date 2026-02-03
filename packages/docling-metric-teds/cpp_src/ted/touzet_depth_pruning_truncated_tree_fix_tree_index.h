@@ -21,18 +21,18 @@
 
 #pragma once
 
-#include <vector>
-#include <memory>
-#include <iostream>
-#include <limits>
-#include <algorithm>
-#include <cstdlib>
-#include <string>
-#include <cmath>
-#include "../node/node.h"
 #include "../data_structures/matrix.h"
+#include "../node/node.h"
 #include "ted_algorithm_touzet.h"
 #include "touzet_baseline_tree_index.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace ted {
 
@@ -47,12 +47,12 @@ namespace ted {
  * NOTE: Only node::TreeIndexTouzetDepthPruningTruncatedTreeFix or its superset
  *       can be used with TouzetDepthPruningTruncatedTreeFixTreeIndex.
  */
-template <typename CostModel, typename TreeIndex = node::TreeIndexTouzetDepthPruningTruncatedTreeFix>
-class TouzetDepthPruningTruncatedTreeFixTreeIndex :
-    public TouzetBaselineTreeIndex<CostModel, TreeIndex> {
+template <typename CostModel,
+          typename TreeIndex = node::TreeIndexTouzetDepthPruningTruncatedTreeFix>
+class TouzetDepthPruningTruncatedTreeFixTreeIndex
+    : public TouzetBaselineTreeIndex<CostModel, TreeIndex> {
 
 public:
-
   // Base class members made visible for this class.
   using TEDAlgorithmTouzet<CostModel, TreeIndex>::td_;
   using TEDAlgorithmTouzet<CostModel, TreeIndex>::fd_;
@@ -65,13 +65,13 @@ public:
   // Depth pruning heuristic requires a different `tree_dist` function.
   // That from TEDAlgorithmTouzet is overriden here.
   // It additionally needed `k` value - added to arguments.
-  double tree_dist(const TreeIndex& t1, const TreeIndex& t2, const int x,
-      const int y, const int k, const int e);
-  
+  double tree_dist(const TreeIndex &t1, const TreeIndex &t2, const int x, const int y, const int k,
+                   const int e);
+
   // `ted_k` funtion is inherited from TouzetBaselineTreeIndex.
   // double ted_k(const TreeIndex& t1, const TreeIndex& t2, const int k);
 };
 
 // Implementation details.
 #include "touzet_depth_pruning_truncated_tree_fix_tree_index_impl.h"
-}
+} // namespace ted

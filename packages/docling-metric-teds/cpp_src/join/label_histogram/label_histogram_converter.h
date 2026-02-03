@@ -22,44 +22,41 @@
 /// \file join/label_histogram/label_histogram_converter.h
 ///
 /// \details
-/// Takes a collection of trees and and converts them into a histogram of label 
-/// values. The histogram stores the number of nodes with a certain label value. 
+/// Takes a collection of trees and and converts them into a histogram of label
+/// values. The histogram stores the number of nodes with a certain label value.
 
 #pragma once
 
-#include <unordered_map>
-#include "../../node/node.h"
 #include "../../label/string_label.h"
+#include "../../node/node.h"
+#include <unordered_map>
 
 namespace label_histogram_converter {
 
-template <typename Label>
-class Converter {
-// Member struct.
+template <typename Label> class Converter {
+  // Member struct.
 public:
   /// Hashfunction for labels.
   struct labelhash {
-    size_t operator()(const Label& l1) const {
-      return std::hash<std::string>()(l1.to_string());
-    }
+    size_t operator()(const Label &l1) const { return std::hash<std::string>()(l1.to_string()); }
   };
-// Member functions.
+  // Member functions.
 public:
   /// Constructor.
   Converter();
-  /// Converts a given tree to a histogram. Each element of the vector contains 
+  /// Converts a given tree to a histogram. Each element of the vector contains
   /// a value of the histogram.
   ///
   /// \param tree_collection A collection of trees.
   /// \param histogram_collection A collection of histograms.
-  void create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection);
+  void
+  create_histogram(const std::vector<node::Node<Label>> &trees_collection,
+                   std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection);
   /// Returns the number of labels of a node in a tree collection.
   ///
   /// \return The the number of labels of a node in a tree collection.
   int get_number_of_labels() const;
-// Member variables.
+  // Member variables.
 private:
   /// Counter to give unique IDs to the tokens.
   int number_of_labels_ = 0;
@@ -67,19 +64,17 @@ private:
   int label_id_ = 0;
   // Map a label to a unique integer.
   typename std::unordered_map<Label, int, labelhash> label_id_map_;
-// Member functions.
+  // Member functions.
 private:
-  /// Recursively transforms a tree into a histogram. Each element holds a value 
+  /// Recursively transforms a tree into a histogram. Each element holds a value
   /// of the histogram.
   ///
   /// \param tree_node Current node of a tree.
   /// \param label_histogram Vector of histogram values.
-  void create_label_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::unordered_map<int, int>& label_histogram, 
-    int& tree_size);
+  void create_label_histrogram(const node::Node<Label> &tree_node,
+                               std::unordered_map<int, int> &label_histogram, int &tree_size);
 };
 
 // Implementation details.
 #include "label_histogram_converter_impl.h"
-}
+} // namespace label_histogram_converter

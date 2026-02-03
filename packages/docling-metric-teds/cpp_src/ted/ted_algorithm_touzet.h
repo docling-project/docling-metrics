@@ -21,18 +21,18 @@
 
 #pragma once
 
-#include <vector>
-#include <memory>
-#include "../node/node.h"
 #include "../data_structures/matrix.h"
+#include "../node/node.h"
 #include "../node/tree_indexer.h"
 #include "ted_algorithm.h"
+#include <memory>
+#include <vector>
 
 namespace ted {
 
 /**
  * Interface for all Touzet algorithms.
- * 
+ *
  * Implements the tree edit distance algorithm by Helene Touzet [1].
  *
  * The algorithm requires parameter k, that is the upper bound for the number
@@ -63,7 +63,6 @@ template <typename CostModel, typename TreeIndex = node::TreeIndexTouzetBaseline
 class TEDAlgorithmTouzet : public TEDAlgorithm<CostModel, TreeIndex> {
 
 public:
-
   // Base class members made visible for this class.
   using TEDAlgorithm<CostModel, TreeIndex>::TEDAlgorithm;
   using TEDAlgorithm<CostModel, TreeIndex>::c_;
@@ -79,7 +78,7 @@ public:
    * The algorithm is executed multiple times with increasing values of k.
    * When k exceeds the returned distance, the algorithm terminates.
    */
-  double ted(const TreeIndex& t1, const TreeIndex& t2) {
+  double ted(const TreeIndex &t1, const TreeIndex &t2) {
 
     // `+1` due to possible 0 size difference - then increase by mutliplication
     // doesn't work.
@@ -136,8 +135,7 @@ public:
    *          insertions).
    * \return Tree edit distance regarding k.
    */
-  virtual double ted_k(const TreeIndex& t1, const TreeIndex& t2,
-      const int k) = 0;
+  virtual double ted_k(const TreeIndex &t1, const TreeIndex &t2, const int k) = 0;
 
   /// Matrix storing subtree distances.
   data_structures::BandMatrix<double> td_;
@@ -160,22 +158,22 @@ public:
    * \param y Postorder ID of a subtree in the destination tree.
    * \param e The remaining budget of structural modifications for (x,y).
    */
-  virtual double tree_dist(const TreeIndex& t1, const TreeIndex& t2, const int x,
-      const int y, const int k, const int e) {
+  virtual double tree_dist(const TreeIndex &t1, const TreeIndex &t2, const int x, const int y,
+                           const int k, const int e) {
     int x_size = t1.postl_to_size_[x];
     int y_size = t2.postl_to_size_[y];
 
     // std::cout << "TEDAlgorithmTouzet::tree_dist" << std::endl;
-    
+
     // Calculates offsets that lets us translate i and j to correct postorder
     // ids.
     int x_off = x - x_size;
     int y_off = y - y_size;
-    
+
     double inf = std::numeric_limits<double>::infinity();
 
     // Initial cases.
-    fd_.at(0, 0) = 0.0; // (0,0) is always within e-strip.
+    fd_.at(0, 0) = 0.0;                              // (0,0) is always within e-strip.
     for (int j = 1; j <= std::min(y_size, e); ++j) { // i = 0; only j that are within e-strip.
       fd_.at(0, j) = fd_.read_at(0, j - 1) + c_.ins(t2.postl_to_label_id_[j + y_off]);
     }
@@ -196,21 +194,25 @@ public:
     int j_forest;
     double fd_read;
     double td_read;
-      
+
     // General cases.
     for (int i = 1; i <= x_size; ++i) {
-      if (i - e - 1 >= 1) { // First j that is outside e-strip - can be read for the cell to the right.
+      if (i - e - 1 >=
+          1) { // First j that is outside e-strip - can be read for the cell to the right.
         fd_.at(i, i - e - 1) = inf;
       }
       i_forest = i - t1.postl_to_size_[i + x_off];
-      for (int j = std::max(1, i - e); j <= std::min(i + e, y_size); ++j) { // only (i,j) that are in e-strip
+      for (int j = std::max(1, i - e); j <= std::min(i + e, y_size);
+           ++j) { // only (i,j) that are in e-strip
         ++subproblem_counter_;
-        
+
         j_forest = j - t2.postl_to_size_[j + y_off];
-        
+
         candidate_result = inf;
-        candidate_result = std::min(candidate_result, fd_.read_at(i - 1, j) + c_.del(t1.postl_to_label_id_[i + x_off]));
-        candidate_result = std::min(candidate_result, fd_.read_at(i, j - 1) + c_.ins(t2.postl_to_label_id_[j + y_off]));
+        candidate_result = std::min(candidate_result, fd_.read_at(i - 1, j) +
+                                                          c_.del(t1.postl_to_label_id_[i + x_off]));
+        candidate_result = std::min(candidate_result, fd_.read_at(i, j - 1) +
+                                                          c_.ins(t2.postl_to_label_id_[j + y_off]));
 
         fd_read = inf;
         // If one of the forests is a tree, look up the vlaues in fd_.
@@ -236,11 +238,12 @@ public:
           }
           candidate_result = std::min(candidate_result, fd_read + td_read);
         } else { // Pair of two subtrees.
-          fd_read = fd_.read_at(i - 1, j - 1) + c_.ren(t1.postl_to_label_id_[i + x_off], t2.postl_to_label_id_[j + y_off]);
+          fd_read = fd_.read_at(i - 1, j - 1) +
+                    c_.ren(t1.postl_to_label_id_[i + x_off], t2.postl_to_label_id_[j + y_off]);
           candidate_result = std::min(candidate_result, fd_read);
           // Store the result only if it is within e budget.
           // Otherwise the inifinity value is already there from init.
-          if (candidate_result <= e ) {
+          if (candidate_result <= e) {
             if (std::abs((i + x_off) - (j + y_off)) <= k) {
               // NOTE: If e is too large, TouzetKRLoop hits a bug here.
               //       See the note above.
@@ -282,20 +285,23 @@ public:
    * \param k Original threshold for the number of structural modifications.
    * \return e(x,y) = k - |(|T1|-(x+1))-(|T2|-(y+1))| - |((x+1)-|T1_x|)-((y+1)-|T2_y|)|
    */
-  int e_budget(const TreeIndex& t1, const TreeIndex& t2, const int x, const int y, const int k) const {
+  int e_budget(const TreeIndex &t1, const TreeIndex &t2, const int x, const int y,
+               const int k) const {
     // Lower bound formula (k - RA - L):
     // e(x,y) = k - |(|T1|-(x+1))-(|T2|-(y+1))| - |((x+1)-|T1_x|)-((y+1)-|T2_y|)|
     // New lower bound formula (k - R - A - L):
-    // e(x,y) = k - |(|T1|-(x+1)-depth(x))-(|T2|-(y+1)-depth(y))| - |depth(x)-depth(y)| - |((x+1)-|T1_x|)-((y+1)-|T2_y|)|
+    // e(x,y) = k - |(|T1|-(x+1)-depth(x))-(|T2|-(y+1)-depth(y))| - |depth(x)-depth(y)| -
+    // |((x+1)-|T1_x|)-((y+1)-|T2_y|)|
     int x_size = t1.postl_to_size_[x];
     int y_size = t2.postl_to_size_[y];
     // int lower_bound = std::abs((t1_size_.back() - (x+1)) - (t2_size_.back() - (y+1))) +
     //                   std::abs(((x+1) - x_size) - ((y+1) - y_size));
-    int lower_bound = std::abs((t1.tree_size_ - (x+1) - t1.postl_to_depth_[x]) -
-        (t2.tree_size_ - (y+1) - t2.postl_to_depth_[y])) +
-        std::abs(t1.postl_to_depth_[x] - t2.postl_to_depth_[y]) +
-        std::abs(((x+1) - x_size) - ((y+1) - y_size));
-    return (k - lower_bound); // TODO: Verify this -> BUG: There is a bug here possibly returning a negative number.
+    int lower_bound = std::abs((t1.tree_size_ - (x + 1) - t1.postl_to_depth_[x]) -
+                               (t2.tree_size_ - (y + 1) - t2.postl_to_depth_[y])) +
+                      std::abs(t1.postl_to_depth_[x] - t2.postl_to_depth_[y]) +
+                      std::abs(((x + 1) - x_size) - ((y + 1) - y_size));
+    return (k - lower_bound); // TODO: Verify this -> BUG: There is a bug here possibly returning a
+                              // negative number.
   };
 
   /// Verifies if subtrees T1_x and T2_y are k-relevant.
@@ -312,22 +318,23 @@ public:
    * \param k maximum number of structural canges.
    * \return True if subtrees T1_x and T2_y are k-relevant, and false otherwise.
    */
-  bool k_relevant(const TreeIndex& t1, const TreeIndex& t2, const int x, const int y, const int k) const {
+  bool k_relevant(const TreeIndex &t1, const TreeIndex &t2, const int x, const int y,
+                  const int k) const {
     // The lower bound formula (RA + D + L):
     // |(|T1|-(x+1))-(|T2|-(y+1))| + ||T1_x|-|T2_y|| + |((x+1)-|T1_x|)-((y+1)-|T2_y|)| < k
     // New lower bound formula (R + A + D + L):
-    // |(|T1|-(x+1)-depth(x))-(|T2|-(y+1)-depth(y))| + |depth(x)-depth(y)| + ||T1_x|-|T2_y|| + |((x+1)-|T1_x|)-((y+1)-|T2_y|)| < k
+    // |(|T1|-(x+1)-depth(x))-(|T2|-(y+1)-depth(y))| + |depth(x)-depth(y)| + ||T1_x|-|T2_y|| +
+    // |((x+1)-|T1_x|)-((y+1)-|T2_y|)| < k
     int x_size = t1.postl_to_size_[x];
     int y_size = t2.postl_to_size_[y];
     // int lower_bound = std::abs((t1_size_.back() - (x+1)) - (t2_size_.back() - (y+1))) +
     //                   std::abs(x_size - y_size) +
     //                   std::abs(((x+1) - x_size) - ((y+1) - y_size));
-    
-    int lower_bound = std::abs((t1.tree_size_ - (x+1) - t1.postl_to_depth_[x]) -
-        (t2.tree_size_ - (y+1) - t2.postl_to_depth_[y])) +
-        std::abs(t1.postl_to_depth_[x] - t2.postl_to_depth_[y]) +
-        std::abs(x_size - y_size) +
-        std::abs(((x+1) - x_size) - ((y+1) - y_size));
+
+    int lower_bound = std::abs((t1.tree_size_ - (x + 1) - t1.postl_to_depth_[x]) -
+                               (t2.tree_size_ - (y + 1) - t2.postl_to_depth_[y])) +
+                      std::abs(t1.postl_to_depth_[x] - t2.postl_to_depth_[y]) +
+                      std::abs(x_size - y_size) + std::abs(((x + 1) - x_size) - ((y + 1) - y_size));
 
     // NOTE: The pair (x,y) is k-relevant if lower_bound <= k.
     //       lower_bound < k is not correct because then (x,y) would be
@@ -338,7 +345,6 @@ public:
     }
     return false;
   };
-
 };
 
-}
+} // namespace ted

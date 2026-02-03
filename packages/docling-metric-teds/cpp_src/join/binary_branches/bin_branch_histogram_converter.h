@@ -22,58 +22,54 @@
 /// \file join/binary_branches/bin_branch_histogram_converter.h
 ///
 /// \details
-/// Takes a collection of trees and and converts them into histograms of binary 
-/// branches. The histogram stores the number of a certain binary branch. 
-
+/// Takes a collection of trees and and converts them into histograms of binary
+/// branches. The histogram stores the number of a certain binary branch.
 
 #pragma once
 
-#include <unordered_map>
-#include "../../node/node.h"
 #include "../../label/string_label.h"
+#include "../../node/node.h"
+#include <unordered_map>
 
 namespace bin_branch_histogram_converter {
 
-template <typename Label>
-class Converter {
-// Member functions.
+template <typename Label> class Converter {
+  // Member functions.
 public:
   /// Constructor.
   Converter();
-  /// Converts a given tree to a histogram. Each element of the vector contains 
+  /// Converts a given tree to a histogram. Each element of the vector contains
   /// a value of the histogram.
   ///
   /// \param tree_collection A collection of trees.
   /// \param histogram_collection A collection of histograms.
-  void create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection);
+  void
+  create_histogram(const std::vector<node::Node<Label>> &trees_collection,
+                   std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection);
   /// Returns the maximum degree of a node in a tree collection.
   ///
   /// \return The the maximum degree of a node in a tree collection.
   int get_number_of_bb() const;
-// Member variables.
+  // Member variables.
 private:
   /// Counter to give unique IDs for each binary branch.
   int bb_id_ = 0;
   // Map a binary branch to a unique integer.
   typename std::unordered_map<std::string, int> bb_id_map_;
-  /// String that is used as empty label. Therefore, no label should contain this string. 
+  /// String that is used as empty label. Therefore, no label should contain this string.
   std::string empty_string_ = "!§$%&/()=?";
-// Member functions.
+  // Member functions.
 private:
-  /// Recursively transforms a tree into a histogram. Each element holds a value 
+  /// Recursively transforms a tree into a histogram. Each element holds a value
   /// of the histogram.
   ///
   /// \param tree_node Current node of a tree.
   /// \param degree_histogram Vector of histogram values.
-  void create_bin_branch_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::string& right_sibling_label, 
-    std::unordered_map<int, int>& degree_histogram, 
-    int& tree_size);
+  void create_bin_branch_histrogram(const node::Node<Label> &tree_node,
+                                    std::string &right_sibling_label,
+                                    std::unordered_map<int, int> &degree_histogram, int &tree_size);
 };
 
 // Implementation details.
 #include "bin_branch_histogram_converter_impl.h"
-}
+} // namespace bin_branch_histogram_converter

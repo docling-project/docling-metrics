@@ -26,11 +26,9 @@
 
 #pragma once
 
-template<class Label>
-LabelDictionary<Label>::LabelDictionary() : labels_count_(0) {}
+template <class Label> LabelDictionary<Label>::LabelDictionary() : labels_count_(0) {}
 
-template<class Label>
-int LabelDictionary<Label>::insert(const Label& l) {
+template <class Label> int LabelDictionary<Label>::insert(const Label &l) {
   // Try to insert the given label with labels_count as its id value.
   // If the label is already in the dictionary, it (and its id) will not be
   // overwritten.
@@ -46,24 +44,18 @@ int LabelDictionary<Label>::insert(const Label& l) {
   return label_in_dictionary.first->second;
 }
 
-template<class Label>
-int LabelDictionary<Label>::get_number_of_labels() {
-  return labels_count_;
-}
+template <class Label> int LabelDictionary<Label>::get_number_of_labels() { return labels_count_; }
 
-template<class Label>
-const Label& LabelDictionary<Label>::get(const int id) const{
+template <class Label> const Label &LabelDictionary<Label>::get(const int id) const {
   // Return the label of the given id.
   return id_to_label_dictionary_[id];
 }
 
-template<class Label>
-void LabelDictionary<Label>::clear() {
+template <class Label> void LabelDictionary<Label>::clear() {
   label_to_id_dictionary_.clear();
   labels_count_ = 0;
 }
 
-template<class Label>
-int LabelDictionary<Label>::size() const {
+template <class Label> int LabelDictionary<Label>::size() const {
   return label_to_id_dictionary_.size();
 }

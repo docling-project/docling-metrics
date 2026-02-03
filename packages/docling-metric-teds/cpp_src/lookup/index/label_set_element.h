@@ -22,7 +22,7 @@
 /// \file lookup/index/label_set_element.h
 ///
 /// \details
-/// Structure a label set element. Containing the id, number of nodes per label, 
+/// Structure a label set element. Containing the id, number of nodes per label,
 /// number of nodes until the actual element and positional information per node.
 
 #pragma once
@@ -51,7 +51,8 @@ struct LabelSetElement {
   /// Constructor.
   LabelSetElement(long int id, long int postorder_id, int weight);
   /// Constructor.
-  LabelSetElement(long int id, long int postorder_id, int weight, long int ancestors, long int descendants);
+  LabelSetElement(long int id, long int postorder_id, int weight, long int ancestors,
+                  long int descendants);
 };
 
 label_set_converter_index::LabelSetElement::LabelSetElement() {}
@@ -59,9 +60,13 @@ label_set_converter_index::LabelSetElement::LabelSetElement() {}
 label_set_converter_index::LabelSetElement::LabelSetElement(long int id, int weight)
     : id(id), weight(weight) {}
 
-label_set_converter_index::LabelSetElement::LabelSetElement(long int id, long int postorder_id, int weight)
+label_set_converter_index::LabelSetElement::LabelSetElement(long int id, long int postorder_id,
+                                                            int weight)
     : id(id), postorder_id(postorder_id), weight(weight) {}
 
-label_set_converter_index::LabelSetElement::LabelSetElement(long int id, long int postorder_id, int weight, long int ancestors, long int descendants)
-    : id(id), postorder_id(postorder_id), ancestors(ancestors), descendants(descendants), weight(weight) {}
-}
+label_set_converter_index::LabelSetElement::LabelSetElement(long int id, long int postorder_id,
+                                                            int weight, long int ancestors,
+                                                            long int descendants)
+    : id(id), postorder_id(postorder_id), ancestors(ancestors), descendants(descendants),
+      weight(weight) {}
+} // namespace label_set_converter_index

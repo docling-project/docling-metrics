@@ -21,17 +21,17 @@
 
 #pragma once
 
-#include <vector>
-#include <memory>
+#include "../../data_structures/matrix.h"
+#include "../../node/node.h"
+#include "ted_algorithm_touzet.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <limits>
-#include <algorithm>
-#include <cstdlib>
+#include <memory>
 #include <string>
-#include <cmath>
-#include "../../node/node.h"
-#include "../../data_structures/matrix.h"
-#include "ted_algorithm_touzet.h"
+#include <vector>
 
 namespace ted {
 
@@ -46,7 +46,6 @@ template <typename CostModel, typename TreeIndex = node::TreeIndexTouzetBaseline
 class TouzetBaselineTreeIndex : public TEDAlgorithmTouzet<CostModel, TreeIndex> {
 
 public:
-  
   // Base class members made visible for this class.
   using TEDAlgorithmTouzet<CostModel, TreeIndex>::td_;
   using TEDAlgorithmTouzet<CostModel, TreeIndex>::fd_;
@@ -57,10 +56,10 @@ public:
   using TEDAlgorithmTouzet<CostModel, TreeIndex>::TEDAlgorithmTouzet;
   using TEDAlgorithmTouzet<CostModel, TreeIndex>::tree_dist;
 
-  double ted_k(const TreeIndex& t1, const TreeIndex& t2, const int k);
+  double ted_k(const TreeIndex &t1, const TreeIndex &t2, const int k);
 };
 
 // Implementation details.
 #include "touzet_baseline_tree_index_impl.h"
 
-}
+} // namespace ted

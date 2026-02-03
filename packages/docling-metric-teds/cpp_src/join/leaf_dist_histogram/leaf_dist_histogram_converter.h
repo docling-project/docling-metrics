@@ -22,52 +22,51 @@
 /// \file join/leaf_dist_histogram/leaf_dist_histogram_converter.h
 ///
 /// \details
-/// Takes a collection of trees and and converts them into a histogram of leaf 
-/// distance values. The histogram stores the number of nodes with a certain 
-/// leaf distance value. 
+/// Takes a collection of trees and and converts them into a histogram of leaf
+/// distance values. The histogram stores the number of nodes with a certain
+/// leaf distance value.
 
 #pragma once
 
-#include <unordered_map>
-#include "../../node/node.h"
 #include "../../label/string_label.h"
+#include "../../node/node.h"
+#include <unordered_map>
 
 namespace leaf_dist_histogram_converter {
 
-template <typename Label>
-class Converter {
-// Member functions.
+template <typename Label> class Converter {
+  // Member functions.
 public:
   /// Constructor.
   Converter();
-  /// Converts a given tree to a histogram. Each element of the vector contains 
+  /// Converts a given tree to a histogram. Each element of the vector contains
   /// a value of the histogram.
   ///
   /// \param tree_collection A collection of trees.
   /// \param histogram_collection A collection of histograms.
-  void create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection);
+  void
+  create_histogram(const std::vector<node::Node<Label>> &trees_collection,
+                   std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection);
   /// Returns the maximum leaf distance of a node in a tree collection.
   ///
   /// \return The the maximum leaf distance of a node in a tree collection.
   int get_maximum_leaf_dist() const;
-// Member variables.
+  // Member variables.
 private:
   /// Maximum leaf distance of a node of all trees.
   int max_leaf_distance_ = 0;
-// Member functions.
+  // Member functions.
 private:
-  /// Recursively transforms a tree into a histogram. Each element holds a value 
+  /// Recursively transforms a tree into a histogram. Each element holds a value
   /// of the histogram.
   ///
   /// \param tree_node Current node of a tree.
   /// \param leaf_dist_histogram Vector of histogram values.
-  int create_leaf_dist_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::unordered_map<int, int>& leaf_dist_histogram, int& tree_size);
+  int create_leaf_dist_histrogram(const node::Node<Label> &tree_node,
+                                  std::unordered_map<int, int> &leaf_dist_histogram,
+                                  int &tree_size);
 };
 
 // Implementation details.
 #include "leaf_dist_histogram_converter_impl.h"
-}
+} // namespace leaf_dist_histogram_converter

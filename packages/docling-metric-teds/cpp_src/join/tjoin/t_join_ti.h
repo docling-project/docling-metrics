@@ -21,14 +21,14 @@
 
 #pragma once
 
-#include <vector>
-#include <functional>
-#include "../join_result_element.h"
 #include "../../node/node.h"
 #include "../../ted_ub/lgm_tree_index.h"
+#include "../join_result_element.h"
 #include "candidate_index.h"
 #include "label_set_converter.h"
 #include "label_set_element.h"
+#include <functional>
+#include <vector>
 
 namespace join {
 
@@ -45,17 +45,16 @@ namespace join {
  * the remaining candidates are verified. Currently best, linear-time Touzet's
  * algorithm should be used.
  */
-template <typename Label, typename VerificationAlgorithm>
-class TJoinTI {
+template <typename Label, typename VerificationAlgorithm> class TJoinTI {
 public:
   TJoinTI();
   /// Executes TJoin algorithm.
   /**
    * TODO: Upper Bound algorithm could be also templated and not fixed to LGM.
    *
-   * Given a collection of trees, the candidates are retrieved by an 
-   * efficient and effective candidate index. Next, all candidates are 
-   * verified with the label guided mapping upper bound. Last, the 
+   * Given a collection of trees, the candidates are retrieved by an
+   * efficient and effective candidate index. Next, all candidates are
+   * verified with the label guided mapping upper bound. Last, the
    * remaining candidates are evaluated by Touzets algorithm.
    *
    * \param trees_collection A vector holding an input collection of trees.
@@ -66,12 +65,12 @@ public:
    *                           differs two trees in the join's result set.
    * \return A vector with the join result.
    */
-  void execute_join(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>& sets_collection,
-      std::vector<std::pair<int, int>>& candidates,
-      std::vector<join::JoinResultElement>& join_result,
-      const double distance_threshold);
+  void execute_join(std::vector<node::Node<Label>> &trees_collection,
+                    std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>
+                        &sets_collection,
+                    std::vector<std::pair<int, int>> &candidates,
+                    std::vector<join::JoinResultElement> &join_result,
+                    const double distance_threshold);
   /// Converts a given collection of trees into a collection of label sets.
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -79,21 +78,23 @@ public:
    *         in trees_collection.
    */
   void convert_trees_to_sets(
-      std::vector<node::Node<Label>>& trees_collection,
-      std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>& sets_collection);
+      std::vector<node::Node<Label>> &trees_collection,
+      std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>
+          &sets_collection);
   /// Retrieves candidate pairs from candidate index.
   /**
    * \param trees_collection A vector holding an input collection of trees.
    * \param candidates A vector of candidate tree pairs.
    * \param distance_threshold The maximum number of edit operations that
    *                           differs two trees in the join's result set.
-   * \return A vector containing pairs of trees ids (candidates) that are 
+   * \return A vector containing pairs of trees ids (candidates) that are
    *         considered candidates.
    */
-  void retrieve_candidates(
-      std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>& sets_collection,
-      std::vector<std::pair<int, int>>& candidates,
-      const double distance_threshold);
+  void
+  retrieve_candidates(std::vector<std::pair<int, std::vector<label_set_converter::LabelSetElement>>>
+                          &sets_collection,
+                      std::vector<std::pair<int, int>> &candidates,
+                      const double distance_threshold);
   /// Verifies candidates using Label Guided Mapping upper bound (LGM).
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -102,11 +103,10 @@ public:
    * \param distance_threshold The maximum number of edit operations that
    *                           differs two trees in the join's result set.
    */
-  void upperbound(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result, 
-    const double distance_threshold);
+  void upperbound(std::vector<node::Node<Label>> &trees_collection,
+                  std::vector<std::pair<int, int>> &candidates,
+                  std::vector<join::JoinResultElement> &join_result,
+                  const double distance_threshold);
   /// Verifies each candidate pair with the tree edit distance.
   /**
    * \param trees_collection A vector holding an input collection of trees.
@@ -116,11 +116,10 @@ public:
    *                           differs two trees in the join's result set.
    * \return A vector containing the join result.
    */
-  void verify_candidates(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, int>>& candidates,
-    std::vector<join::JoinResultElement>& join_result, 
-    const double distance_threshold);
+  void verify_candidates(std::vector<node::Node<Label>> &trees_collection,
+                         std::vector<std::pair<int, int>> &candidates,
+                         std::vector<join::JoinResultElement> &join_result,
+                         const double distance_threshold);
   /// Returns the number of precandidates.
   /**
    * \return pre_candidates_
@@ -153,4 +152,4 @@ private:
 // Implementation details.
 #include "t_join_ti_impl.h"
 
-}
+} // namespace join

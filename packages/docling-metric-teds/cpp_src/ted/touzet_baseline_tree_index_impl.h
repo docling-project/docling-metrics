@@ -24,14 +24,14 @@
 #pragma once
 
 template <typename CostModel, typename TreeIndex>
-double TouzetBaselineTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex& t1,
-    const TreeIndex& t2, const int k) {
-  
+double TouzetBaselineTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex &t1,
+                                                            const TreeIndex &t2, const int k) {
+
   const int t1_size = t1.tree_size_;
   const int t2_size = t2.tree_size_;
 
   init_matrices(t1_size, k);
-  
+
   // Reset subproblem counter.
   subproblem_counter_ = 0;
 
@@ -40,17 +40,17 @@ double TouzetBaselineTreeIndex<CostModel, TreeIndex>::ted_k(const TreeIndex& t1,
   if (std::abs(t1_size - t2_size) > k) {
     return std::numeric_limits<double>::infinity();
   }
-  
+
   // Nested loop over all node pairs in k-strip : |x-y|<=k. This loop iterates
   // over all node pairs from k-strip, and verifies their k-relevancy.
   for (int x = 0; x < t1_size; ++x) {
-    for (int y = std::max(0, x - k); y <= std::min(x + k, t2_size-1); ++y) {
+    for (int y = std::max(0, x - k); y <= std::min(x + k, t2_size - 1); ++y) {
       if (k_relevant(t1, t2, x, y, k)) {
         // Compute td(x, y) with e errors - the value of e(x, y, k).
         td_.at(x, y) = tree_dist(t1, t2, x, y, k, e_budget(t1, t2, x, y, k));
       }
     }
   }
-  
-  return td_.at(t1.tree_size_-1, t2.tree_size_-1);
+
+  return td_.at(t1.tree_size_ - 1, t2.tree_size_ - 1);
 }

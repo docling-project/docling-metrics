@@ -38,4 +38,4 @@ struct InvertedListElement {
 
 lookup::InvertedListElement::InvertedListElement() {}
 
-}
+} // namespace lookup

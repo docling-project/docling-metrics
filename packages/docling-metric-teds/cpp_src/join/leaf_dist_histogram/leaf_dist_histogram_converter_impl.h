@@ -22,21 +22,20 @@
 /// \file join/leaf_dist_histogram/leaf_dist_histogram_converter_impl.h
 ///
 /// \details
-/// Implements an algorithm that converts a collection of trees into a collection 
-/// of leaf distance histograms. 
+/// Implements an algorithm that converts a collection of trees into a collection
+/// of leaf distance histograms.
 
 #pragma once
 
-template<typename Label>
-Converter<Label>::Converter() {}
+template <typename Label> Converter<Label>::Converter() {}
 
-template<typename Label>
+template <typename Label>
 void Converter<Label>::create_histogram(
-    const std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::unordered_map<int, int>>>& histogram_collection) {
+    const std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::unordered_map<int, int>>> &histogram_collection) {
 
   // for each tree in the tree collection
-  for (const auto& tree: trees_collection) {
+  for (const auto &tree : trees_collection) {
     // stores the number of nodes per leaf distance
     std::unordered_map<int, int> leaf_dist_histogram;
     // stores the number of nodes per leaf distance
@@ -48,17 +47,17 @@ void Converter<Label>::create_histogram(
   }
 }
 
-template<typename Label>
-int Converter<Label>::create_leaf_dist_histrogram(
-    const node::Node<Label>& tree_node, 
-    std::unordered_map<int, int>& leaf_dist_histogram, int& tree_size) {
+template <typename Label>
+int Converter<Label>::create_leaf_dist_histrogram(const node::Node<Label> &tree_node,
+                                                  std::unordered_map<int, int> &leaf_dist_histogram,
+                                                  int &tree_size) {
 
   // the leaf distance is the minimum leaf distance of a nodes children + 1
   int max_child_leaf_dist = 0;
   // do recursively for all children
-  for (const auto& child: tree_node.get_children()) {
+  for (const auto &child : tree_node.get_children()) {
     int child_dist = create_leaf_dist_histrogram(child, leaf_dist_histogram, tree_size);
-    if(max_child_leaf_dist < child_dist)
+    if (max_child_leaf_dist < child_dist)
       max_child_leaf_dist = child_dist;
   }
   // the leaf distance is the minimum leaf distance of a nodes children + 1
@@ -66,7 +65,7 @@ int Converter<Label>::create_leaf_dist_histrogram(
   // increase leaf distance count for current node
   ++leaf_dist_histogram[max_child_leaf_dist];
   // store maximum leaf distance of the collection
-  if(max_child_leaf_dist > max_leaf_distance_)
+  if (max_child_leaf_dist > max_leaf_distance_)
     max_leaf_distance_ = max_child_leaf_dist;
   // increase tree size
   ++tree_size;
@@ -74,7 +73,6 @@ int Converter<Label>::create_leaf_dist_histrogram(
   return max_child_leaf_dist;
 }
 
-template<typename Label>
-int Converter<Label>::get_maximum_leaf_dist() const {
+template <typename Label> int Converter<Label>::get_maximum_leaf_dist() const {
   return max_leaf_distance_;
 }

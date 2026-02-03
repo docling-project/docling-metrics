@@ -26,36 +26,35 @@ namespace ted {
 /**
  * Interface for all TED algorithms.
  */
-template <typename CostModel, typename TreeIndex>
-class TEDAlgorithm {
+template <typename CostModel, typename TreeIndex> class TEDAlgorithm {
 public:
   /// Constructor. Takes cost model.
-  TEDAlgorithm(CostModel& c) : c_(c) {};
+  TEDAlgorithm(CostModel &c) : c_(c) {};
 
   virtual ~TEDAlgorithm() {};
-  
+
   /// Computes the tree edit distance between two trees.
   /**
    * \param t1 Source tree.
    * \param t2 Destination tree.
    * \return Tree edit distance value.
    */
-  virtual double ted(const TreeIndex& t1, const TreeIndex& t2) = 0;
-  
+  virtual double ted(const TreeIndex &t1, const TreeIndex &t2) = 0;
+
   /// Returns the number of subproblems encountered during TED computation.
   /**
    * \return The number of subproblems acountered in the last TED computation.
    */
   long long int get_subproblem_count() { return subproblem_counter_; };
-  
+
   /// To initialise VerificationAlgorithm and TreeIndex variables in join algorithms.
   typedef CostModel AlgsCostModel;
   typedef TreeIndex AlgsTreeIndex;
-  
+
 protected:
   /// Cost model.
-  const CostModel& c_;
-  
+  const CostModel &c_;
+
   /// Subproblem counter - for experiments only.
   /**
    * Counts the number of non-trivial values filled in fd_ matrix: subproblems
@@ -64,4 +63,4 @@ protected:
   long long int subproblem_counter_;
 };
 
-}
+} // namespace ted

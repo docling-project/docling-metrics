@@ -49,27 +49,27 @@ namespace label {
 /// one wants to use a specialized cost model.
 class StringLabel {
 public:
-    StringLabel(const std::string& label);
+  StringLabel(const std::string &label);
 
-    /// Operator overloadings.
-    /// @{
-    bool operator==(const StringLabel& other) const;
-    /// @}
+  /// Operator overloadings.
+  /// @{
+  bool operator==(const StringLabel &other) const;
+  /// @}
 
-    /// Return the type field of the label.
-    unsigned int get_type() const;
+  /// Return the type field of the label.
+  unsigned int get_type() const;
 
-    /// Return the label field of the label.
-    const std::string& get_label() const;
+  /// Return the label field of the label.
+  const std::string &get_label() const;
 
-    /// Generates a string representation of the label.
-    ///
-    /// \return String representation of the label.
-    const std::string& to_string() const;
+  /// Generates a string representation of the label.
+  ///
+  /// \return String representation of the label.
+  const std::string &to_string() const;
 
 private:
-    /// The label to be associated with a node.
-    std::string label_{};
+  /// The label to be associated with a node.
+  std::string label_{};
 };
 
 // Implementation details
@@ -79,14 +79,13 @@ private:
 
 // Custom specialization of std::hash - injected in namespace std.
 // This is needed for LabelDictionary.
-namespace std
-{
-  template<> struct hash<label::StringLabel> {
-    typedef label::StringLabel argument_type;
-    typedef std::size_t result_type;
-    result_type operator()(argument_type const& s) const noexcept {
-        result_type const h ( std::hash<std::string>{}(s.to_string()) );
-        return h;
-    }
-  };
-}
+namespace std {
+template <> struct hash<label::StringLabel> {
+  typedef label::StringLabel argument_type;
+  typedef std::size_t result_type;
+  result_type operator()(argument_type const &s) const noexcept {
+    result_type const h(std::hash<std::string>{}(s.to_string()));
+    return h;
+  }
+};
+} // namespace std

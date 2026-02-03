@@ -22,21 +22,21 @@
 /// \file lookup/index/label_set_converter_impl.h
 ///
 /// \details
-/// Implements an algorithm that converts a collection of trees into a collection 
-/// of label sets. The node labels of a tree are substituted with their inverted 
-/// label frequency order number. Each set holds labels and each label holds all 
+/// Implements an algorithm that converts a collection of trees into a collection
+/// of label sets. The node labels of a tree are substituted with their inverted
+/// label frequency order number. Each set holds labels and each label holds all
 /// elements with that label.
 
 #pragma once
 
-template<typename Label>
-Converter<Label>::Converter() {}
+template <typename Label> Converter<Label>::Converter() {}
 
-template<typename Label>
+template <typename Label>
 void Converter<Label>::assignFrequencyIdentifiers(
-    std::vector<node::Node<Label>>& trees_collection,
-    std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>& sets_collection,
-    std::vector<std::pair<int, int>>& size_setid_map) {
+    std::vector<node::Node<Label>> &trees_collection,
+    std::vector<std::pair<int, std::vector<label_set_converter_index::LabelSetElement>>>
+        &sets_collection,
+    std::vector<std::pair<int, int>> &size_setid_map) {
   // token_map = {(token, tokcnt) -> id}
   typename std::unordered_map<Label, int, labelhash> token_map;
   // token_list = [(#occurrences, data_nr)]
@@ -44,7 +44,7 @@ void Converter<Label>::assignFrequencyIdentifiers(
 
   // for each tree in the tree collection
   long int set_id = 0;
-  for(const auto& tree: trees_collection) {
+  for (const auto &tree : trees_collection) {
     // record = [tokid]
     std::vector<label_set_converter_index::LabelSetElement> record;
     // {tokid -> 1}
@@ -62,7 +62,7 @@ void Converter<Label>::assignFrequencyIdentifiers(
     actual_pre_order_number_ = 0;
     actual_depth_ = 0;
 
-    for (const auto& it : record_labels) {
+    for (const auto &it : record_labels) {
       record.emplace_back(it.second);
     }
 
@@ -75,10 +75,10 @@ void Converter<Label>::assignFrequencyIdentifiers(
   }
 
   // token_count_list = [tokenfrequency, tokenid]
-  for(int i = 0; i < next_token_id_; ++i)
+  for (int i = 0; i < next_token_id_; ++i)
     token_count_list.emplace_back(0, i);
-  for(const auto& record: sets_collection) {
-    for(const auto& token: record.second) {
+  for (const auto &record : sets_collection) {
+    for (const auto &token : record.second) {
       token_count_list[token.id].first += token.weight;
     }
   }
@@ -87,13 +87,13 @@ void Converter<Label>::assignFrequencyIdentifiers(
   std::sort(token_count_list.begin(), token_count_list.end(), pairComparator);
 
   // tokenmaplist[tokenid] = frequencyID
-  std::vector<int> tokenmaplist (token_count_list.size());
-  for(std::size_t i = 0; i < token_count_list.size(); ++i)
+  std::vector<int> tokenmaplist(token_count_list.size());
+  for (std::size_t i = 0; i < token_count_list.size(); ++i)
     tokenmaplist[token_count_list[i].second] = i;
 
   // substitute the tokenIDs with frequencyIDs
-  for(auto& record: sets_collection) {
-    for(std::size_t i = 0; i < record.second.size(); ++i) {
+  for (auto &record : sets_collection) {
+    for (std::size_t i = 0; i < record.second.size(); ++i) {
       record.second[i].id = tokenmaplist[record.second[i].id];
     }
 
@@ -102,23 +102,23 @@ void Converter<Label>::assignFrequencyIdentifiers(
 
     // weight of an element in the set up to its position
     int weight_sum = 0;
-    for(std::size_t i = 0; i < record.second.size(); ++i) {
+    for (std::size_t i = 0; i < record.second.size(); ++i) {
       weight_sum += record.second[i].weight;
       record.second[i].weight_so_far = weight_sum;
     }
   }
 
   // sort all label sets by length (number of elements, not labels)
-  // TODO: needed for an unordered input, but messes up the order of an ordered 
+  // TODO: needed for an unordered input, but messes up the order of an ordered
   //       input file, that should match in case of a tree similarity join
   // std::sort(sets_collection.begin(), sets_collection.end(), vectorComparator);
 }
 
-template<typename Label>
+template <typename Label>
 int Converter<Label>::create_record(
-    const node::Node<Label>& tree_node, int& postorder_id, int tree_size,
-    std::unordered_map<Label, int, labelhash>& token_map, 
-    std::unordered_multimap<int, label_set_converter_index::LabelSetElement>& record_labels) {
+    const node::Node<Label> &tree_node, int &postorder_id, int tree_size,
+    std::unordered_map<Label, int, labelhash> &token_map,
+    std::unordered_multimap<int, label_set_converter_index::LabelSetElement> &record_labels) {
 
   // number of children = subtree_size - 1
   // subtree_size = 1 -> actual node + sum of children
@@ -128,7 +128,7 @@ int Converter<Label>::create_record(
   ++actual_depth_;
 
   // do recursively for all children
-  for (const auto& child: tree_node.get_children()) {
+  for (const auto &child : tree_node.get_children()) {
     subtree_size += create_record(child, postorder_id, tree_size, token_map, record_labels);
   }
 
@@ -144,22 +144,24 @@ int Converter<Label>::create_record(
   std::string label_str = tree_node.label().to_string();
 
   // lookup key in token_map
-  typename std::unordered_map<Label, int, labelhash>::const_iterator 
-                              token_in_map = token_map.find(key);
+  typename std::unordered_map<Label, int, labelhash>::const_iterator token_in_map =
+      token_map.find(key);
 
   // if tokenkey not in map
-  if(token_in_map == token_map.end()) {
+  if (token_in_map == token_map.end()) {
     // store tokenid in global tokenmap
     token_map.emplace(key, next_token_id_);
     // create new set element
-    label_set_converter_index::LabelSetElement se = {next_token_id_, postorder_id, 1, actual_depth_, subtree_size - 1};
+    label_set_converter_index::LabelSetElement se = {next_token_id_, postorder_id, 1, actual_depth_,
+                                                     subtree_size - 1};
     // append to record (id, weight, left, right, ancestor, descendant)
     record_labels.emplace(next_token_id_, se);
     // update next_token_id_
     next_token_id_ += 1;
   } else {
     // if(record_labels.find(token_map[key]) == record_labels.end()) {
-    label_set_converter_index::LabelSetElement se = {token_map[key], postorder_id, 1, actual_depth_, subtree_size - 1};
+    label_set_converter_index::LabelSetElement se = {token_map[key], postorder_id, 1, actual_depth_,
+                                                     subtree_size - 1};
     // append to record (id, weight, left, right, ancestor, descendant)
     record_labels.emplace(token_map[key], se);
   }
@@ -167,7 +169,6 @@ int Converter<Label>::create_record(
   return subtree_size;
 }
 
-template<typename Label>
-long int Converter<Label>::get_number_of_labels() const {
+template <typename Label> long int Converter<Label>::get_number_of_labels() const {
   return next_token_id_;
 }
