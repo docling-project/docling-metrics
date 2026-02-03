@@ -20,6 +20,7 @@ Before building the C++ code, we have only the source code directories:
 
 ```
 .
+├── devtools              # Various bash scripts, useful with C++ development
 ├── cmake                 # Cmake files required to compile the C++ code.
 ├── cpp_src               # C++ source code
 ├── cpp_tests             # C++ source code for the test
@@ -44,13 +45,25 @@ After building the C++ code we have the following directories:
 
 ## Installation
 
-TODO: This is the manual installation via a local bash script
+All C++ and Python code is managed by `uv`. The following command starts the workflow that:
+
+1. Installs all Python dependencies.
+2. Builds the C++ code including the C++ external dependencies.
+3. Installs the `*.so` file with the python bindings inside the uv venv.
+
+```bash
+uv sync -v --all-extras
+```
+
+In case a manual compilation of the C++ code is needed, you can use the bash scripts from `devtools/`:
+
+Build C++ code:
 
 ```bash
 devtools/build_cpp.sh
 ```
 
-Testing:
+Run C++ tests:
 
 ```bash
 devtools/test_cpp.sh

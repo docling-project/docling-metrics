@@ -1,10 +1,27 @@
 #include <iostream>
+#include <exception>
+#include <stdexcept>
 
 #include "nlohmann/json.hpp"
 #include "loguru.hpp"
 #include "cxxopts.hpp"
 
 #include "teds_manager.h"
+
+
+void set_loglevel(std::string level) {
+    if(level == "info") {
+        loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
+    } else if(level == "warning") {
+        loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
+    } else if(level == "error") {
+        loguru::g_stderr_verbosity = loguru::Verbosity_ERROR;
+    } else if(level == "fatal") {
+        loguru::g_stderr_verbosity = loguru::Verbosity_FATAL;
+    } else {
+      throw std::invalid_argument("Unsupported log level: " + level);
+    }
+}
 
 
 int main(int argc, char* argv[]) {
@@ -17,10 +34,22 @@ int main(int argc, char* argv[]) {
         options.add_options()
           ("a,input-a-file", "Input A file in bracket notation", cxxopts::value<std::string>())
           ("b,input-b-file", "Input B file in bracket notation", cxxopts::value<std::string>())
-          // ("l,loglevel", "loglevel [error;warning;success;info]", cxxopts::value<std::string>())
+          ("l,loglevel", "loglevel [error;warning;success;info]", cxxopts::value<std::string>())
           ("V,version", "Show version")
           ("h,help", "Print usage");
         auto cli = options.parse(argc, argv);
+
+        // Set the log level
+        std::string level = "info";
+        if (cli.count("loglevel")){
+          level = cli["loglevel"].as<std::string>();
+
+          // Convert the string to lowercase
+          std::transform(level.begin(), level.end(), level.begin(), [](unsigned char c) {
+            return std::tolower(c);
+          });
+        }
+        set_loglevel(level);
 
         // Help option or no arguments provided
         if (cli.count("help")) {
