@@ -31,6 +31,9 @@ jobs:
       - name: Testing
         run: |
           uv run --no-sync pytest -v --cov --cov-report=xml packages/*/tests
+      - name: Native C++ tests
+        run: |
+          find packages/ -name "build" -execdir ctest --test-dir build/ \;
       - name: Upload coverage to Codecov
         if: inputs.push_coverage
         uses: codecov/codecov-action@v5
