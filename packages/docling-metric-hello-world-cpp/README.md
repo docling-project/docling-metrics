@@ -12,9 +12,28 @@ This package provides a simple "Hello World" metric that:
 
 ## Installation
 
+From the monorepo root directory:
+
 ```bash
-pip install docling-metric-hello-world-cpp
+# 1. Create the uv venv
+uv venv -p <python_version>
+
+# 2. Build the C++ code and install all python dependencies
+uv sync -v --all-extras
 ```
+
+The compiled `*.so` file is placed by in the monorepo venv.
+
+In case you want to manualy build the C++ code (e.g. for debugging/development reasons):
+
+```bash
+cmake -S . -B build/
+cmake --build build/
+cmake --install build/
+```
+
+The compiled `*.so` file is located in `docling_metric_hello_world_cpp/` dir.
+
 
 ## Usage
 
