@@ -29,21 +29,22 @@ PYBIND11_MODULE(docling_metric_teds_cpp, m) {
     pybind11::class_<TEDSManager>(m, "TEDSManager", "Manager for computing TEDS metrics on tree structures")
         .def(py::init<>(), "Initialize a new TEDSManager instance")
         .def("evaluate_sample", &TEDSManager::evaluate_sample,
-             py::arg("id"), py::arg("gt_bracket"), py::arg("pred_bracket"),
+             py::arg("id"), py::arg("bracket_a"), py::arg("bracket_b"),
              "Evaluate a single sample\n\n"
              "Args:\n"
              "    id: Sample identifier\n"
-             "    gt_bracket: Ground truth tree in bracket notation\n"
-             "    pred_bracket: Prediction tree in bracket notation\n\n"
+             "    bracket_a: Input A in bracket notation\n"
+             "    bracket_b: Input B in bracket notation\n\n"
              "Returns:\n"
              "    TEDSSampleEvaluation: Evaluation result containing TEDS score and metadata")
         .def("evaluate_html_sample", &TEDSManager::evaluate_html_sample,
-             py::arg("id"), py::arg("gt_html"), py::arg("pred_html"),
+             py::arg("id"), py::arg("html_a"), py::arg("html_b"), py::arg("structure_only"),
              "Evaluate a single sample from HTML format\n\n"
              "Args:\n"
              "    id: Sample identifier\n"
-             "    gt_html: Ground truth table in HTML format\n"
-             "    pred_html: Prediction table in HTML format\n\n"
+             "    html_a: Input A in HTML format\n"
+             "    html_b: Input B in HTML format\n\n"
+             "    structure_only: If true the HTML content is not considered\n\n"
              "Returns:\n"
              "    TEDSSampleEvaluation: Evaluation result containing TEDS score and metadata")
         .def("aggregate", &TEDSManager::aggregate,

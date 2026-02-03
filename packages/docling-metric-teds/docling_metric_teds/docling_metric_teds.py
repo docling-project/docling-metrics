@@ -69,6 +69,7 @@ class TEDSMetric(BaseMetric):
         """
         # Decide if html should be first converted to bracket format
         if isinstance(sample, TEDSMetricHTMLInputSample):
+            # TODO: Switch to the C++ HTML-to-bracket conversion when it will be ready
             a_bracket = self._teds_scorer.html_to_bracket(sample.a_html)
             b_bracket = self._teds_scorer.html_to_bracket(sample.b_html)
         elif isinstance(sample, TEDSMetricBracketInputSample):
@@ -108,7 +109,7 @@ class TEDSMetric(BaseMetric):
         r"""
         Evaluate a dataset.
         """
-        # TODO: Implement proper dataset evaluation
+        # TODO: Add implementation
         result = TEDSMetricDatasetEvaluation(
             sample_count=0,
             error_id=0,

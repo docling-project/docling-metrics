@@ -31,8 +31,6 @@ struct TEDSSampleEvaluation {
     std::string id;
     int gt_tree_size;
     int pred_tree_size;
-
-    // TODO: How to have teds with/without content
     double teds;
 };
 
@@ -63,13 +61,18 @@ public:
      */
     TEDSSampleEvaluation evaluate_html_sample(
         const std::string& id,
-        const std::string& gt_html,
-        const std::string& pred_html
+        const std::string& html_a,
+        const std::string& html_b,
+        bool structure_only
     ) {
+        // Convert the html to bracket format
+        std::string bracket_a = html_to_bracket(html_a, structure_only);
+        std::string bracket_b = html_to_bracket(html_b, structure_only);
+
         return evaluate_sample(
             id,
-            html_to_bracket(gt_html),
-            html_to_bracket(pred_html)
+            bracket_a,
+            bracket_b
         );
     }
 
@@ -78,28 +81,27 @@ public:
      */
     TEDSSampleEvaluation evaluate_sample(
         const std::string& id,
-        const std::string& gt_bracket,
-        const std::string& pred_bracket
+        const std::string& bracket_a,
+        const std::string& bracket_b
     ) {
         // Return object with full information: teds, tree sizes, ...
         TEDSSampleEvaluation eval_sample(id);
 
         // Create gt_tree
-        if (!bnp_.validate_input(gt_bracket)) {
+        if (!bnp_.validate_input(bracket_a)) {
             eval_sample.error_id = 1;
             eval_sample.error_msg = "Incorrect format of the ground truth input";
             return eval_sample;
         }
-        const node::Node<Label> gt_tree = bnp_.parse_single(gt_bracket);
+        const node::Node<Label> gt_tree = bnp_.parse_single(bracket_a);
 
         // Create pred_tree
-        if (!bnp_.validate_input(pred_bracket)) {
+        if (!bnp_.validate_input(bracket_b)) {
             eval_sample.error_id = 2;
             eval_sample.error_msg = "Incorrect format of the predictions input";
             return eval_sample;
         }
-        const node::Node<Label> pred_tree = bnp_.parse_single(pred_bracket);
-
+        const node::Node<Label> pred_tree = bnp_.parse_single(bracket_b);
 
         // Compute ted
         int gt_tree_size = gt_tree.get_tree_size();
@@ -129,8 +131,8 @@ public:
     }
 
 private:
-    std::string html_to_bracket(const std::string& html) {
-        // TODO
+    std::string html_to_bracket(const std::string& html, bool structure_only) {
+        // TODO: Add implementation
         return "";
     }
 
