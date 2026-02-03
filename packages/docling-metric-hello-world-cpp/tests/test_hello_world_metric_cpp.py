@@ -5,7 +5,7 @@ from docling_metric_hello_world_cpp import HelloWorldMetric, StringInputSample
 
 def test_evaluate_sample_returns_one() -> None:
     metric = HelloWorldMetric()
-    sample = StringInputSample(id="s1", payload="foo")
+    sample = StringInputSample(id="s1", payload_a="foo", payload_b="bar")
     result = metric.evaluate_sample(sample)
 
     assert result.id == "s1"
@@ -15,8 +15,8 @@ def test_evaluate_sample_returns_one() -> None:
 def test_evaluate_dataset() -> None:
     metric = HelloWorldMetric()
     data = [
-        StringInputSample(id="1", payload="a"),
-        StringInputSample(id="2", payload="b"),
+        StringInputSample(id="1", payload_a="a1", payload_b="b1"),
+        StringInputSample(id="2", payload_a="a2", payload_b="b2"),
     ]
 
     aggregate = metric.evaluate_dataset(data)

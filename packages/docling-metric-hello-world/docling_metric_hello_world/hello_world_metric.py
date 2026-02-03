@@ -14,7 +14,8 @@ from pydantic import Field
 class StringInputSample(BaseInputSample):
     """Input sample with a string payload."""
 
-    payload: Annotated[str, Field(description="The string payload for this sample")]
+    payload_a: Annotated[str, Field(description="String payload A for this sample")]
+    payload_b: Annotated[str, Field(description="String payload B for this sample")]
 
 
 class HelloWorldSampleResult(BaseSampleResult):

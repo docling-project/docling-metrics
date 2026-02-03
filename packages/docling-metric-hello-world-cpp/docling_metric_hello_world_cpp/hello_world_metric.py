@@ -16,7 +16,8 @@ from ._hello_world_cpp import evaluate_sample as cpp_evaluate_sample
 class StringInputSample(BaseInputSample):
     """Input sample with a string payload."""
 
-    payload: Annotated[str, Field(description="The string payload for this sample")]
+    payload_a: Annotated[str, Field(description="String payload A for this sample")]
+    payload_b: Annotated[str, Field(description="String payload B for this sample")]
 
 
 class HelloWorldSampleResult(BaseSampleResult):
@@ -41,7 +42,9 @@ class HelloWorldMetric(BaseMetric):
     def evaluate_sample(  # type: ignore[override]
         self, sample: StringInputSample
     ) -> HelloWorldSampleResult:
-        score = float(cpp_evaluate_sample(sample.id, sample.payload))
+        score = float(
+            cpp_evaluate_sample(sample.id, sample.payload_a, sample.payload_b)
+        )
         return HelloWorldSampleResult(id=sample.id, score=score)
 
     def aggregate(  # type: ignore[override]
