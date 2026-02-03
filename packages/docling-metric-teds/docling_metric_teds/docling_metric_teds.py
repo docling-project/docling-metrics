@@ -18,19 +18,19 @@ TEDSDatasetEvaluation: Any = docling_metric_teds_cpp.TEDSDatasetEvaluation
 
 
 class TEDSMetricBracketInputSample(BaseInputSample):
-    a_bracket: Annotated[
+    bracket_a: Annotated[
         str, Field(description="The input-a string to be evaluated in bracket format")
     ]
-    b_bracket: Annotated[
+    bracket_b: Annotated[
         str, Field(description="The input-b string to be evaluated in bracket format")
     ]
 
 
 class TEDSMetricHTMLInputSample(BaseInputSample):
-    a_html: Annotated[
+    html_a: Annotated[
         str, Field(description="The input-a string to be evaluated in HTML format")
     ]
-    b_html: Annotated[
+    html_b: Annotated[
         str, Field(description="The input-b string to be evaluated in HTML format")
     ]
     structure_only: Annotated[
@@ -39,16 +39,12 @@ class TEDSMetricHTMLInputSample(BaseInputSample):
 
 
 class TEDSMetricSampleEvaluation(BaseSampleResult):
-    gt_tree_size: int
-    pred_tree_size: int
+    tree_a_size: int
+    tree_b_size: int
     teds: float
 
 
-class TEDSMetricDatasetEvaluation(BaseAggregateResult):
-    error_id: int
-    error_msg: str
-    gt_tree_size: str
-    pred_tree_size: str
+class TEDSMetricDatasetEvaluation(BaseAggregateResult): ...
 
 
 class TEDSMetric(BaseMetric):
@@ -70,27 +66,27 @@ class TEDSMetric(BaseMetric):
         # Decide if html should be first converted to bracket format
         if isinstance(sample, TEDSMetricHTMLInputSample):
             # TODO: Switch to the C++ HTML-to-bracket conversion when it will be ready
-            a_bracket = self._teds_scorer.html_to_bracket(sample.a_html)
-            b_bracket = self._teds_scorer.html_to_bracket(sample.b_html)
+            bracket_a = self._teds_scorer.html_to_bracket(sample.html_a)
+            bracket_b = self._teds_scorer.html_to_bracket(sample.html_b)
         elif isinstance(sample, TEDSMetricBracketInputSample):
-            a_bracket = sample.a_bracket
-            b_bracket = sample.b_bracket
+            bracket_a = sample.bracket_a
+            bracket_b = sample.bracket_b
         else:
             raise ValueError("Invalid sample type")  # type: ignore[unreachable]
 
         # Evaluate the sample
         sample_evaluaton: Any = self._teds_manager.evaluate_sample(
             sample.id,
-            a_bracket,
-            b_bracket,
+            bracket_a,
+            bracket_b,
         )
         if sample_evaluaton.error_id != 0:
             raise ValueError(sample_evaluaton.error_msg)
 
         result = TEDSMetricSampleEvaluation(
             id=sample.id,
-            gt_tree_size=sample_evaluaton.gt_tree_size,
-            pred_tree_size=sample_evaluaton.pred_tree_size,
+            tree_a_size=sample_evaluaton.tree_a_size,
+            tree_b_size=sample_evaluaton.tree_b_size,
             teds=sample_evaluaton.teds,
         )
         return result
@@ -110,13 +106,7 @@ class TEDSMetric(BaseMetric):
         Evaluate a dataset.
         """
         # TODO: Add implementation
-        result = TEDSMetricDatasetEvaluation(
-            sample_count=0,
-            error_id=0,
-            error_msg="",
-            gt_tree_size="",
-            pred_tree_size="",
-        )
+        result = TEDSMetricDatasetEvaluation(sample_count=0)
         return result
 
     def _html_to_bracket(self, html_str: str) -> str:

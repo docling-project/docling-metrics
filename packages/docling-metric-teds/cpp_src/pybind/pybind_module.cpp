@@ -16,8 +16,8 @@ PYBIND11_MODULE(docling_metric_teds_cpp, m) {
         .def_readwrite("error_id", &TEDSSampleEvaluation::error_id, "Error identifier (0 if no error)")
         .def_readwrite("error_msg", &TEDSSampleEvaluation::error_msg, "Error message (empty if no error)")
         .def_readwrite("id", &TEDSSampleEvaluation::id, "Sample identifier")
-        .def_readwrite("gt_tree_size", &TEDSSampleEvaluation::gt_tree_size, "Size of the ground truth tree")
-        .def_readwrite("pred_tree_size", &TEDSSampleEvaluation::pred_tree_size, "Size of the prediction tree")
+        .def_readwrite("tree_a_size", &TEDSSampleEvaluation::tree_a_size, "Tree A size")
+        .def_readwrite("tree_b_size", &TEDSSampleEvaluation::tree_b_size, "Tree B size")
         .def_readwrite("teds", &TEDSSampleEvaluation::teds, "TEDS score (1.0 - normalized tree edit distance)");
 
     pybind11::class_<TEDSDatasetEvaluation>(m, "TEDSDatasetEvaluation", "Evaluation result for an entire dataset")

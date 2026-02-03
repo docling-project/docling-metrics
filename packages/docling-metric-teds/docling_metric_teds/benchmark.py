@@ -36,7 +36,7 @@ class BenchmarkSample(BaseModel):
     cpp_teds: float
     cpp_ms: float
     html_to_bracket_ms: (
-        float  # This includes converting both GT and preds from HTML to bracket
+        float  # This includes converting both inputs from HTML to bracket
     )
     match: bool
 
@@ -147,8 +147,8 @@ class Benchmarker:
                 metric_input: TEDSMetricBracketInputSample = (
                     TEDSMetricBracketInputSample(
                         id=file_id,
-                        a_bracket=gt_bracket_str,
-                        b_bracket=pred_bracket_str,
+                        bracket_a=gt_bracket_str,
+                        bracket_b=pred_bracket_str,
                     )
                 )
                 sample_evaluaton: TEDSMetricSampleEvaluation = (
@@ -159,7 +159,7 @@ class Benchmarker:
                 all_cpp_ms.append(cpp_ms)
 
                 # Create BenchmarkSample
-                n_nodes: int = sample_evaluaton.gt_tree_size
+                n_nodes: int = sample_evaluaton.tree_a_size
                 match = abs(cpp_teds - python_teds) < 1e-6
                 characterization = "Match!" if match else "Differ"
 

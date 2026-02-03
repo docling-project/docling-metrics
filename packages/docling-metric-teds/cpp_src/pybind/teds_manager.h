@@ -23,14 +23,14 @@ struct TEDSSampleEvaluation {
     TEDSSampleEvaluation(): TEDSSampleEvaluation("") {}
 
     TEDSSampleEvaluation(const std::string& sid):
-        error_id(0), error_msg(""), id(sid), gt_tree_size(0), pred_tree_size(0), teds(-1.)
+        error_id(0), error_msg(""), id(sid), tree_a_size(0), tree_b_size(0), teds(-1.)
     {}
 
     int error_id;
     std::string error_msg;
     std::string id;
-    int gt_tree_size;
-    int pred_tree_size;
+    int tree_a_size;
+    int tree_b_size;
     double teds;
 };
 
@@ -87,36 +87,34 @@ public:
         // Return object with full information: teds, tree sizes, ...
         TEDSSampleEvaluation eval_sample(id);
 
-        // Create gt_tree
+        // Parse the inputs
         if (!bnp_.validate_input(bracket_a)) {
             eval_sample.error_id = 1;
-            eval_sample.error_msg = "Incorrect format of the ground truth input";
+            eval_sample.error_msg = "Incorrect format of input A";
             return eval_sample;
         }
-        const node::Node<Label> gt_tree = bnp_.parse_single(bracket_a);
-
-        // Create pred_tree
+        const node::Node<Label> tree_a = bnp_.parse_single(bracket_a);
         if (!bnp_.validate_input(bracket_b)) {
             eval_sample.error_id = 2;
-            eval_sample.error_msg = "Incorrect format of the predictions input";
+            eval_sample.error_msg = "Incorrect format of input B";
             return eval_sample;
         }
-        const node::Node<Label> pred_tree = bnp_.parse_single(bracket_b);
+        const node::Node<Label> tree_b = bnp_.parse_single(bracket_b);
 
         // Compute ted
-        int gt_tree_size = gt_tree.get_tree_size();
-        int pred_tree_size = pred_tree.get_tree_size();
-        int max_tree_size = std::max(gt_tree_size, pred_tree_size);
+        int tree_a_size = tree_a.get_tree_size();
+        int tree_b_size = tree_b.get_tree_size();
+        int max_tree_size = std::max(tree_a_size, tree_b_size);
 
         node::TreeIndexAPTED ti1;
         node::TreeIndexAPTED ti2;
-        node::index_tree(ti1, gt_tree, ld_, *ucm_ptr_);
-        node::index_tree(ti2, pred_tree, ld_, *ucm_ptr_);
+        node::index_tree(ti1, tree_a, ld_, *ucm_ptr_);
+        node::index_tree(ti2, tree_b, ld_, *ucm_ptr_);
         double distance = apted_ptr_->ted(ti1, ti2);
         double teds = 1. - (distance / max_tree_size);
 
-        eval_sample.gt_tree_size = gt_tree_size;
-        eval_sample.pred_tree_size = pred_tree_size;
+        eval_sample.tree_a_size = tree_a_size;
+        eval_sample.tree_b_size = tree_b_size;
         eval_sample.teds = teds;
 
         return eval_sample;

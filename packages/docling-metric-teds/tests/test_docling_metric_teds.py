@@ -57,16 +57,16 @@ def test_cpp_bindings():
     assert math.isclose(sample_evaluation.teds, 0.970588, rel_tol=1e-6), (
         "Wrong TEDS score for valid bracket"
     )
-    assert sample_evaluation.gt_tree_size > 0, "GT tree size should be positive"
-    assert sample_evaluation.pred_tree_size > 0, "Pred tree size should be positive"
+    assert sample_evaluation.tree_a_size > 0, "Tree A size should be positive"
+    assert sample_evaluation.tree_b_size > 0, "Tree B size should be positive"
 
     # Print results
     print("\n=== Sample Evaluation Results ===")
     print(f"Sample ID: {sample_evaluation.id}")
     print(f"Error ID: {sample_evaluation.error_id}")
-    print(f"Error Message: {sample_evaluation.error_msg}")
-    print(f"GT Tree Size: {sample_evaluation.gt_tree_size}")
-    print(f"Pred Tree Size: {sample_evaluation.pred_tree_size}")
+    print(f"Error message: {sample_evaluation.error_msg}")
+    print(f"Tree A size: {sample_evaluation.tree_b_size}")
+    print(f"Tree B size: {sample_evaluation.tree_b_size}")
     print(f"TEDS Score: {sample_evaluation.teds}")
 
     # Test with broken bracket
@@ -88,7 +88,7 @@ def test_teds_metric_api():
     Test the high-level TEDSMetric API with valid and broken bracket notations.
     """
     # Load test data
-    gt_bracket, pred_bracket, broken_bracket = load_test_data()
+    bracket_a, bracket_b, broken_bracket = load_test_data()
 
     # Initialize TEDSMetric
     teds_metric = TEDSMetric()
@@ -96,23 +96,23 @@ def test_teds_metric_api():
     # Evaluate sample using the high-level API
     sample = TEDSMetricBracketInputSample(
         id="s1",
-        a_bracket=gt_bracket,
-        b_bracket=pred_bracket,
+        bracket_a=bracket_a,
+        bracket_b=bracket_b,
     )
     sample_evaluation: TEDSMetricSampleEvaluation = teds_metric.evaluate_sample(sample)
 
     # Print results
     print("\n=== Sample Evaluation Results ===")
-    print(f"GT Tree Size: {sample_evaluation.gt_tree_size}")
-    print(f"Pred Tree Size: {sample_evaluation.pred_tree_size}")
+    print(f"Tree A Size: {sample_evaluation.tree_a_size}")
+    print(f"Tree B Size: {sample_evaluation.tree_b_size}")
     print(f"TEDS Score: {sample_evaluation.teds}")
 
     # Test with broken bracket - should raise ValueError
     print("\n=== Testing Broken Bracket ===")
     broken_sample = TEDSMetricBracketInputSample(
         id="s2",
-        a_bracket=broken_bracket,
-        b_bracket=pred_bracket,
+        bracket_a=broken_bracket,
+        bracket_b=bracket_b,
     )
 
     with pytest.raises(ValueError) as exc_info:
@@ -124,8 +124,8 @@ def test_teds_metric_api():
     assert math.isclose(sample_evaluation.teds, 0.970588, rel_tol=1e-6), (
         "Wrong TEDS score for valid bracket"
     )
-    assert sample_evaluation.gt_tree_size > 0, "GT tree size should be positive"
-    assert sample_evaluation.pred_tree_size > 0, "Pred tree size should be positive"
+    assert sample_evaluation.tree_a_size > 0, "Tree A size should be positive"
+    assert sample_evaluation.tree_b_size > 0, "Tree B size should be positive"
 
     print("\n All tests passed!")
 
