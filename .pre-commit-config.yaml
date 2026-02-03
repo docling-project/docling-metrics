@@ -11,12 +11,23 @@ repos:
         args: [--exit-non-zero-on-fix, --fix, --config=pyproject.toml]
   - repo: local
     hooks:
+      - id: clang-format
+        name: "Format C++ code"
+        entry: uv run clang-format -i 
+        pass_filenames: true
+        language: system
+        files: '\.(cpp|h)$'
+  - repo: local
+    hooks:
       - id: mypy
         name: MyPy
         entry: uv run --no-sync mypy packages/
         pass_filenames: false
         language: system
         files: '\.py$'
+
+  # TODO: Add cppcheck also
+
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.7.8
     hooks:
