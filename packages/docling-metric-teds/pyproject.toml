@@ -40,7 +40,7 @@ requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
-wheel.packages = ["docling_metric_teds_cpp"]
+wheel.packages = ["docling_metric_teds"]
 
 [tool.uv]
 package = true
