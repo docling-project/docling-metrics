@@ -13,21 +13,24 @@ from docling_metric_teds.docling_metric_teds import (
     TEDSMetricSampleEvaluation,
 )
 
-# "CHD.2018.page_21.pdf_147707_0",
+# Test configuration
+TEDS_RELATIVE_TOLERANCE = 1e-6
 
 # Test data configuration: stems and expected values
 TEST_DATA: dict[str, dict[str, int | float]] = {
-    "ZBRA.2018.page_89.pdf_172_0": {
-        "html_teds": 0.970588,
-        "bracket_teds": 0.970588,
-        "tree_a_size": 68,
-        "tree_b_size": 67,
-    },
     "CHD.2018.page_21.pdf_147707_0": {
-        "html_teds": 0.285714,
-        "bracket_teds": 0.285714,
+        "html_teds": 0.285714285714286,
+        "html_structure_only_teds": 0.571428571428571,
+        "bracket_teds": 0.285714285714286,
         "tree_a_size": 14,
         "tree_b_size": 12,
+    },
+    "WU.2016.page_106.pdf_68194_0": {
+        "html_teds": 0.323529411764706,
+        "html_structure_only_teds": 0.980392156862745,
+        "bracket_teds": 0.323529411764706,
+        "tree_a_size": 101,
+        "tree_b_size": 102,
     },
 }
 
@@ -107,7 +110,9 @@ def test_cpp_bindings():
             f"Expected no error for valid brackets (stem: {stem})"
         )
         assert math.isclose(
-            sample_evaluation.teds, expected_bracket_teds, rel_tol=1e-6
+            sample_evaluation.teds,
+            expected_bracket_teds,
+            rel_tol=TEDS_RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for valid bracket (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation.teds}"
         )
@@ -159,6 +164,7 @@ def test_teds_metric_api():
         config = TEST_DATA[stem]
         expected_bracket_teds = config["bracket_teds"]
         expected_html_teds = config["html_teds"]
+        expected_html_structure_only_teds = config["html_structure_only_teds"]
         expected_tree_a_size = config["tree_a_size"]
         expected_tree_b_size = config["tree_b_size"]
 
@@ -184,7 +190,9 @@ def test_teds_metric_api():
 
         # Assertions for bracket notation test
         assert math.isclose(
-            sample_evaluation_bracket.teds, expected_bracket_teds, rel_tol=1e-6
+            sample_evaluation_bracket.teds,
+            expected_bracket_teds,
+            rel_tol=TEDS_RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for valid bracket (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation_bracket.teds}"
         )
@@ -214,7 +222,9 @@ def test_teds_metric_api():
 
         # Assertions for HTML input test
         assert math.isclose(
-            sample_evaluation_html.teds, expected_html_teds, rel_tol=1e-6
+            sample_evaluation_html.teds,
+            expected_html_teds,
+            rel_tol=TEDS_RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for HTML input (stem: {stem}). Expected {expected_html_teds}, got {sample_evaluation_html.teds}"
         )
@@ -243,15 +253,18 @@ def test_teds_metric_api():
         print(f"TEDS Score: {sample_evaluation_html_structure.teds}")
 
         # Assertions for HTML input test with structure_only=True
-        # Note: structure_only may produce different TEDS scores, so we just verify it runs successfully
-        assert sample_evaluation_html_structure.tree_a_size > 0, (
-            f"Tree A size should be positive for HTML with structure_only=True (stem: {stem})"
+        assert math.isclose(
+            sample_evaluation_html_structure.teds,
+            expected_html_structure_only_teds,
+            rel_tol=TEDS_RELATIVE_TOLERANCE,
+        ), (
+            f"Wrong TEDS score for HTML input with structure_only=True (stem: {stem}). Expected {expected_html_structure_only_teds}, got {sample_evaluation_html_structure.teds}"
         )
-        assert sample_evaluation_html_structure.tree_b_size > 0, (
-            f"Tree B size should be positive for HTML with structure_only=True (stem: {stem})"
+        assert sample_evaluation_html_structure.tree_a_size == expected_tree_a_size, (
+            f"Wrong tree A size for HTML with structure_only=True (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_html_structure.tree_a_size}"
         )
-        assert 0.0 <= sample_evaluation_html_structure.teds <= 1.0, (
-            f"TEDS score should be between 0 and 1 (stem: {stem}), got {sample_evaluation_html_structure.teds}"
+        assert sample_evaluation_html_structure.tree_b_size == expected_tree_b_size, (
+            f"Wrong tree B size for HTML with structure_only=True (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_html_structure.tree_b_size}"
         )
 
         # Test 3: Test with broken bracket - should raise ValueError
@@ -261,7 +274,6 @@ def test_teds_metric_api():
             bracket_a=test_data["broken_bracket"],
             bracket_b=test_data["pred_bracket"],
         )
-
         with pytest.raises(ValueError) as exc_info:
             teds_metric.evaluate_sample(broken_sample)
 
