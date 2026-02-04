@@ -22,7 +22,7 @@ uv sync
 
 # collect release notes
 REL_NOTES=$(mktemp)
-uv run --no-sync semantic-release changelog --unreleased >> "${REL_NOTES}"
+(cd "packages/${PACKAGE}" && uv run --no-sync semantic-release changelog --unreleased) >> "${REL_NOTES}"
 
 # update changelog
 TMP_CHGLOG=$(mktemp)
