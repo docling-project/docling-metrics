@@ -66,8 +66,13 @@ class TEDSMetric(BaseMetric):
         # Decide if html should be first converted to bracket format
         if isinstance(sample, TEDSMetricHTMLInputSample):
             # TODO: Switch to the C++ HTML-to-bracket conversion when it will be ready
-            bracket_a = self._teds_scorer.html_to_bracket(sample.html_a)
-            bracket_b = self._teds_scorer.html_to_bracket(sample.html_b)
+            structure_only = sample.structure_only
+            bracket_a = self._teds_scorer.html_to_bracket(
+                sample.html_a, structure_only=structure_only
+            )
+            bracket_b = self._teds_scorer.html_to_bracket(
+                sample.html_b, structure_only=structure_only
+            )
         elif isinstance(sample, TEDSMetricBracketInputSample):
             bracket_a = sample.bracket_a
             bracket_b = sample.bracket_b
