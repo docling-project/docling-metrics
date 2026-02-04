@@ -1,6 +1,5 @@
 from typing import Annotated, Any, Iterable, Optional
 
-import docling_metric_teds_cpp  # type: ignore[import-not-found]
 from docling_metrics_core.base_types import (
     BaseAggregateResult,
     BaseInputSample,
@@ -11,6 +10,8 @@ from lxml import html
 from pydantic import Field
 
 from docling_metric_teds.utils.teds import TableTree, TEDScorer
+
+from . import docling_metric_teds_cpp
 
 TEDSManager = docling_metric_teds_cpp.TEDSManager
 TEDSSampleEvaluation: Any = docling_metric_teds_cpp.TEDSSampleEvaluation
