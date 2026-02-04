@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Annotated, Iterable, Tuple
+from typing import Annotated, Iterable, Optional
 
 from pydantic import BaseModel, Field
 
@@ -42,13 +42,15 @@ class BaseMetric(ABC):
         ...
 
     @abstractmethod
-    def aggregate(self, results: Iterable[BaseSampleResult]) -> BaseAggregateResult:
+    def aggregate(
+        self, results: Iterable[BaseSampleResult]
+    ) -> Optional[BaseAggregateResult]:
         """Aggregate multiple sample results."""
         ...
 
     @abstractmethod
     def evaluate_dataset(
-        self, sample_pairs: Iterable[Tuple[BaseInputSample, BaseInputSample]]
+        self, sample_pairs: Iterable[BaseInputSample]
     ) -> BaseAggregateResult:
         """Evaluate an entire dataset."""
         ...

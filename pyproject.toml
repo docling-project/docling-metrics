@@ -22,9 +22,12 @@ dev = [
     "pytest-cov>=6.1.1",
     "pytest-dependency~=0.6",
     "pytest-xdist~=3.3",
+    "clang-format>=19.1.7",
+    "build",
     # Workspace members — ensures `uv sync` installs all packages
     "docling-metrics-core",
     "docling-metric-hello-world",
+    "docling-metric-teds",
     "docling-metric-hello-world-cpp",
 ]
 build = [
@@ -35,6 +38,7 @@ build = [
 [tool.uv.sources]
 docling-metrics-core = { workspace = true }
 docling-metric-hello-world = { workspace = true }
+docling-metric-teds = { workspace = true }
 docling-metric-hello-world-cpp = { workspace = true }
 
 [tool.mypy]
@@ -42,7 +46,16 @@ pretty = true
 # strict = true
 no_implicit_optional = true
 python_version = "3.10"
-exclude = '^\\.venv/'
+exclude = [
+    '^\\.venv/',
+    'build/',
+    'externals/',
+    '.*/build/.*',
+    '.*/externals/.*',
+]
+
+ignore_missing_imports = true
+follow_imports = "skip"
 
 [tool.ruff]
 target-version = "py310"
