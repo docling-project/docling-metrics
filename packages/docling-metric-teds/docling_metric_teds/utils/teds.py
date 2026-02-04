@@ -6,8 +6,8 @@ from collections import deque
 
 from apted import APTED, Config
 from apted.helpers import Tree
-from Levenshtein import distance
 from lxml import html
+from rapidfuzz.distance import Levenshtein
 
 
 class CustomConfig(Config):
@@ -18,7 +18,7 @@ class CustomConfig(Config):
 
     def normalized_distance(self, *sequences):
         """Get distance from 0 to 1"""
-        return float(distance.levenshtein(*sequences)) / self.maximum(*sequences)
+        return float(Levenshtein.distance(*sequences)) / self.maximum(*sequences)
 
     def rename(self, node1, node2):
         """Compares attributes of trees"""
