@@ -74,9 +74,11 @@ name = "build"
 version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "python_full_version >= '3.11' and os_name == 'nt'" },
-    { name = "packaging", marker = "python_full_version >= '3.11'" },
-    { name = "pyproject-hooks", marker = "python_full_version >= '3.11'" },
+    { name = "colorama", marker = "os_name == 'nt'" },
+    { name = "importlib-metadata", marker = "python_full_version < '3.10.2'" },
+    { name = "packaging" },
+    { name = "pyproject-hooks" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/18/94eaffda7b329535d91f00fe605ab1f1e5cd68b2074d03f255c7d250687d/build-1.4.0.tar.gz", hash = "sha256:f1b91b925aa322be454f8330c6fb48b465da993d1e7e7e6fa35027ec49f3c936", size = 50054, upload-time = "2026-01-08T16:41:47.696Z" }
 wheels = [
@@ -679,6 +681,7 @@ build = [
     { name = "delocate" },
 ]
 dev = [
+    { name = "build" },
     { name = "clang-format" },
     { name = "coverage" },
     { name = "docling-metric-hello-world" },
@@ -704,6 +707,7 @@ build = [
     { name = "delocate", specifier = ">=0.12" },
 ]
 dev = [
+    { name = "build" },
     { name = "clang-format", specifier = ">=19.1.7" },
     { name = "coverage", specifier = "~=7.6" },
     { name = "docling-metric-hello-world", editable = "packages/docling-metric-hello-world" },

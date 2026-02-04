@@ -1,15 +1,11 @@
 #!/bin/bash
-
 set -e
 
-# Activate the python venv
-pwd=$(pwd)
-cd ../../
-. .venv/bin/activate
-cd "${pwd}"
-
 # Build the wheel
-python -m build --wheel
+pwd="$(pwd)"
+cd ../../
+uv run python -m build --wheel packages/docling-metric-teds/
+cd "${pwd}"
 
 # Check if the wheel was built
 echo

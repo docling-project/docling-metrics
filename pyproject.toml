@@ -23,6 +23,7 @@ dev = [
     "pytest-dependency~=0.6",
     "pytest-xdist~=3.3",
     "clang-format>=19.1.7",
+    "build",
     # Workspace members — ensures `uv sync` installs all packages
     "docling-metrics-core",
     "docling-metric-hello-world",
