@@ -73,7 +73,7 @@ devtools/test_cpp.sh
 ## Usage
 
 ```python
-from docling_metric_teds.docling_metric_teds import (
+from docling_metric_teds import (
     TEDSMetric,
     TEDSMetricBracketInputSample,
     TEDSMetricHTMLInputSample,
