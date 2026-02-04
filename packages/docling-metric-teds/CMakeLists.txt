@@ -28,9 +28,9 @@ if(NOT DEFINED TOPLEVEL_PREFIX_PATH)
     set(TOPLEVEL_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
-# Only override CMAKE_INSTALL_PREFIX when not building with scikit-build-core
-# scikit-build-core sets SKBUILD and manages CMAKE_INSTALL_PREFIX itself
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT DEFINED SKBUILD)
+if (DEFINED SKBUILD)
+    set(CMAKE_INSTALL_PREFIX "${install_root}" CACHE PATH "Install prefix" FORCE)
+elseif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${TOPLEVEL_PREFIX_PATH}/${install_root}" CACHE PATH "Install prefix" FORCE)
 endif()
 
@@ -145,7 +145,7 @@ endif()
 # Include external dependencies
 include(cmake/extlib_cxxopts.cmake)
 include(cmake/extlib_loguru.cmake)
-include(cmake/extlib_json.cmake)
+# include(cmake/extlib_json.cmake)
 
 # Use the Python from the python venv
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
@@ -205,11 +205,11 @@ add_dependencies("${teds_project_name}" ${dependencies})
 # Install
 #
 
-# CLI - install to bin directory
-install(TARGETS "${teds_cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+# CLI
+install(TARGETS "${teds_cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
-# Python bindings - install into the Python package directory
-install(TARGETS "${teds_project_name}" LIBRARY DESTINATION "${install_root}")
+# Python bindings
+install(TARGETS "${teds_project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 
 ###########################################################################################

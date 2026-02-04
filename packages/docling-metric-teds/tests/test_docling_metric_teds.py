@@ -2,10 +2,7 @@ import math
 from pathlib import Path
 
 import pytest
-from docling_metric_teds import (
-    TEDSManager,
-    TEDSSampleEvaluation,
-)
+from docling_metric_teds import docling_metric_teds_cpp
 from docling_metric_teds.docling_metric_teds import (
     TEDSMetric,
     TEDSMetricBracketInputSample,
@@ -85,7 +82,7 @@ def test_cpp_bindings():
     all_test_data: dict[str, dict[str, str]] = load_test_data()
 
     # Initialize TEDSManager
-    teds_manager = TEDSManager()
+    teds_manager = docling_metric_teds_cpp.TEDSManager()
 
     # Loop over all stems
     for stem, test_data in all_test_data.items():
@@ -101,7 +98,7 @@ def test_cpp_bindings():
 
         # Evaluate sample
         id = f"s1_{stem}"
-        sample_evaluation: TEDSSampleEvaluation = teds_manager.evaluate_sample(
+        sample_evaluation = teds_manager.evaluate_sample(
             id, test_data["gt_bracket"], test_data["pred_bracket"]
         )
 
@@ -134,7 +131,7 @@ def test_cpp_bindings():
 
         # Test with broken bracket
         print("\n=== Testing Broken Bracket ===")
-        broken_eval: TEDSSampleEvaluation = teds_manager.evaluate_sample(
+        broken_eval = teds_manager.evaluate_sample(
             f"s2_{stem}", test_data["broken_bracket"], test_data["pred_bracket"]
         )
         print(f"Error ID: {broken_eval.error_id}")

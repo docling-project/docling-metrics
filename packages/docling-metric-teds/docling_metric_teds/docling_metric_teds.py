@@ -13,10 +13,6 @@ from docling_metric_teds.utils.teds import TableTree, TEDScorer
 
 from . import docling_metric_teds_cpp
 
-TEDSManager = docling_metric_teds_cpp.TEDSManager
-TEDSSampleEvaluation: Any = docling_metric_teds_cpp.TEDSSampleEvaluation
-TEDSDatasetEvaluation: Any = docling_metric_teds_cpp.TEDSDatasetEvaluation
-
 
 class TEDSMetricBracketInputSample(BaseInputSample):
     bracket_a: Annotated[
@@ -55,7 +51,7 @@ class TEDSMetric(BaseMetric):
 
     def __init__(self) -> None:
         r""" """
-        self._teds_manager = TEDSManager()
+        self._teds_manager = docling_metric_teds_cpp.TEDSManager()
         self._teds_scorer = TEDScorer()
 
     def evaluate_sample(  # type: ignore[override]
