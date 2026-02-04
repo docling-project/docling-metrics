@@ -57,13 +57,13 @@ uv sync -v --all-extras
 
 In case a manual compilation of the C++ code is needed, you can use the bash scripts from `devtools/`:
 
-Build C++ code:
+Build the C++ code:
 
 ```bash
 devtools/build_cpp.sh
 ```
 
-Run C++ tests:
+Run the native C++ tests:
 
 ```bash
 devtools/test_cpp.sh
@@ -75,17 +75,19 @@ devtools/test_cpp.sh
 ```python
 from docling_metric_teds.docling_metric_teds import (
     TEDSMetric,
-    TEDSMetricInputSample,
+    TEDSMetricBracketInputSample,
+    TEDSMetricHTMLInputSample,
     TEDSMetricSampleEvaluation,
 )
 
-sample = TEDSMetricInputSample(
+# Input sample in bracket notation
+bracket_sample = TEDSMetricBracketInputSample(
     id="s1",
-    gt_bracket="{x{a}{b}}",
-    pred_bracket="{x{a}{c}}",
+    bracket_a="{x{a}{b}}",
+    bracket_b="{x{a}{c}}",
 )
-teds_metric = TEDSMetric()
 
+teds_metric = TEDSMetric()
 sample_evaluation: TEDSMetricSampleEvaluation = teds_metric.evaluate_sample(sample)
 print(sample_evaluation)
 ```
