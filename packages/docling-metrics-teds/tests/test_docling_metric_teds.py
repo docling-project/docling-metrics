@@ -2,8 +2,8 @@ import math
 from pathlib import Path
 
 import pytest
-from docling_metric_teds import docling_metric_teds_cpp
-from docling_metric_teds.docling_metric_teds import (
+from docling_metrics_teds import docling_metric_teds_cpp
+from docling_metrics_teds.docling_metrics_teds import (
     TEDSMetric,
     TEDSMetricBracketInputSample,
     TEDSMetricHTMLInputSample,

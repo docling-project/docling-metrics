@@ -9,7 +9,7 @@ from docling_metrics_core.base_types import (
 from lxml import html
 from pydantic import Field
 
-from docling_metric_teds.utils.teds import TableTree, TEDScorer
+from docling_metrics_teds.utils.teds import TableTree, TEDScorer
 
 from . import docling_metric_teds_cpp
 

@@ -1,5 +1,5 @@
 [project]
-name = "docling-metric-teds"
+name = "docling-metrics-teds"
 version = "0.0.1" # DO NOT EDIT, updated automatically
 description = "Tree-Edit-Distance Score metric"
 license = "MIT"
@@ -40,7 +40,7 @@ requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
-wheel.packages = ["docling_metric_teds"]
+wheel.packages = ["docling_metrics_teds"]
 
 [tool.uv]
 package = true

@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     loguru::init(argc, argv);
 
     // Initialize cxxopts
-    cxxopts::Options options("docling-metric-teds", "Compute Tree Edit Distance Score");
+    cxxopts::Options options("docling-metrics-teds", "Compute Tree Edit Distance Score");
     options.add_options()("a,input-a-file", "Input A file in bracket notation",
                           cxxopts::value<std::string>())(
         "b,input-b-file", "Input B file in bracket notation", cxxopts::value<std::string>())(
