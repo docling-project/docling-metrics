@@ -1,4 +1,4 @@
-# docling-metric-hello-world-cpp
+# docling-metrics-hello-world-cpp
 
 A minimal example metric implementation demonstrating a C++ (pybind11) backend
 on top of `docling-metrics-core`.
@@ -32,13 +32,13 @@ cmake --build build/
 cmake --install build/
 ```
 
-The compiled `*.so` file is located in `docling_metric_hello_world_cpp/` dir.
+The compiled `*.so` file is located in `docling_metrics_hello_world_cpp/` dir.
 
 
 ## Usage
 
 ```python
-from docling_metric_hello_world_cpp import HelloWorldMetric, StringInputSample
+from docling_metrics_hello_world_cpp import HelloWorldMetric, StringInputSample
 
 metric = HelloWorldMetric()
 

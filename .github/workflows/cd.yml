@@ -9,9 +9,9 @@ on:
         type: choice
         options:
           - docling-metrics-core
-          - docling-metric-hello-world
-          - docling-metric-hello-world-cpp
-          - docling-metric-teds
+          - docling-metrics-hello-world
+          - docling-metrics-hello-world-cpp
+          - docling-metrics-teds
 
 jobs:
   code-checks:

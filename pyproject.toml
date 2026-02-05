@@ -26,9 +26,9 @@ dev = [
     "build",
     # Workspace members — ensures `uv sync` installs all packages
     "docling-metrics-core",
-    "docling-metric-hello-world",
-    "docling-metric-teds",
-    "docling-metric-hello-world-cpp",
+    "docling-metrics-hello-world",
+    "docling-metrics-teds",
+    "docling-metrics-hello-world-cpp",
 ]
 build = [
     "cibuildwheel>=2.19",
@@ -37,9 +37,9 @@ build = [
 
 [tool.uv.sources]
 docling-metrics-core = { workspace = true }
-docling-metric-hello-world = { workspace = true }
-docling-metric-teds = { workspace = true }
-docling-metric-hello-world-cpp = { workspace = true }
+docling-metrics-hello-world = { workspace = true }
+docling-metrics-teds = { workspace = true }
+docling-metrics-hello-world-cpp = { workspace = true }
 
 [tool.mypy]
 pretty = true

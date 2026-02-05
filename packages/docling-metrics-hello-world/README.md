@@ -1,4 +1,4 @@
-# docling-metric-hello-world
+# docling-metrics-hello-world
 
 A minimal example metric implementation demonstrating how to build metrics on top of
 `docling-metrics-core`.
@@ -13,13 +13,13 @@ This package provides a simple "Hello World" metric that:
 ## Installation
 
 ```bash
-pip install docling-metric-hello-world
+pip install docling-metrics-hello-world
 ```
 
 ## Usage
 
 ```python
-from docling_metric_hello_world import HelloWorldMetric, StringInputSample
+from docling_metrics_hello_world import HelloWorldMetric, StringInputSample
 
 # Create metric instance
 metric = HelloWorldMetric()

@@ -1,31 +1,33 @@
 [project]
-name = "docling-metric-hello-world"
-version = "0.0.1" # DO NOT EDIT, updated automatically
-description = "A hello-world example metric implementation for Docling metrics"
+name = "docling-metrics-teds"
+version = "0.2.0" # DO NOT EDIT, updated automatically
+description = "Tree-Edit-Distance Score metric"
 license = "MIT"
-keywords = ["docling", "metrics", "evaluation", "example", "hello-world"]
+keywords = ["docling", "metrics", "evaluation", "example", "teds", "tree-edit-distance-score", "cpp"]
 readme = "README.md"
 authors = [
-    { name = "Christoph Auer", email = "cau@zurich.ibm.com" },
-    { name = "Panos Vagenas", email = "pva@zurich.ibm.com" },
-    { name = "Ahmed Nassar", email = "ahn@zurich.ibm.com" },
     { name = "Nikos Livathinos", email = "nli@zurich.ibm.com" },
-    { name = "Maxim Lysak", email = "mly@zurich.ibm.com" },
-    { name = "Michele Dolfi", email = "dol@zurich.ibm.com" },
+    { name = "Christoph Auer", email = "cau@zurich.ibm.com" },
     { name = "Peter Staar", email = "taa@zurich.ibm.com" },
 ]
 classifiers = [
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Programming Language :: Python :: 3",
 ]
-requires-python = '>=3.10,<4.0'
+requires-python = ">=3.10,<4.0"
 dependencies = [
     "docling-metrics-core>=0.0.1",
+    "pybind11",
+    "apted",
+    "pydantic",
+    "RapidFuzz",
+    "lxml",
 ]
 
 [project.urls]
@@ -34,11 +36,11 @@ repository = "https://github.com/docling-project/docling-metrics"
 issues = "https://github.com/docling-project/docling-metrics/issues"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+build-backend = "scikit_build_core.build"
 
-[tool.hatch.build.targets.wheel]
-packages = ["docling_metric_hello_world"]
+[tool.scikit-build]
+wheel.packages = ["docling_metrics_teds"]
 
 [tool.uv]
 package = true
@@ -56,14 +58,19 @@ test = [
 ]
 
 [tool.semantic_release]
-# for default values check:
-# https://github.com/python-semantic-release/python-semantic-release/blob/v7.32.2/semantic_release/defaults.cfg
-
 version_source = "tag_only"
 branch = "main"
-
-# configure types which should trigger minor and patch version bumps respectively
-# (note that they must be a subset of the configured allowed types):
 parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
 parser_angular_minor_types = "feat"
 parser_angular_patch_types = "fix,perf"
+
+
+[tool.mypy]
+
+[[tool.mypy.overrides]]
+module = [
+    "docling_metric_teds_cpp",
+    "lxml.*",
+    "distance.*",
+    "apted.*",
+]

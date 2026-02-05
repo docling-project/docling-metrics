@@ -4,7 +4,7 @@ set -e
 # Build the wheel
 pwd="$(pwd)"
 cd ../../
-uv run python -m build --wheel packages/docling-metric-teds/
+uv run python -m build --wheel packages/docling-metrics-teds/
 cd "${pwd}"
 
 # Check if the wheel was built

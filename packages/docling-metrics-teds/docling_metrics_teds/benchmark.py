@@ -10,12 +10,12 @@ from typing import Optional
 from apted import APTED
 from pydantic import BaseModel
 
-from docling_metric_teds.docling_metric_teds import (
+from docling_metrics_teds.docling_metrics_teds import (
     TEDSMetric,
     TEDSMetricBracketInputSample,
     TEDSMetricSampleEvaluation,
 )
-from docling_metric_teds.utils.teds import CustomConfig, TableTree, TEDScorer
+from docling_metrics_teds.utils.teds import CustomConfig, TableTree, TEDScorer
 
 _log: Logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class BenchmarkReport(BaseModel):
 class Benchmarker:
     r"""
     Receive a dataset of bracket strings and evaluate the TEDS metric.
-    Compare the APTED (python) vs the docling-metric-teds (C++/Python bindings) implementations.
+    Compare the APTED (python) vs the docling-metrics-teds (C++/Python bindings) implementations.
     Save a report with detailed results as json file.
     """
 
@@ -140,7 +140,7 @@ class Benchmarker:
                 python_ms = (time.monotonic() - t0) * 1000
                 all_python_ms.append(python_ms)
 
-                # Step 3: Call docling-metric-teds
+                # Step 3: Call docling-metrics-teds
                 cpp_teds = None
                 cpp_ms = -1.0
                 t0 = time.monotonic()

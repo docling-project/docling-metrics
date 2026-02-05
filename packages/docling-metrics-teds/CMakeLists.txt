@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.15)
 #
 set(teds_project_name "docling_metric_teds_cpp")
 set(teds_cli_name "docling_metric_teds_cli")
-set(install_root "docling_metric_teds")
+set(install_root "docling_metrics_teds")
 set(externals_root "externals")
 
 project(${teds_project_name} VERSION 1.0.0 LANGUAGES CXX C)
