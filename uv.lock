@@ -601,7 +601,7 @@ test = [
 
 [[package]]
 name = "docling-metric-teds"
-version = "0.0.1"
+version = "0.2.0"
 source = { editable = "packages/docling-metric-teds" }
 dependencies = [
     { name = "apted" },
