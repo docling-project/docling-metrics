@@ -1,15 +1,11 @@
-"""Tests for the HelloWorld metric."""
+"""Tests for the HelloWorld C++ metric."""
 
-from docling_metric_hello_world import (
-    HelloWorldMetric,
-    StringInputSample,
-)
+from docling_metrics_hello_world_cpp import HelloWorldMetric, StringInputSample
 
 
 def test_evaluate_sample_returns_one() -> None:
-    """Test that evaluate_sample always returns score of 1.0."""
     metric = HelloWorldMetric()
-    sample = StringInputSample(id="s1", payload_a="p_a", payload_b="p_b")
+    sample = StringInputSample(id="s1", payload_a="foo", payload_b="bar")
     result = metric.evaluate_sample(sample)
 
     assert result.id == "s1"
@@ -17,11 +13,10 @@ def test_evaluate_sample_returns_one() -> None:
 
 
 def test_evaluate_dataset() -> None:
-    """Test evaluating a dataset of sample pairs."""
     metric = HelloWorldMetric()
     data = [
         StringInputSample(id="1", payload_a="a1", payload_b="b1"),
-        StringInputSample(id="1", payload_a="a2", payload_b="b2"),
+        StringInputSample(id="2", payload_a="a2", payload_b="b2"),
     ]
 
     aggregate = metric.evaluate_dataset(data)

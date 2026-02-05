@@ -12,5 +12,5 @@ target_compile_features(_hello_world_cpp PRIVATE cxx_std_17)
 
 install(
     TARGETS _hello_world_cpp
-    LIBRARY DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/docling_metric_hello_world_cpp"
+    LIBRARY DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/docling_metrics_hello_world_cpp"
 )

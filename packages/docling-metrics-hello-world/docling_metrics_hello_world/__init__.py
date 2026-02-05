@@ -1,6 +1,6 @@
 """A hello-world example metric implementation for Docling metrics."""
 
-from docling_metric_hello_world.hello_world_metric import (
+from docling_metrics_hello_world.hello_world_metric import (
     HelloWorldAggregateResult,
     HelloWorldMetric,
     HelloWorldSampleResult,
