@@ -37,8 +37,6 @@ jobs:
             runs-on: windows-latest
           - os: windows-arm
             runs-on: windows-11-arm
-          - os: macos-intel
-            runs-on: macos-15-intel
           - os: macos-arm
             runs-on: macos-14
     steps:
@@ -52,6 +50,12 @@ jobs:
           CIBW_SKIP: "cp*t-* *-win32 *_i686 *_s390x"
           CIBW_BUILD_VERBOSITY: 2
           MACOSX_DEPLOYMENT_TARGET: "11.0"
+          # Use manylinux_2_28
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
+          # Use musllinux_1_2
+          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2
+          CIBW_MUSLLINUX_AARCH64_IMAGE: musllinux_1_2
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ inputs.package }}-${{ matrix.os }}-${{ strategy.job-index }}
