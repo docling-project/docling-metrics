@@ -38,15 +38,18 @@ def compute_nltk_scores(
     # precision_score = precision(true_tokens_set, pred_tokens_set) or 0.0
     # recall_score = recall(true_tokens_set, pred_tokens_set) or 0.0
     # meteor = meteor_score.meteor_score([true_tokens], pred_tokens)
-    damerau_levenshtein = edit_distance(pred_tokens, true_tokens)
-    edit_dist = float(damerau_levenshtein) / token_size if token_size > 0 else 0.0
+
+    # By default edit_distance the Levenshtein algorithm without transpositions
+    levenshtein = edit_distance(pred_tokens, true_tokens)
+    edit_dist = float(levenshtein) / token_size if token_size > 0 else 0.0
 
     metrics: dict[str, float] = {
         # "f1_score": f1_score,
         # "precision": precision_score,
         # "recall": recall_score,
         # "meteor": meteor,
-        "damerau_levenshtein_NLTK": damerau_levenshtein,
+        # "damerau_levenshtein_NLTK": damerau_levenshtein,
+        "levenshtein_NLTK": levenshtein,
         "edit_distance_NLTK": edit_dist,
     }
     return metrics
@@ -62,8 +65,9 @@ def compute_rapidfuzz_distances(
     token_size = max(len(true_tokens), len(pred_tokens))
 
     # Compute the Damerau-Levenshtein on the tokens, not the original strings
-    damerau_levenshtein = distance.DamerauLevenshtein.distance(true_tokens, pred_tokens)
-    edit_distance = float(damerau_levenshtein) / token_size if token_size > 0 else 0.0
+    # damerau_levenshtein = distance.DamerauLevenshtein.distance(true_tokens, pred_tokens)
+    levenshtein = distance.Levenshtein.distance(true_tokens, pred_tokens)
+    edit_distance = float(levenshtein) / token_size if token_size > 0 else 0.0
 
     # hamming = distance.Hamming.distance(true_txt, pred_txt)
     # indel = distance.Indel.distance(true_txt, pred_txt)
@@ -72,7 +76,8 @@ def compute_rapidfuzz_distances(
     # levenshtein = distance.Levenshtein.distance(true_txt, pred_txt)
 
     metrics: dict[str, int | float] = {
-        "damerau_levenshtein_rapidfuzz": damerau_levenshtein,
+        # "damerau_levenshtein_rapidfuzz": damerau_levenshtein,
+        "levenshtein_rapidfuzz": levenshtein,
         "edit_distance_rapidfuzz": edit_distance,
         # "hamming": hamming,
         # "indel": indel,
