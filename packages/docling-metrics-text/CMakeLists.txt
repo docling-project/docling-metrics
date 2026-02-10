@@ -16,7 +16,7 @@ add_compile_definitions(PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR})
 add_compile_definitions(PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 # Debug: Show make commands
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 ###########################################################################################
@@ -149,11 +149,10 @@ if(NOT USE_SYSTEM_DEPS)
 endif()
 
 # Include external dependencies
-include(cmake/extlib_cxxopts.cmake)
-include(cmake/extlib_loguru.cmake)
+# include(cmake/extlib_cxxopts.cmake)
+# include(cmake/extlib_loguru.cmake)
 include(cmake/extlib_abseil.cmake)
 include(cmake/extlib_re2.cmake)
-# include(cmake/extlib_json.cmake)
 
 # Use the Python from the python venv
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
@@ -181,109 +180,11 @@ message(STATUS "PyBind11 libs: ${pybind11_LIBRARIES}")
 
 set(target_dependencies
     text_interface
-    "${ext_name_loguru}"
-    "${ext_name_cxxopts}"
+    # "${ext_name_loguru}"
+    # "${ext_name_cxxopts}"
     "${ext_name_abseil}"
     "${ext_name_re2}"
 )
-
-set(lib_dependencies
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_die_if_null.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_conditions.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_city.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_time_zone.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_kernel_timeout_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_generic_printer_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_spinlock_wait.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_cord.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_status.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_severity.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_failure_signal_handler.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_nullguard.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_utf8_for_code_point.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_tracing_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_log_sink_set.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_hash.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_commandlineflag.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_raw_logging_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_reflection_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_format.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_cord_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_poison.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_base.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_cordz_info.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_periodic_sampler.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_distributions.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_usage_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_seed_sequences.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_platform.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_entropy_pool.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_throw_delegate.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_decode_rust_punycode.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_debugging_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_fnmatch.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_private_handle_accessor.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_strings.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_malloc_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_str_format_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_usage.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_strings_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_program_name.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_int128.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_crc_cord_state.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_scoped_set_env.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_raw_hash_set.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_crc32c.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_seed_material.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_symbolize.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_crc_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_randen_slow.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_graphcycles_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_exponential_biased.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_borrowed_fixup_buffer.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_randen_hwaes_impl.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_crc_cpu_detect.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_statusor.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_globals.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_sink.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_check_op.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_stacktrace.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_cordz_handle.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_structured_proto.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_demangle_rust.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_message.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_initialize.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_randen_hwaes.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_parse.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_globals.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_internal_proto.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_randen.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_internal_distribution_test_util.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_time.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_config.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_synchronization.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_clock_interface.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_commandlineflag_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_hashtablez_sampler.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_demangle_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_leak_check.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_marshalling.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_strerror.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libre2.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_entry.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_reflection.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_profile_builder.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_cordz_functions.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_examine_stack.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_flags_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_random_seed_gen_exception.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_hashtable_profiler.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_vlog_config_internal.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_log_flags.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_cordz_sample_token.a
-    ${EXTERNALS_PREFIX_PATH}/lib/libabsl_civil_time.a
-)
-message(STATUS "lib_dependencies: ${lib_dependencies}")
 
 
 ###########################################################################################
@@ -291,15 +192,15 @@ message(STATUS "lib_dependencies: ${lib_dependencies}")
 #
 
 # Compile CLI
-add_executable("${cli_name}" "cpp_src/cli/main.cpp")
-add_dependencies("${cli_name}" ${target_dependencies})
-target_link_libraries(
-    "${cli_name}"
-    PUBLIC
-    ${target_dependencies}
-    ${lib_dependencies}
-    ${CMAKE_DL_LIBS}
-)
+# add_executable("${cli_name}" "cpp_src/cli/main.cpp")
+# add_dependencies("${cli_name}" ${target_dependencies})
+# target_link_libraries(
+#     "${cli_name}"
+#     PUBLIC
+#     ${target_dependencies}
+#     ${CMAKE_DL_LIBS}
+# )
+# target_link_directories("${cli_name}" PUBLIC ${EXTERNALS_PREFIX_PATH}/lib)
 
 
 ###########################################################################################
@@ -319,7 +220,7 @@ target_link_libraries(
 #
 
 # CLI
-install(TARGETS "${cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
+# install(TARGETS "${cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 # Python bindings
 # install(TARGETS "${project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")

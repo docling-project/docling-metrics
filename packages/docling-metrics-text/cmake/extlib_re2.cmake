@@ -18,6 +18,9 @@ else()
     set(re_git_url https://github.com/google/re2.git)
     set(re_git_tag 2025-11-05)
     ExternalProject_Add(extlib_re2_source
+        # Add dependency on abseil to ensure that the source code of Abseil builds first
+        DEPENDS extlib_abseil_source
+
         PREFIX extlib_re2
 
         UPDATE_COMMAND ""
@@ -30,17 +33,27 @@ else()
 
         # By default it builds static *.a files
         # Add flag to switch into dynamic libraries -DBUILD_SHARED_LIBS=ON \\
+        # Ensure that abseil is properly seen by setting DCMAKE_PREFIX_PATH=${EXTERNALS_PREFIX_PATH}
         CMAKE_ARGS \\
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \\
-        -DCMAKE_INSTALL_PREFIX=${EXTERNALS_PREFIX_PATH}
+        -DCMAKE_INSTALL_PREFIX=${EXTERNALS_PREFIX_PATH} \\
+        -DCMAKE_PREFIX_PATH=${EXTERNALS_PREFIX_PATH}
 
         BUILD_IN_SOURCE ON
         LOG_DOWNLOAD ON
     )
+
     add_library("${ext_name_re2}" INTERFACE)
+    # add_dependencies("${ext_name_re2}" "${ext_name_abseil}" extlib_re2_source)
+    # add_dependencies("${ext_name_re2}" "${ext_name_abseil}")
     add_dependencies("${ext_name_re2}" extlib_re2_source)
-    set_target_properties(
-        "${ext_name_re2}"
-        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${EXTERNALS_PREFIX_PATH}/include
+
+    target_include_directories(
+        "${ext_name_re2}" INTERFACE
+        ${EXTERNALS_PREFIX_PATH}/include
+    )
+    target_link_libraries(
+        "${ext_name_re2}" INTERFACE
+        ${EXTERNALS_PREFIX_PATH}/lib
     )
 endif()

@@ -29,6 +29,7 @@ else()
         INSTALL_DIR ${EXTERNALS_PREFIX_PATH}
 
         # By default it builds static *.a files
+        # Add flag to switch into dynamic libraries -DBUILD_SHARED_LIBS=ON \\
         CMAKE_ARGS \\
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \\
         -DCMAKE_INSTALL_PREFIX=${EXTERNALS_PREFIX_PATH} \\
@@ -37,12 +38,16 @@ else()
         BUILD_IN_SOURCE ON
         LOG_DOWNLOAD ON
     )
+
     # Collect all abseil libraries that will be built
     add_library("${ext_name_abseil}" INTERFACE)
     add_dependencies("${ext_name_abseil}" extlib_abseil_source)
-    set_target_properties(
-        "${ext_name_abseil}"
-        PROPERTIES 
-        INTERFACE_INCLUDE_DIRECTORIES "${EXTERNALS_PREFIX_PATH}/include"
+    target_include_directories(
+        "${ext_name_abseil}" INTERFACE
+        ${EXTERNALS_PREFIX_PATH}/include
+    )
+    target_link_directories(
+        "${ext_name_abseil}" INTERFACE
+        ${EXTERNALS_PREFIX_PATH}/lib
     )
 endif()
