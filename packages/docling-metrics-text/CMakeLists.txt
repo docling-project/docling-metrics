@@ -202,6 +202,8 @@ set(dependencies
 # Object libraries
 #
 add_library(text_objects OBJECT ${text_sources})
+add_dependencies(text_objects ${dependencies})
+target_link_libraries(text_objects PUBLIC ${dependencies})
 
 
 
