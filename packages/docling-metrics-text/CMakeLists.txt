@@ -123,10 +123,15 @@ endforeach()
 list(REMOVE_DUPLICATES text_include_dirs)
 list(APPEND text_include_dirs "${pybind11_INCLUDE_DIRS}")
 list(APPEND text_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
-
 # Debug
 # string(REPLACE ";" "\n" text_include_dirs_str "${text_include_dirs}")
 # message(STATUS "Include dirs: ${text_include_dirs_str}")
+
+# List of source files that are not the CLI or the python bindings
+file(GLOB_RECURSE text_sources "cpp_src/[!_]*.cpp")
+file(GLOB_RECURSE text_sources_EXCLUSIONS "cpp_src/cli/main.cpp")  # TODO: Add python bindings
+list(REMOVE_ITEM text_sources ${text_sources_EXCLUSIONS})
+message(STATUS "Source files: ${text_sources}")
 
 
 ###########################################################################################
@@ -193,6 +198,12 @@ set(dependencies
     "${ext_name_re2}"
 )
 
+###########################################################################################
+# Object libraries
+#
+add_library(text_objects OBJECT ${text_sources})
+
+
 
 ###########################################################################################
 # Executables
@@ -203,6 +214,7 @@ add_executable("${cli_name}" "cpp_src/cli/main.cpp")
 add_dependencies("${cli_name}" ${dependencies})
 target_link_libraries(
     "${cli_name}" PUBLIC
+    text_objects
     ${dependencies}
     ${CMAKE_DL_LIBS}
 )
