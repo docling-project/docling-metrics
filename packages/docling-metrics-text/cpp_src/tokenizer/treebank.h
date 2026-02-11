@@ -1,7 +1,10 @@
 #pragma once
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "re2/re2.h"
 
 namespace docling {
 
@@ -12,18 +15,18 @@ public:
   std::vector<std::string> tokenize(const std::string &text, bool convert_parentheses = false);
 
 private:
-  // Pattern pairs: (regex_pattern, replacement)
-  std::vector<std::pair<std::string, std::string>> starting_quotes_;
-  std::vector<std::pair<std::string, std::string>> punctuation_;
-  std::vector<std::pair<std::string, std::string>> ending_quotes_;
-  std::vector<std::pair<std::string, std::string>> convert_parentheses_;
+  // Pattern pairs: (compiled_regex, replacement)
+  std::vector<std::pair<std::unique_ptr<re2::RE2>, std::string>> starting_quotes_;
+  std::vector<std::pair<std::unique_ptr<re2::RE2>, std::string>> punctuation_;
+  std::vector<std::pair<std::unique_ptr<re2::RE2>, std::string>> ending_quotes_;
+  std::vector<std::pair<std::unique_ptr<re2::RE2>, std::string>> convert_parentheses_;
 
-  std::pair<std::string, std::string> parens_brackets_;
-  std::pair<std::string, std::string> double_dashes_;
+  std::pair<std::unique_ptr<re2::RE2>, std::string> parens_brackets_;
+  std::pair<std::unique_ptr<re2::RE2>, std::string> double_dashes_;
 
-  // Contraction patterns (only patterns, replacement is fixed)
-  std::vector<std::string> contractions2_;
-  std::vector<std::string> contractions3_;
+  // Contraction patterns (compiled regex, replacement is fixed)
+  std::vector<std::unique_ptr<re2::RE2>> contractions2_;
+  std::vector<std::unique_ptr<re2::RE2>> contractions3_;
 };
 
 } // namespace docling

@@ -206,7 +206,6 @@ add_dependencies(text_objects ${dependencies})
 target_link_libraries(text_objects PUBLIC ${dependencies})
 
 
-
 ###########################################################################################
 # Executables
 #
@@ -238,7 +237,7 @@ target_link_libraries(
 #
 
 # CLI
-# install(TARGETS "${cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(TARGETS "${cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 # Python bindings
 # install(TARGETS "${project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")
@@ -247,5 +246,23 @@ target_link_libraries(
 ###########################################################################################
 # Tests
 #
-# include(CTest)
-# add_subdirectory(cpp_tests/)
+
+include(CTest)
+
+# Collect all test targets
+set(all_test_targets)
+
+file(GLOB_RECURSE test_srcs "cpp_tests/[!_]*.cpp")
+foreach(test_fn ${test_srcs})
+  cmake_path(GET test_fn STEM test_name)
+  message(STATUS "Build test: ${test_name}")
+  set(all_test_targets ${all_test_targets} ${test_name})
+
+  add_executable("${test_name}" "${test_fn}")
+  target_link_libraries("${test_name}" PRIVATE
+    text_objects
+    ${dependencies}
+  )
+  add_test(NAME "${test_name}" COMMAND "${test_name}" WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+endforeach()
+
