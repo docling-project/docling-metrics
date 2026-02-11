@@ -8,6 +8,8 @@
 namespace docling {
 
 TreeBankTokenizer::TreeBankTokenizer() {
+  // TODO: Compile the regexes
+
   // Starting quotes
   starting_quotes_.push_back({R"(^")", "``"});
   starting_quotes_.push_back({R"((``))", R"( \1 )"});
@@ -42,6 +44,7 @@ TreeBankTokenizer::TreeBankTokenizer() {
   ending_quotes_.push_back({R"(([^' ])('[sS]|'[mM]|'[dD]|') )", R"(\1 \2 )"});
   ending_quotes_.push_back({R"(([^' ])('ll|'LL|'re|'RE|'ve|'VE|n't|N'T) )", R"(\1 \2 )"});
 
+  // TODO: Check it
   // Contractions (case-insensitive)
   // Note: RE2 doesn't support lookaheads, so we adjust patterns
   contractions2_.push_back(R"((?i)\b(can)(not)\b)");
