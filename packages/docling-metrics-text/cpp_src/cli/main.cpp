@@ -26,8 +26,8 @@ void demo_tokenizer() {
 
   std::cout << "Text: \n" << text;
   std::cout << "\n\nTokens: \n";
-  for (const std::string &token : tokens) {
-    std::cout << token << " ";
+  for (int i = 0; i < tokens.size(); ++i) {
+    std::cout << i << ": " << tokens[i] << "\n";
   }
 }
 
