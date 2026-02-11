@@ -52,4 +52,3 @@ cmake --build "${BUILD_DIR}" -j16
 # Install
 #
 cmake --install "${BUILD_DIR}"
-
