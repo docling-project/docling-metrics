@@ -136,6 +136,7 @@ list(APPEND text_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
 # Interface library for our source code
 add_library(text_interface INTERFACE)
 target_include_directories(text_interface INTERFACE "${text_include_dirs}")
+target_link_directories(text_interface INTERFACE "${EXTERNALS_LIB_PATH}")
 
 option(
     USE_SYSTEM_DEPS OFF
@@ -146,6 +147,8 @@ option(
 if(NOT USE_SYSTEM_DEPS)
     if(NOT EXISTS ${EXTERNALS_PREFIX_PATH})
         file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH})
+
+        # TODO: Check if it is needed to create the subdirs
         file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/bin)
         file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/lib)
         file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/include)
@@ -199,12 +202,10 @@ set(dependencies
 add_executable("${cli_name}" "cpp_src/cli/main.cpp")
 add_dependencies("${cli_name}" ${dependencies})
 target_link_libraries(
-    "${cli_name}"
-    PUBLIC
+    "${cli_name}" PUBLIC
     ${dependencies}
     ${CMAKE_DL_LIBS}
 )
-
 
 ###########################################################################################
 # Python bindings
