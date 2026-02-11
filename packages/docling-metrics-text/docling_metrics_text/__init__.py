@@ -1,7 +1,9 @@
 from docling_metrics_text.docling_metrics_text import (
-    TextMetric,
+    EditDistanceMetric,
+    EditDistanceSampleEvaluation,
 )
 
 __all__ = [
-    "TextMetric",
+    "EditDistanceMetric",
+    "EditDistanceSampleEvaluation",
 ]
