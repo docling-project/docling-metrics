@@ -1,4 +1,5 @@
 #include "re2/re2.h"
+#include <string>
 
 void demo_regex() {
   int i;

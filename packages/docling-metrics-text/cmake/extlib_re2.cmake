@@ -54,6 +54,7 @@ else()
     )
     target_link_libraries(
         "${ext_name_re2}" INTERFACE
-        ${EXTERNALS_PREFIX_PATH}/lib
+        ${EXTERNALS_PREFIX_PATH}/lib/libre2.a
     )
 endif()
+

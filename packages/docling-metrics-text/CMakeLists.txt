@@ -130,9 +130,6 @@ list(APPEND text_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
 add_library(text_interface INTERFACE)
 target_include_directories(text_interface INTERFACE "${text_include_dirs}")
 
-# TODO:
-# target_link_directories(text_interface INTERFACE "${EXTERNALS_PREFIX_PATH}/lib")
-
 option(
     USE_SYSTEM_DEPS OFF
     "If enabled, find and link to system libs, otherwise compile on the fly from original source."
@@ -149,8 +146,8 @@ if(NOT USE_SYSTEM_DEPS)
 endif()
 
 # Include external dependencies
-# include(cmake/extlib_cxxopts.cmake)
-# include(cmake/extlib_loguru.cmake)
+include(cmake/extlib_cxxopts.cmake)
+include(cmake/extlib_loguru.cmake)
 include(cmake/extlib_abseil.cmake)
 include(cmake/extlib_re2.cmake)
 
@@ -178,10 +175,10 @@ message(STATUS "PyBind11 libs: ${pybind11_LIBRARIES}")
 # define subdirlist utility
 # include(cmake/subdirlist.cmake)
 
-set(target_dependencies
+set(dependencies
     text_interface
-    # "${ext_name_loguru}"
-    # "${ext_name_cxxopts}"
+    "${ext_name_loguru}"
+    "${ext_name_cxxopts}"
     "${ext_name_abseil}"
     "${ext_name_re2}"
 )
@@ -192,15 +189,14 @@ set(target_dependencies
 #
 
 # Compile CLI
-# add_executable("${cli_name}" "cpp_src/cli/main.cpp")
-# add_dependencies("${cli_name}" ${target_dependencies})
-# target_link_libraries(
-#     "${cli_name}"
-#     PUBLIC
-#     ${target_dependencies}
-#     ${CMAKE_DL_LIBS}
-# )
-# target_link_directories("${cli_name}" PUBLIC ${EXTERNALS_PREFIX_PATH}/lib)
+add_executable("${cli_name}" "cpp_src/cli/main.cpp")
+add_dependencies("${cli_name}" ${dependencies})
+target_link_libraries(
+    "${cli_name}"
+    PUBLIC
+    ${dependencies}
+    ${CMAKE_DL_LIBS}
+)
 
 
 ###########################################################################################
@@ -211,8 +207,8 @@ set(target_dependencies
 #     "${project_name}"
 #     "${TOPLEVEL_PREFIX_PATH}/cpp_src/pybind/pybind_module.cpp"
 # )
-# add_dependencies("${project_name}" ${target_dependencies})
-# target_link_libraries("${project_name}" PUBLIC ${target_dependencies})
+# add_dependencies("${project_name}" ${dependencies})
+# target_link_libraries("${project_name}" PUBLIC ${dependencies})
 
 
 ###########################################################################################
