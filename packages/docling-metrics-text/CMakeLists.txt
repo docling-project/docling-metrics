@@ -42,23 +42,30 @@ if(NOT "${TOPLEVEL_PREFIX_PATH}/cmake" IN_LIST CMAKE_MODULE_PATH)
     set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${TOPLEVEL_PREFIX_PATH}/cmake")
 endif()
 
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(ARCH_BIT 64)
+else()
+    set(ARCH_BIT 32)
+endif()
+
+set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib")
+if(LINUX AND ${ARCH_BIT} EQUAL 64)
+    set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib64")
+endif()
+
 include(GNUInstallDirs)
 
 
-# set(ENV_ARCH $ENV{CIBW_ARCHS})
-# message(STATUS "cibw arch: " ${ENV_ARCH})
-
-# set(CMAKE_OSX_ARCHITECTURES $ENV{CIBW_ARCHS})
-# message(STATUS "cibw arch: " ${ENV_ARCH})
-
 set(ENV_ARCHFLAGS $ENV{ARCHFLAGS})
-message(STATUS "arch flags: " ${ENV_ARCHFLAGS})
-message(STATUS "        top path: " ${TOPLEVEL_PREFIX_PATH})
-message(STATUS "        lib path: " ${EXTERNALS_PREFIX_PATH})
-message(STATUS "    install path: " ${CMAKE_INSTALL_PREFIX})
-message(STATUS "      cmake path: " ${CMAKE_MODULE_PATH})
-message(STATUS "    cmake system: " ${CMAKE_SYSTEM_PROCESSOR})
-message(STATUS "   make osx arch: " ${CMAKE_OSX_ARCHITECTURES})
+message(STATUS "ENV_ARCH_FLAGS: ${ENV_ARCHFLAGS}")
+message(STATUS "TOP_LEVEL_PREFIX_PATH: ${TOPLEVEL_PREFIX_PATH}")
+message(STATUS "EXTERNALS_PREFIX_PATH: ${EXTERNALS_PREFIX_PATH}")
+message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "MAKE_OSX_ARCHITECTURES: ${CMAKE_OSX_ARCHITECTURES}")
+message(STATUS "ARCH_BIT: ${ARCH_BIT}")
+message(STATUS "EXTERNALS_LIB_PATH: ${EXTERNALS_LIB_PATH}")
 
 
 #################################################################################

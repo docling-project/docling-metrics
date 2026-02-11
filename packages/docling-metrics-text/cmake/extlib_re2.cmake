@@ -44,8 +44,6 @@ else()
     )
 
     add_library("${ext_name_re2}" INTERFACE)
-    # add_dependencies("${ext_name_re2}" "${ext_name_abseil}" extlib_re2_source)
-    # add_dependencies("${ext_name_re2}" "${ext_name_abseil}")
     add_dependencies("${ext_name_re2}" extlib_re2_source)
 
     target_include_directories(
@@ -54,7 +52,7 @@ else()
     )
     target_link_libraries(
         "${ext_name_re2}" INTERFACE
-        ${EXTERNALS_PREFIX_PATH}/lib/libre2.a
+        ${EXTERNALS_LIB_PATH}/libre2.a
     )
 endif()
 
