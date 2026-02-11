@@ -10,7 +10,13 @@ class TextManager {
 public:
   TextManager();
 
-  std::vector<std::string> tokenize(const std::string &text, bool convert_parentheses = false);
+  /**
+   * Implementation of the TreeBankTokenizer using regular expressions
+   * The logic is ported from the NLTK tokenizer
+   * The implementation is based on the RE2 regex library
+   *
+   */
+  std::vector<std::string> tokenize(const std::string &text, bool convert_parentheses);
 
 private:
   TreeBankTokenizer tokenizer_;
