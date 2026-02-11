@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 3.15)
 #################################################################################
 # Names and versions
 #
-set(project_name "docling_metric_text_cpp")
-set(cli_name "docling_metric_text_cli")
+set(project_name "docling_metrics_text_cpp")
+set(cli_name "docling_metrics_text_cli")
 set(install_root "docling_metrics_text")
 set(externals_root "externals")
 
@@ -129,7 +129,7 @@ list(APPEND text_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
 
 # List of source files that are not the CLI or the python bindings
 file(GLOB_RECURSE text_sources "cpp_src/[!_]*.cpp")
-file(GLOB_RECURSE text_sources_EXCLUSIONS "cpp_src/cli/main.cpp")  # TODO: Add python bindings
+file(GLOB_RECURSE text_sources_EXCLUSIONS "cpp_src/cli/main.cpp" "cpp_src/pybind/pybind_module.cpp")
 list(REMOVE_ITEM text_sources ${text_sources_EXCLUSIONS})
 message(STATUS "Source files: ${text_sources}")
 
@@ -220,16 +220,21 @@ target_link_libraries(
     ${CMAKE_DL_LIBS}
 )
 
+
 ###########################################################################################
 # Python bindings
 #
 
-# pybind11_add_module(
-#     "${project_name}"
-#     "${TOPLEVEL_PREFIX_PATH}/cpp_src/pybind/pybind_module.cpp"
-# )
-# add_dependencies("${project_name}" ${dependencies})
-# target_link_libraries("${project_name}" PUBLIC ${dependencies})
+pybind11_add_module(
+    "${project_name}"
+    "${TOPLEVEL_PREFIX_PATH}/cpp_src/pybind/pybind_module.cpp"
+)
+add_dependencies("${project_name}" ${dependencies})
+target_link_libraries(
+    "${project_name}" PUBLIC
+    text_objects
+    ${dependencies}
+)
 
 
 ###########################################################################################
@@ -240,7 +245,7 @@ target_link_libraries(
 install(TARGETS "${cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 # Python bindings
-# install(TARGETS "${project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(TARGETS "${project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 
 ###########################################################################################
