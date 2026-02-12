@@ -8,15 +8,19 @@ from statistics import mean, median
 
 from nltk import word_tokenize
 
-from docling_metrics_text import EditDistanceMetric
+from docling_metrics_text import TextMetrics
 
 _log = logging.getLogger(__name__)
 
 
 class TokenizerBenchmarker:
+    r"""
+    Run the
+    """
+
     def __init__(self, save_root: Path):
         self._save_root = save_root
-        self._ed_metric = EditDistanceMetric()
+        self._ed_metric = TextMetrics()
 
         self._save_root.mkdir(parents=True, exist_ok=True)
 
@@ -32,6 +36,7 @@ class TokenizerBenchmarker:
         }
 
         # 1. Glob the *.md files from the input_root and sort them by name
+        _log.info("Reading *.md files from: %s", str(input_root))
         md_files = sorted(input_root.glob("*.md"))
         _log.info(f"Found {len(md_files)} markdown files to process")
 
@@ -50,7 +55,7 @@ class TokenizerBenchmarker:
 
             # 4. Additionally pass its content to the self._ed_metric._tokenize() and keep track of the elapsed time in ms
             start_time = time.perf_counter()
-            ed_metric_tokens = self._ed_metric._tokenize(content)
+            ed_metric_tokens = self._ed_metric._word_tokenize(content)
             ed_metric_elapsed_ms = (time.perf_counter() - start_time) * 1000
 
             # 5. Compare if the two lists of tokens are the same and set it to the match_tokens variable
@@ -124,7 +129,8 @@ def main():
         "-i",
         "--input_root",
         type=Path,
-        required=True,
+        required=False,
+        default="tests/data/md",
         help="Path to the data root directory",
     )
     parser.add_argument(

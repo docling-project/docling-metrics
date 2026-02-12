@@ -37,12 +37,12 @@ homepage = "https://github.com/docling-project/docling-metrics"
 repository = "https://github.com/docling-project/docling-metrics"
 issues = "https://github.com/docling-project/docling-metrics/issues"
 
-# [build-system]
-# requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
-# build-backend = "scikit_build_core.build"
-#
-# [tool.scikit-build]
-# wheel.packages = ["docling_metric_text"]
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+wheel.packages = ["docling_metric_text"]
 
 [tool.uv]
 package = true
