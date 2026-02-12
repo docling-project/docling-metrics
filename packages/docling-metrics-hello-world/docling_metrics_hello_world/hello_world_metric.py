@@ -49,8 +49,7 @@ class HelloWorldMetric(BaseMetric):
         """Evaluate a single sample pair.
 
         Args:
-            sample_a: First input sample with string payload.
-            sample_b: Second input sample with string payload.
+            sample: Input sample with two string payloads.
 
         Returns:
             HelloWorldSampleResult with score always equal to 1.0.
