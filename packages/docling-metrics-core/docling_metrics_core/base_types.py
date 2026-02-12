@@ -36,7 +36,7 @@ class BaseMetric(ABC):
 
     @abstractmethod
     def evaluate_sample(
-        self, sample_a: BaseInputSample, sample_b: BaseInputSample
+        self, sample: BaseInputSample
     ) -> BaseSampleResult:
         """Evaluate a single sample pair."""
         ...
