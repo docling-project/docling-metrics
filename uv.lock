@@ -898,7 +898,6 @@ dependencies = [
     { name = "docling-metrics-core" },
     { name = "evaluate" },
     { name = "nltk" },
-    { name = "pybind11" },
     { name = "pydantic" },
     { name = "rapidfuzz" },
 ]
@@ -917,7 +916,6 @@ requires-dist = [
     { name = "docling-metrics-core", editable = "packages/docling-metrics-core" },
     { name = "evaluate", specifier = ">=0.4.3,<0.5.0" },
     { name = "nltk", specifier = ">=3.9.1,<4.0.0" },
-    { name = "pybind11" },
     { name = "pydantic" },
     { name = "rapidfuzz" },
 ]
