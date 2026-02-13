@@ -9,6 +9,7 @@ from statistics import mean, median
 from nltk import word_tokenize
 
 from docling_metrics_text import TextMetrics
+from docling_metrics_text.utils.data_loader import TextFileLoader
 
 _log = logging.getLogger(__name__)
 
@@ -35,18 +36,16 @@ class TokenizersBenchmarker:
             "edit_distance_metric_stats": {},
         }
 
-        # 1. Glob the *.md files from the input_root and sort them by name
-        _log.info("Reading *.md files from: %s", str(input_root))
-        md_files = sorted(input_root.glob("*.md"))
-        _log.info(f"Found {len(md_files)} markdown files to process")
+        # 1. Initialize TextFileLoader to load *.md files from the input_root
+        loader = TextFileLoader(input_root, file_pattern="*.md")
 
         nltk_times = []
         ed_metric_times = []
 
-        # 2. Loop over the files and read them
-        for md_file in md_files:
-            _log.info(f"Processing {md_file.name}")
-            content = md_file.read_text(encoding="utf-8")
+        # 2. Loop over the files using the loader
+        for file_entry in loader.load():
+            _log.info(f"Processing {file_entry.filename.name}")
+            content = file_entry.content
 
             # 3. Pass its content to the word_tokenize from NLTK and keep track of the elapsed time in ms
             start_time = time.perf_counter()
@@ -62,7 +61,7 @@ class TokenizersBenchmarker:
             match_tokens = nltk_tokens == ed_metric_tokens
 
             # 6. Update the report["files"] dict with the benchmarks
-            report["files"][md_file.name] = {
+            report["files"][file_entry.filename.name] = {
                 "nltk_tokens": nltk_tokens,
                 "ed_metric_tokens": ed_metric_tokens,
                 "nltk_elapsed_ms": nltk_elapsed_ms,
@@ -98,7 +97,7 @@ class TokenizersBenchmarker:
 
         # 8. Log summary statistics
         _log.info("\n=== Benchmark Summary ===")
-        _log.info(f"Total files processed: {len(md_files)}")
+        _log.info(f"Total files processed: {len(nltk_times)}")
         if nltk_times:
             _log.info(
                 f"NLTK - Mean: {report['nltk_stats']['mean_ms']:.2f}ms, "
