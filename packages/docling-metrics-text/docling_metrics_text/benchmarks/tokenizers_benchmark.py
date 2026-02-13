@@ -13,9 +13,9 @@ from docling_metrics_text import TextMetrics
 _log = logging.getLogger(__name__)
 
 
-class TokenizerBenchmarker:
+class TokenizersBenchmarker:
     r"""
-    Run the
+    Run benchmarks for the tokenizers
     """
 
     def __init__(self, save_root: Path):
@@ -24,7 +24,7 @@ class TokenizerBenchmarker:
 
         self._save_root.mkdir(parents=True, exist_ok=True)
 
-    def benchmark(self, input_root: Path):
+    def benchmark_word_tokenize(self, input_root: Path):
         r"""
         Compare the exactness and runtime between the NLTK and our implementation of the TreeBank tokenizer
         """
@@ -152,8 +152,8 @@ def main():
 
     # Benchmark
     _log.info("Benchmark Python vs C++ TEDs implementations")
-    benchmarker = TokenizerBenchmarker(save_root)
-    benchmarker.benchmark(input_root)
+    benchmarker = TokenizersBenchmarker(save_root)
+    benchmarker.benchmark_word_tokenize(input_root)
 
 
 if __name__ == "__main__":

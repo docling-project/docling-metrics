@@ -58,9 +58,9 @@ class TextMetrics(BaseMetric):
         tokens_b_set = set(tokens_b)
 
         # Compute metrics
-        f1_score = f_measure(tokens_a_set, tokens_b_set)
-        precision_score = precision(tokens_a_set, tokens_b_set)
-        recall_score = recall(tokens_a_set, tokens_b_set)
+        f1_score = f_measure(tokens_a_set, tokens_b_set) or -1.0
+        precision_score = precision(tokens_a_set, tokens_b_set) or -1.0
+        recall_score = recall(tokens_a_set, tokens_b_set) or -1.0
 
         # edit_distance_score is a normalized Levenshtein distance
         edit_distance_score = edit_distance(tokens_a, tokens_b) / max(
@@ -72,7 +72,7 @@ class TextMetrics(BaseMetric):
         result = self._bleu_eval.compute(
             predictions=[sample.text_a], references=[[sample.text_b]]
         )
-        bleu_score = result["bleu"]
+        bleu_score = -1 if result is None else result["bleu"]
 
         result = TextPairEvaluation(
             id=sample.id,

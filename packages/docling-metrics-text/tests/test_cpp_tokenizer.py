@@ -1,5 +1,7 @@
-MD_FILE_DIR = "data/md"
-TOKENS_DATA = "data/nltk_tokens.json"
+# from docling_metrics_text import TextMetrics, TextPairSample, TextPairEvaluation
+
+# MD_FILE_DIR = "data/md"
+# TOKENS_DATA = "data/nltk_tokens.json"
 
 
 # def test_tokenizer():
