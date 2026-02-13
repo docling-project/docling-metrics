@@ -49,30 +49,20 @@ class TextMetrics(BaseMetric):
         sample: TextPairSample,
     ) -> TextPairEvaluation:
         r"""
-        Compute text metrics for the input sample
+        Python implementation to compute text metrics for the input sample
         """
         # Tokenize the inputs
-        tokens_a = self._word_tokenize(sample.text_a)
-        tokens_b = self._word_tokenize(sample.text_b)
-        tokens_a_set = set(tokens_a)
-        tokens_b_set = set(tokens_b)
+        tokens_a, tokens_b, tokens_a_set, tokens_b_set = self._tokenize_pair(
+            sample.text_a, sample.text_b
+        )
 
         # Compute metrics
-        f1_score = f_measure(tokens_a_set, tokens_b_set) or -1.0
-        precision_score = precision(tokens_a_set, tokens_b_set) or -1.0
-        recall_score = recall(tokens_a_set, tokens_b_set) or -1.0
-
-        # edit_distance_score is a normalized Levenshtein distance
-        edit_distance_score = edit_distance(tokens_a, tokens_b) / max(
-            len(tokens_a), len(tokens_b)
-        )
-        meteor = meteor_score.meteor_score([tokens_a], tokens_b)
-
-        # BLEU implementation
-        result = self._bleu_eval.compute(
-            predictions=[sample.text_a], references=[[sample.text_b]]
-        )
-        bleu_score = -1 if result is None else result["bleu"]
+        f1_score = self._compute_f1(tokens_a_set, tokens_b_set)
+        precision_score = self._compute_precision(tokens_a_set, tokens_b_set)
+        recall_score = self._compute_recall(tokens_a_set, tokens_b_set)
+        edit_distance_score = self._compute_edit_distance(tokens_a, tokens_b)
+        meteor_score_value = self._compute_meteor(tokens_a, tokens_b)
+        bleu_score = self._compute_bleu(sample.text_a, sample.text_b)
 
         result = TextPairEvaluation(
             id=sample.id,
@@ -80,7 +70,7 @@ class TextMetrics(BaseMetric):
             precision_score=precision_score,
             recall_score=recall_score,
             edit_distance_score=edit_distance_score,
-            meteor_score=meteor,
+            meteor_score=meteor_score_value,
             bleu_score=bleu_score,
         )
         return result
@@ -97,5 +87,106 @@ class TextMetrics(BaseMetric):
 
     def _word_tokenize(self, text: str) -> list[str]:
         r"""Tokenize the input string using the TreeBank tokenizer"""
-        # TODO: Replace with the C++ implemenation when ready
         return word_tokenize(text)
+
+    def _tokenize_pair(
+        self, text_a: str, text_b: str
+    ) -> tuple[list[str], list[str], set[str], set[str]]:
+        r"""
+        Tokenize a pair of texts and create sets for efficient comparison.
+
+        Args:
+            text_a: First text to tokenize
+            text_b: Second text to tokenize
+
+        Returns:
+            Tuple of (tokens_a, tokens_b, tokens_a_set, tokens_b_set)
+        """
+        tokens_a = self._word_tokenize(text_a)
+        tokens_b = self._word_tokenize(text_b)
+        tokens_a_set = set(tokens_a)
+        tokens_b_set = set(tokens_b)
+        return tokens_a, tokens_b, tokens_a_set, tokens_b_set
+
+    def _compute_f1(self, tokens_a_set: set[str], tokens_b_set: set[str]) -> float:
+        r"""
+        Compute F1 score between two token sets.
+
+        Args:
+            tokens_a_set: First set of tokens
+            tokens_b_set: Second set of tokens
+
+        Returns:
+            F1 score, or -1.0 if computation fails
+        """
+        return f_measure(tokens_a_set, tokens_b_set) or -1.0
+
+    def _compute_precision(
+        self, tokens_a_set: set[str], tokens_b_set: set[str]
+    ) -> float:
+        r"""
+        Compute precision score between two token sets.
+
+        Args:
+            tokens_a_set: First set of tokens (reference)
+            tokens_b_set: Second set of tokens (prediction)
+
+        Returns:
+            Precision score, or -1.0 if computation fails
+        """
+        return precision(tokens_a_set, tokens_b_set) or -1.0
+
+    def _compute_recall(self, tokens_a_set: set[str], tokens_b_set: set[str]) -> float:
+        r"""
+        Compute recall score between two token sets.
+
+        Args:
+            tokens_a_set: First set of tokens (reference)
+            tokens_b_set: Second set of tokens (prediction)
+
+        Returns:
+            Recall score, or -1.0 if computation fails
+        """
+        return recall(tokens_a_set, tokens_b_set) or -1.0
+
+    def _compute_edit_distance(self, tokens_a: list[str], tokens_b: list[str]) -> float:
+        r"""
+        Compute normalized edit distance (Levenshtein distance) between two token lists.
+
+        Args:
+            tokens_a: First list of tokens
+            tokens_b: Second list of tokens
+
+        Returns:
+            Normalized edit distance score (0.0 = identical, 1.0 = completely different)
+        """
+        distance = edit_distance(tokens_a, tokens_b)
+        max_length = max(len(tokens_a), len(tokens_b))
+        return distance / max_length if max_length > 0 else 0.0
+
+    def _compute_meteor(self, tokens_a: list[str], tokens_b: list[str]) -> float:
+        r"""
+        Compute METEOR score between two token lists.
+
+        Args:
+            tokens_a: First list of tokens (reference)
+            tokens_b: Second list of tokens (hypothesis)
+
+        Returns:
+            METEOR score
+        """
+        return meteor_score.meteor_score([tokens_a], tokens_b)
+
+    def _compute_bleu(self, text_a: str, text_b: str) -> float:
+        r"""
+        Compute BLEU score between two texts.
+
+        Args:
+            text_a: First text (prediction)
+            text_b: Second text (reference)
+
+        Returns:
+            BLEU score, or -1.0 if computation fails
+        """
+        result = self._bleu_eval.compute(predictions=[text_a], references=[[text_b]])
+        return -1.0 if result is None else result["bleu"]
