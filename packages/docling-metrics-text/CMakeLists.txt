@@ -107,7 +107,7 @@ message(STATUS "cxx-standard: " ${CMAKE_CXX_STANDARD})
 
 # List of header files
 # Get all *.h except those begining with underscore
-file(GLOB_RECURSE text_headers "${PROJECT_SOURCE_DIR}/cpp/[!_]*.h")
+file(GLOB_RECURSE text_headers "${PROJECT_SOURCE_DIR}/cpp/include/[!_]*.h")
 # message(STATUS "Header files: ${text_headers}")
 
 # List all header directories
@@ -120,8 +120,8 @@ list(REMOVE_DUPLICATES text_include_dirs)
 list(APPEND text_include_dirs "${pybind11_INCLUDE_DIRS}")
 list(APPEND text_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
 # Debug
-# string(REPLACE ";" "\n" text_include_dirs_str "${text_include_dirs}")
-# message(STATUS "Include dirs: ${text_include_dirs_str}")
+string(REPLACE ";" "\n" text_include_dirs_str "${text_include_dirs}")
+message(STATUS "Include dirs: ${text_include_dirs_str}")
 
 # List of source files that are not the CLI or the python bindings
 file(GLOB_RECURSE text_sources "cpp/[!_]*.cpp")
