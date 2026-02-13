@@ -268,13 +268,4 @@ EDLIB_API char *edlibAlignmentToCigar(const unsigned char *alignment, int alignm
 }
 #endif
 
-#ifdef __cplusplus
-#include <string>
-#include <vector>
-
-EdlibAlignResult edlibAlignStrings(const std::vector<std::string> &query,
-                                   const std::vector<std::string> &target,
-                                   const EdlibAlignConfig config);
-#endif
-
 #endif // EDLIB_H
