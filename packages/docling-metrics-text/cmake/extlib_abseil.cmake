@@ -140,16 +140,26 @@ else()
         libabsl_vlog_config_internal.a
     )
 
+    set(abseil_lib_paths "")
     foreach(abseil_lib ${abseil_libs})
-        target_link_libraries(
-            "${ext_name_abseil}" INTERFACE
-            ${EXTERNALS_LIB_PATH}/${abseil_lib}
-        )
+        list(APPEND abseil_lib_paths "${EXTERNALS_LIB_PATH}/${abseil_lib}")
     endforeach()
 
-   if(APPLE)
-       find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
-       target_link_libraries("${ext_name_abseil}" INTERFACE ${COREFOUNDATION_LIBRARY})
-   endif()
+    if(APPLE)
+        find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
+        target_link_libraries(
+            "${ext_name_abseil}" INTERFACE
+            ${abseil_lib_paths}
+            ${COREFOUNDATION_LIBRARY}
+        )
+    else()
+        # Use linker group to handle circular dependencies between abseil static libs
+        target_link_libraries(
+            "${ext_name_abseil}" INTERFACE
+            -Wl,--start-group
+            ${abseil_lib_paths}
+            -Wl,--end-group
+        )
+    endif()
 endif()
 

@@ -50,7 +50,9 @@ endif()
 
 set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib")
 if(LINUX AND ${ARCH_BIT} EQUAL 64)
-    set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib64")
+    # TODO:
+    # set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib64")
+    set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib")
 endif()
 
 include(GNUInstallDirs)
@@ -194,7 +196,6 @@ set(dependencies
     text_interface
     "${ext_name_loguru}"
     "${ext_name_cxxopts}"
-    "${ext_name_abseil}"
     "${ext_name_re2}"
 )
 

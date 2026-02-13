@@ -53,6 +53,7 @@ else()
     target_link_libraries(
         "${ext_name_re2}" INTERFACE
         ${EXTERNALS_LIB_PATH}/libre2.a
+        "${ext_name_abseil}"
     )
 endif()
 
