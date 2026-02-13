@@ -37,15 +37,16 @@ class TokenizersBenchmarker:
         }
 
         # 1. Initialize TextFileLoader to load *.md files from the input_root
-        loader = TextFileLoader(input_root, file_pattern="*.md")
+        loader = TextFileLoader(input_root)
 
         nltk_times = []
         ed_metric_times = []
 
         # 2. Loop over the files using the loader
         for file_entry in loader.load():
-            _log.info(f"Processing {file_entry.filename.name}")
-            content = file_entry.content
+            _log.info(f"Processing {file_entry.pivot_filename.name}")
+            filename = file_entry.pivot_filename.name
+            content = file_entry.pivot_content
 
             # 3. Pass its content to the word_tokenize from NLTK and keep track of the elapsed time in ms
             start_time = time.perf_counter()
@@ -61,7 +62,7 @@ class TokenizersBenchmarker:
             match_tokens = nltk_tokens == ed_metric_tokens
 
             # 6. Update the report["files"] dict with the benchmarks
-            report["files"][file_entry.filename.name] = {
+            report["files"][filename] = {
                 "nltk_tokens": nltk_tokens,
                 "ed_metric_tokens": ed_metric_tokens,
                 "nltk_elapsed_ms": nltk_elapsed_ms,
