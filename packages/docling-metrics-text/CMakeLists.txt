@@ -23,6 +23,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 # Path variables
 # External dependencies are downloaded inside the externals/ dir
 #
+include(GNUInstallDirs)
 
 if(NOT DEFINED TOPLEVEL_PREFIX_PATH)
     set(TOPLEVEL_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -48,14 +49,7 @@ else()
     set(ARCH_BIT 32)
 endif()
 
-set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib")
-if(LINUX AND ${ARCH_BIT} EQUAL 64)
-    # TODO:
-    # set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib64")
-    set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/lib")
-endif()
-
-include(GNUInstallDirs)
+set(EXTERNALS_LIB_PATH "${EXTERNALS_PREFIX_PATH}/${CMAKE_INSTALL_LIBDIR}")
 
 
 set(ENV_ARCHFLAGS $ENV{ARCHFLAGS})
@@ -154,10 +148,8 @@ option(
 if(NOT USE_SYSTEM_DEPS)
     if(NOT EXISTS ${EXTERNALS_PREFIX_PATH})
         file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH})
-
-        # TODO: Check if it is needed to create the subdirs
         file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/bin)
-        file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/lib)
+        file(MAKE_DIRECTORY ${EXTERNALS_LIB_PATH})
         file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/include)
     endif()
 endif()
