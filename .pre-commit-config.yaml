@@ -5,10 +5,9 @@ repos:
     hooks:
       - id: ruff-format
         name: "Ruff formatter"
-        args: [--config=pyproject.toml]
       - id: ruff
         name: "Ruff linter"
-        args: [--exit-non-zero-on-fix, --fix, --config=pyproject.toml]
+        args: [--exit-non-zero-on-fix, --fix]
   - repo: local
     hooks:
       - id: clang-format

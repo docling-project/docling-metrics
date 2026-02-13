@@ -40,6 +40,7 @@ docling-metrics-core = { workspace = true }
 docling-metrics-hello-world = { workspace = true }
 docling-metrics-teds = { workspace = true }
 docling-metrics-hello-world-cpp = { workspace = true }
+docling-metrics-text = { workspace = true }
 
 [tool.mypy]
 pretty = true
