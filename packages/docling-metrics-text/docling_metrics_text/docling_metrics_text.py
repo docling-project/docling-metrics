@@ -13,7 +13,7 @@ from nltk import edit_distance, word_tokenize
 from nltk.metrics import f_measure, precision, recall
 from nltk.translate import meteor_score
 
-from . import docling_metrics_text_cpp  # type: ignore
+# from . import docling_metrics_text_cpp  # type: ignore
 
 
 class TextMetricsMode(str, Enum):
@@ -44,7 +44,7 @@ class TextMetrics(BaseMetric):
     Various text metrics
     """
 
-    def __init__(self, mode: TextMetricsMode = TextMetricsMode.CPP) -> None:
+    def __init__(self, mode: TextMetricsMode = TextMetricsMode.PYTHON) -> None:
         r""" """
         self._mode = mode
 
@@ -171,12 +171,9 @@ class TextMetrics(BaseMetric):
             Normalized edit distance score (0.0 = identical, 1.0 = completely different)
         """
 
-        if self._mode == TextMetricsMode.PYTHON:
-            levenshtein = edit_distance(tokens_a, tokens_b)
-            max_length = max(len(tokens_a), len(tokens_b))
-            distance = levenshtein / max_length if max_length > 0 else 0.0
-        else:
-            distance = docling_metrics_text_cpp.levenshtein()
+        levenshtein = edit_distance(tokens_a, tokens_b)
+        max_length = max(len(tokens_a), len(tokens_b))
+        distance = levenshtein / max_length if max_length > 0 else 0.0
         return distance
 
     def _compute_meteor(self, tokens_a: list[str], tokens_b: list[str]) -> float:
