@@ -20,19 +20,9 @@ std::vector<std::string> TextManager::tokenize(const std::string &text, bool con
 
 double TextManager::edit_distance(const std::vector<std::string> &tokens_a,
                                   const std::vector<std::string> &tokens_b) {
-  // int text_a_size = text_a.size();
-  // int text_b_size = text_b.size();
-
-  // EdlibAlignResult result =
-  //     edlibAlign(text_a.c_str(), text_a.size(), text_b.c_str(), text_b.size(), *ed_config_ptr_);
-
-  // if (result.status != EDLIB_STATUS_OK) {
-  //   return -1.0;
-  // }
-
-  // int levenshtein = result.editDistance;
-  // int max_length = std::max(tokens_a_size, len(tokens_b))
-  // edlibFreeAlignResult(result);
+  // TODO: Extend the implementation of edlibAlign from edlib code to accept vectors of strings:
+  // - Each token should be mapped to a uint64_t using a lookup map
+  // - Check Mayer's bit-vector algorithm
 
   return -1.;
 }
