@@ -6,6 +6,7 @@
 #include <cstring>
 #include <stdint.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace {
@@ -1515,4 +1516,178 @@ extern "C" void edlibFreeAlignResult(EdlibAlignResult result) {
     free(result.startLocations);
   if (result.alignment)
     free(result.alignment);
+}
+
+EdlibAlignResult edlibAlignStrings(const std::vector<std::string> &query,
+                                   const std::vector<std::string> &target,
+                                   const EdlibAlignConfig config) {
+  using namespace std;
+
+  EdlibAlignResult result;
+  result.status = EDLIB_STATUS_OK;
+  result.editDistance = -1;
+  result.endLocations = result.startLocations = NULL;
+  result.numLocations = 0;
+  result.alignment = NULL;
+  result.alignmentLength = 0;
+  result.alphabetLength = 0;
+
+  const int queryLength = static_cast<int>(query.size());
+  const int targetLength = static_cast<int>(target.size());
+
+  /*------------ MAP TOKENS TO UNSIGNED CHAR INDICES -----------*/
+  unordered_map<string, unsigned char> tokenIndex;
+  unsigned char nextIdx = 0;
+
+  for (const auto &tok : query) {
+    if (tokenIndex.find(tok) == tokenIndex.end()) {
+      tokenIndex[tok] = nextIdx++;
+      if (nextIdx == 0) { // Overflow: more than 256 unique tokens
+        result.status = EDLIB_STATUS_ERROR;
+        return result;
+      }
+    }
+  }
+  for (const auto &tok : target) {
+    if (tokenIndex.find(tok) == tokenIndex.end()) {
+      tokenIndex[tok] = nextIdx++;
+      if (nextIdx == 0) { // Overflow: more than 256 unique tokens
+        result.status = EDLIB_STATUS_ERROR;
+        return result;
+      }
+    }
+  }
+
+  int alphabetLength = static_cast<int>(tokenIndex.size());
+  string alphabet(alphabetLength, ' '); // Synthetic alphabet
+  for (const auto &kv : tokenIndex) {
+    alphabet[kv.second] = static_cast<char>(kv.second);
+  }
+
+  unsigned char *queryTransformed =
+      static_cast<unsigned char *>(malloc(sizeof(unsigned char) * queryLength));
+  unsigned char *targetTransformed =
+      static_cast<unsigned char *>(malloc(sizeof(unsigned char) * targetLength));
+
+  for (int i = 0; i < queryLength; i++) {
+    queryTransformed[i] = tokenIndex[query[i]];
+  }
+  for (int i = 0; i < targetLength; i++) {
+    targetTransformed[i] = tokenIndex[target[i]];
+  }
+  result.alphabetLength = alphabetLength;
+  /*-------------------------------------------------------*/
+
+  // Handle special situation when at least one of the sequences has length 0.
+  if (queryLength == 0 || targetLength == 0) {
+    if (config.mode == EDLIB_MODE_NW) {
+      result.editDistance = std::max(queryLength, targetLength);
+      result.endLocations = static_cast<int *>(malloc(sizeof(int) * 1));
+      result.endLocations[0] = targetLength - 1;
+      result.numLocations = 1;
+    } else if (config.mode == EDLIB_MODE_SHW || config.mode == EDLIB_MODE_HW) {
+      result.editDistance = queryLength;
+      result.endLocations = static_cast<int *>(malloc(sizeof(int) * 1));
+      result.endLocations[0] = -1;
+      result.numLocations = 1;
+    } else {
+      result.status = EDLIB_STATUS_ERROR;
+    }
+
+    free(queryTransformed);
+    free(targetTransformed);
+    return result;
+  }
+
+  /*--------------------- INITIALIZATION ------------------*/
+  int maxNumBlocks = ceilDiv(queryLength, WORD_SIZE);
+  int W = maxNumBlocks * WORD_SIZE - queryLength;
+  EqualityDefinition equalityDefinition(alphabet, config.additionalEqualities,
+                                        config.additionalEqualitiesLength);
+  Word *Peq = buildPeq(alphabetLength, queryTransformed, queryLength, equalityDefinition);
+  /*-------------------------------------------------------*/
+
+  /*------------------ MAIN CALCULATION -------------------*/
+  int positionNW;
+  AlignmentData *alignData = NULL;
+  bool dynamicK = false;
+  int k = config.k;
+  if (k < 0) {
+    dynamicK = true;
+    k = WORD_SIZE;
+  }
+
+  do {
+    if (config.mode == EDLIB_MODE_HW || config.mode == EDLIB_MODE_SHW) {
+      myersCalcEditDistanceSemiGlobal(Peq, W, maxNumBlocks, queryLength, targetTransformed,
+                                      targetLength, k, config.mode, &(result.editDistance),
+                                      &(result.endLocations), &(result.numLocations));
+    } else {
+      myersCalcEditDistanceNW(Peq, W, maxNumBlocks, queryLength, targetTransformed, targetLength, k,
+                              &(result.editDistance), &positionNW, false, &alignData, -1);
+    }
+    k *= 2;
+  } while (dynamicK && result.editDistance == -1);
+
+  if (result.editDistance >= 0) {
+    if (config.mode == EDLIB_MODE_NW) {
+      result.endLocations = static_cast<int *>(malloc(sizeof(int) * 1));
+      result.endLocations[0] = targetLength - 1;
+      result.numLocations = 1;
+    }
+
+    if (config.task == EDLIB_TASK_LOC || config.task == EDLIB_TASK_PATH) {
+      result.startLocations = static_cast<int *>(malloc(result.numLocations * sizeof(int)));
+      if (config.mode == EDLIB_MODE_HW) {
+        const unsigned char *rTarget = createReverseCopy(targetTransformed, targetLength);
+        const unsigned char *rQuery = createReverseCopy(queryTransformed, queryLength);
+        Word *rPeq = buildPeq(alphabetLength, rQuery, queryLength, equalityDefinition);
+        for (int i = 0; i < result.numLocations; i++) {
+          int endLocation = result.endLocations[i];
+          if (endLocation == -1) {
+            result.startLocations[i] = 0;
+          } else {
+            int bestScoreSHW, numPositionsSHW;
+            int *positionsSHW;
+            myersCalcEditDistanceSemiGlobal(rPeq, W, maxNumBlocks, queryLength,
+                                            rTarget + targetLength - endLocation - 1,
+                                            endLocation + 1, result.editDistance, EDLIB_MODE_SHW,
+                                            &bestScoreSHW, &positionsSHW, &numPositionsSHW);
+            result.startLocations[i] = endLocation - positionsSHW[numPositionsSHW - 1];
+            free(positionsSHW);
+          }
+        }
+        delete[] rTarget;
+        delete[] rQuery;
+        delete[] rPeq;
+      } else {
+        for (int i = 0; i < result.numLocations; i++) {
+          result.startLocations[i] = 0;
+        }
+      }
+    }
+
+    if (config.task == EDLIB_TASK_PATH) {
+      int alnStartLocation = result.startLocations[0];
+      int alnEndLocation = result.endLocations[0];
+      const unsigned char *alnTarget = targetTransformed + alnStartLocation;
+      const int alnTargetLength = alnEndLocation - alnStartLocation + 1;
+      const unsigned char *rAlnTarget = createReverseCopy(alnTarget, alnTargetLength);
+      const unsigned char *rQuery = createReverseCopy(queryTransformed, queryLength);
+      obtainAlignment(queryTransformed, rQuery, queryLength, alnTarget, rAlnTarget, alnTargetLength,
+                      equalityDefinition, alphabetLength, result.editDistance, &(result.alignment),
+                      &(result.alignmentLength));
+      delete[] rAlnTarget;
+      delete[] rQuery;
+    }
+  }
+  /*-------------------------------------------------------*/
+
+  delete[] Peq;
+  free(queryTransformed);
+  free(targetTransformed);
+  if (alignData)
+    delete alignData;
+
+  return result;
 }
