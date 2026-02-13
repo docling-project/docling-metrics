@@ -107,7 +107,7 @@ message(STATUS "cxx-standard: " ${CMAKE_CXX_STANDARD})
 
 # List of header files
 # Get all *.h except those begining with underscore
-file(GLOB_RECURSE text_headers "${PROJECT_SOURCE_DIR}/cpp_src/[!_]*.h")
+file(GLOB_RECURSE text_headers "${PROJECT_SOURCE_DIR}/cpp/[!_]*.h")
 # message(STATUS "Header files: ${text_headers}")
 
 # List all header directories
@@ -124,8 +124,8 @@ list(APPEND text_include_dirs "${EXTERNALS_PREFIX_PATH}/include")
 # message(STATUS "Include dirs: ${text_include_dirs_str}")
 
 # List of source files that are not the CLI or the python bindings
-file(GLOB_RECURSE text_sources "cpp_src/[!_]*.cpp")
-file(GLOB_RECURSE text_sources_EXCLUSIONS "cpp_src/cli/main.cpp" "cpp_src/pybind/pybind_module.cpp")
+file(GLOB_RECURSE text_sources "cpp/[!_]*.cpp")
+file(GLOB_RECURSE text_sources_EXCLUSIONS "cpp/src/main.cpp" "cpp/src/pybind_module.cpp")
 list(REMOVE_ITEM text_sources ${text_sources_EXCLUSIONS})
 message(STATUS "Source files: ${text_sources}")
 
@@ -159,7 +159,7 @@ include(cmake/extlib_cxxopts.cmake)
 include(cmake/extlib_loguru.cmake)
 include(cmake/extlib_abseil.cmake)
 include(cmake/extlib_re2.cmake)
-include(cmake/extlib_edlib.cmake)
+# include(cmake/extlib_edlib.cmake)
 
 # Use the Python from the python venv
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
@@ -190,7 +190,6 @@ set(dependencies
     "${ext_name_loguru}"
     "${ext_name_cxxopts}"
     "${ext_name_re2}"
-    "${ext_name_edlib}"
 )
 
 ###########################################################################################
@@ -206,7 +205,7 @@ target_link_libraries(text_objects PUBLIC ${dependencies})
 #
 
 # Compile CLI
-add_executable("${cli_name}" "cpp_src/cli/main.cpp")
+add_executable("${cli_name}" "cpp/src/main.cpp")
 add_dependencies("${cli_name}" ${dependencies})
 target_link_libraries(
     "${cli_name}" PUBLIC
@@ -222,7 +221,7 @@ target_link_libraries(
 
 pybind11_add_module(
     "${project_name}"
-    "${TOPLEVEL_PREFIX_PATH}/cpp_src/pybind/pybind_module.cpp"
+    "${TOPLEVEL_PREFIX_PATH}/cpp/src/pybind_module.cpp"
 )
 add_dependencies("${project_name}" ${dependencies})
 target_link_libraries(

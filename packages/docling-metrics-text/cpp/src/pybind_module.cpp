@@ -18,7 +18,14 @@ PYBIND11_MODULE(docling_metrics_text_cpp, m) {
            "    text: The input text to tokenize\n"
            "    convert_parentheses: Convert all parentheses\n\n"
            "Returns:\n"
-           "    List of the tokens");
+           "    List of the tokens")
+      .def("edit_distance", &TextManager::edit_distance, py::arg("tokens_a"), py::arg("tokens_b"),
+           "Calculate the normalized edit distance between two token lists\n\n"
+           "Args:\n"
+           "    tokens_a: The first list of tokens\n"
+           "    tokens_b: The second list of tokens\n\n"
+           "Returns:\n"
+           "    The normalized edit distance as a float");
 }
 
 } // namespace docling

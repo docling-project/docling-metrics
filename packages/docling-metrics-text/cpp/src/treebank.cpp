@@ -66,6 +66,11 @@ TreeBankTokenizer::TreeBankTokenizer() {
   contractions3_.emplace_back(std::make_unique<re2::RE2>(R"((?i) ('t)(was)\b)", re2::RE2::Quiet));
 }
 
+/**
+ * Implementation of the TreeBankTokenizer using regular expressions
+ * The logic is ported from the NLTK tokenizer
+ * The implementation is based on the RE2 regex library
+ */
 std::vector<std::string> TreeBankTokenizer::tokenize(const std::string &text,
                                                      bool convert_parentheses) {
   std::string result = text;
