@@ -159,6 +159,7 @@ include(cmake/extlib_cxxopts.cmake)
 include(cmake/extlib_loguru.cmake)
 include(cmake/extlib_abseil.cmake)
 include(cmake/extlib_re2.cmake)
+include(cmake/extlib_edlib.cmake)
 
 # Use the Python from the python venv
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
@@ -189,6 +190,7 @@ set(dependencies
     "${ext_name_loguru}"
     "${ext_name_cxxopts}"
     "${ext_name_re2}"
+    "${ext_name_edlib}"
 )
 
 ###########################################################################################
