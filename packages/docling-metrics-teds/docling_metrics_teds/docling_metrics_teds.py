@@ -102,7 +102,10 @@ class TEDSMetric(BaseMetric):
         return None
 
     def evaluate_dataset(
-        self, sample_pairs: Iterable[BaseInputSample]
+        self,
+        sample_pairs: Iterable[
+            TEDSMetricBracketInputSample | TEDSMetricHTMLInputSample
+        ],
     ) -> TEDSMetricDatasetEvaluation:
         r"""
         Evaluate a dataset.
