@@ -7,7 +7,6 @@ This is an optimized implementation of the Tree Edit Distance Score.
 
 Main features:
 
-- Parallelized C++ implementation.
 - Python bindings.
 - Docling API.
 
@@ -52,7 +51,7 @@ All C++ and Python code is managed by `uv`. The following command starts the wor
 3. Installs the `*.so` file with the python bindings inside the uv venv.
 
 ```bash
-uv sync -v --all-extras
+uv sync --all-packages
 ```
 
 In case a manual compilation of the C++ code is needed, you can use the bash scripts from `devtools/`:
