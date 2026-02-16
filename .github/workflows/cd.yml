@@ -11,7 +11,7 @@ on:
           - docling-metrics-core
           - docling-metrics-hello-world
           - docling-metrics-hello-world-cpp
-          - docling-metrics-teds
+          - docling-metrics-table
           - docling-metrics-text
 
 jobs:
