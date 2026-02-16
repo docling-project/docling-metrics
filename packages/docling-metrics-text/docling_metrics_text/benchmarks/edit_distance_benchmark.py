@@ -143,7 +143,9 @@ class EditDistanceBenchmarker:
 
         # Save report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_path = self._save_root / f"edit_distance_benchmark_report_{timestamp}.json"
+        report_path = (
+            self._save_root / f"edit_distance_benchmark_report_{timestamp}.json"
+        )
         with open(report_path, "w") as f:
             json.dump(report, f, indent=2, sort_keys=True)
         _log.info(f"Benchmark report saved to: {report_path}")
@@ -183,4 +185,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

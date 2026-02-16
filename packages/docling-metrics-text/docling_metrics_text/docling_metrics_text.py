@@ -44,7 +44,7 @@ class TextMetrics(BaseMetric):
     Various text metrics
     """
 
-    def __init__(self, mode: TextMetricsMode = TextMetricsMode.PYTHON) -> None:
+    def __init__(self, mode: TextMetricsMode = TextMetricsMode.CPP) -> None:
         r""" """
         self._mode = mode
 

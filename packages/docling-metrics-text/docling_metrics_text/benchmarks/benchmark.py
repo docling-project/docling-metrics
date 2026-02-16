@@ -8,48 +8,10 @@ from statistics import mean, median
 from typing import Any
 
 from docling_metrics_text import TextMetrics
+from docling_metrics_text.docling_metrics_text import TextMetricsMode
 from docling_metrics_text.utils.data_loader import FileEntry, TextFileLoader
 
 _log = logging.getLogger(__name__)
-
-# Decide if the C++/Python implementation will be used:
-# os.environ["RAPIDFUZZ_IMPLEMENTATION"] = "cpp"
-# # os.environ["RAPIDFUZZ_IMPLEMENTATION"] = "python"
-# from rapidfuzz import distance
-#
-# TEDS_RELATIVE_TOLERANCE = 1e-6
-#
-# def compute_rapidfuzz_distances(
-#     true_txt: str,
-#     pred_txt: str,
-# ) -> dict[str, int | float]:
-#     r""" """
-#     true_tokens = word_tokenize(true_txt)
-#     pred_tokens = word_tokenize(pred_txt)
-#     token_size = max(len(true_tokens), len(pred_tokens))
-
-#     # Compute the Damerau-Levenshtein on the tokens, not the original strings
-#     # damerau_levenshtein = distance.DamerauLevenshtein.distance(true_tokens, pred_tokens)
-#     levenshtein = distance.Levenshtein.distance(true_tokens, pred_tokens)
-#     edit_distance = float(levenshtein) / token_size if token_size > 0 else 0.0
-
-#     # hamming = distance.Hamming.distance(true_txt, pred_txt)
-#     # indel = distance.Indel.distance(true_txt, pred_txt)
-#     # jaro = distance.Jaro.distance(true_txt, pred_txt)
-#     # jaro_winkler = distance.JaroWinkler.distance(true_txt, pred_txt)
-#     # levenshtein = distance.Levenshtein.distance(true_txt, pred_txt)
-
-#     metrics: dict[str, int | float] = {
-#         # "damerau_levenshtein_rapidfuzz": damerau_levenshtein,
-#         "levenshtein_rapidfuzz": levenshtein,
-#         "edit_distance_rapidfuzz": edit_distance,
-#         # "hamming": hamming,
-#         # "indel": indel,
-#         # "jaro": jaro,
-#         # "jaro_winkler": jaro_winkler,
-#         # "levenshtein": levenshtein,
-#     }
-#     return metrics
 
 
 class Benchmarker:
@@ -68,7 +30,7 @@ class Benchmarker:
     ):
         r""" """
         loader = TextFileLoader(data_root)
-        mc = TextMetrics()
+        mc = TextMetrics(mode=TextMetricsMode.CPP)
 
         report: dict[str, dict[str, Any]] = {
             "stats": {},
