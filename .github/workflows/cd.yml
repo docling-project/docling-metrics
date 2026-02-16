@@ -12,6 +12,7 @@ on:
           - docling-metrics-hello-world
           - docling-metrics-hello-world-cpp
           - docling-metrics-teds
+          - docling-metrics-text
 
 jobs:
   code-checks:
