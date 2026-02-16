@@ -21,7 +21,8 @@ jobs:
           TAG="${{ github.event.release.tag_name }}"
           PKG="${TAG%-v*}"
           echo "package=${PKG}" >> "$GITHUB_OUTPUT"
-          if grep -q "scikit_build_core" "packages/${PKG}/pyproject.toml" 2>/dev/null; then
+          BUILD_BACKEND=$(uvx --from=toml-cli toml get --toml-path="packages/${PKG}/pyproject.toml" build-system.build-backend 2>/dev/null || echo "")
+          if [[ "$BUILD_BACKEND" == *"scikit_build_core"* ]]; then
             echo "is_native=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_native=false" >> "$GITHUB_OUTPUT"
