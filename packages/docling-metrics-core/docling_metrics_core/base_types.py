@@ -35,9 +35,7 @@ class BaseMetric(ABC):
     """Abstract base class defining the interface for all metrics."""
 
     @abstractmethod
-    def evaluate_sample(
-        self, sample: BaseInputSample
-    ) -> BaseSampleResult:
+    def evaluate_sample(self, sample: BaseInputSample) -> BaseSampleResult:
         """Evaluate a single sample pair."""
         ...
 

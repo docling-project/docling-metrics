@@ -1,0 +1,82 @@
+{
+  "ff53c7ca2dcd955e07db19643809483cd29dd4e2caedc4e494253cdf0bd51ffc": {
+    "bleu_score": 0.9975277932034514,
+    "edit_distance_score": 0.0024390243902439024,
+    "f1_score": 1.0,
+    "meteor_score": 0.9978043352305864,
+    "precision_score": 1.0,
+    "recall_score": 1.0
+  },
+  "ff5c99ec039099a6da52977f98180b847f51378892af85007c9d737c5e97d304": {
+    "bleu_score": 0.0,
+    "edit_distance_score": 0.9901185770750988,
+    "f1_score": 0.05181347150259067,
+    "meteor_score": 0.008159684141259048,
+    "precision_score": 1.0,
+    "recall_score": 0.026595744680851064
+  },
+  "ff69aaffb9dcb6b8b682804fff48a54d96bf2d594ecae9749835dc048769213f": {
+    "bleu_score": 0.8442213850107677,
+    "edit_distance_score": 0.15236051502145923,
+    "f1_score": 0.9947368421052631,
+    "meteor_score": 0.9394298187682022,
+    "precision_score": 1.0,
+    "recall_score": 0.9895287958115183
+  },
+  "ff69e9cd316e51f70c13116a77e3bd753ac906ed2c2daac4129f93bb20d1b6c6": {
+    "bleu_score": 0.9719056383917756,
+    "edit_distance_score": 0.022033898305084745,
+    "f1_score": 0.9803149606299212,
+    "meteor_score": 0.9830490109635422,
+    "precision_score": 0.9841897233201581,
+    "recall_score": 0.9764705882352941
+  },
+  "ff6c5559985711f53e54226825fa27f4db298c368dc36af24acccc57f3c498d2": {
+    "bleu_score": 0.3946040099966312,
+    "edit_distance_score": 0.5709677419354838,
+    "f1_score": 0.8782051282051283,
+    "meteor_score": 0.6734111695909867,
+    "precision_score": 0.8616352201257862,
+    "recall_score": 0.8954248366013072
+  },
+  "ff7fdddf928dc133ace4cfcdb88b361fd5c42adedde38639356720a879474e27": {
+    "bleu_score": 0.8957773760468092,
+    "edit_distance_score": 0.06609195402298851,
+    "f1_score": 0.9193548387096774,
+    "meteor_score": 0.9381980950298592,
+    "precision_score": 0.9421487603305785,
+    "recall_score": 0.8976377952755905
+  },
+  "ff850a0ebda17a1b314eeb2c32291ebc7dd57d4dacf34c666f607e4028eea2ee": {
+    "bleu_score": 0.5037519153077786,
+    "edit_distance_score": 0.3333333333333333,
+    "f1_score": 0.6285714285714286,
+    "meteor_score": 0.7570925320867848,
+    "precision_score": 0.5789473684210527,
+    "recall_score": 0.6875
+  },
+  "ff86d932d02036ee106321d65dc869effaf785754a5fa0d29657b4e0ed1397d2": {
+    "bleu_score": 0.3866136079307839,
+    "edit_distance_score": 0.5701357466063348,
+    "f1_score": 0.7924528301886793,
+    "meteor_score": 0.779613546092807,
+    "precision_score": 0.7058823529411765,
+    "recall_score": 0.9032258064516129
+  },
+  "ffa7d492a6c8e1171983a3ff93c9dab2ea27087b16a5593b25e1f60dbc93f9aa": {
+    "bleu_score": 0.44654458232733174,
+    "edit_distance_score": 0.4819277108433735,
+    "f1_score": 0.757142857142857,
+    "meteor_score": 0.4487587188481449,
+    "precision_score": 0.9464285714285714,
+    "recall_score": 0.6309523809523809
+  },
+  "ffe949aee0067d7064d477ab0cafc99faaa9fc90086b9a5199a4b3b96682a63b": {
+    "bleu_score": 0.8623123923778343,
+    "edit_distance_score": 0.08602150537634409,
+    "f1_score": 0.9538461538461539,
+    "meteor_score": 0.9411447127239613,
+    "precision_score": 0.9489795918367347,
+    "recall_score": 0.9587628865979382
+  }
+}

@@ -1,0 +1,75 @@
+[project]
+name = "docling-metrics-text"
+version = "0.2.0" # DO NOT EDIT, updated automatically
+description = "Text metrics"
+license = "MIT"
+keywords = ["docling", "metrics", "evaluation", "example", "text", "BLEU, edit-distance, METEOR, precision, recall, f1", "cpp"]
+readme = "README.md"
+authors = [
+    { name = "Nikos Livathinos", email = "nli@zurich.ibm.com" },
+    { name = "Christoph Auer", email = "cau@zurich.ibm.com" },
+    { name = "Peter Staar", email = "taa@zurich.ibm.com" },
+]
+classifiers = [
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "docling-metrics-core>=0.0.1",
+    # "pybind11",  # C++ build (temporarily disabled)
+    "pydantic",
+    "RapidFuzz",
+
+    # Metrics used in the benchmarks
+    'evaluate (>=0.4.3,<0.5.0)',
+    'nltk (>=3.9.1,<4.0.0)',
+]
+
+[project.urls]
+homepage = "https://github.com/docling-project/docling-metrics"
+repository = "https://github.com/docling-project/docling-metrics"
+issues = "https://github.com/docling-project/docling-metrics/issues"
+
+# C++ build (temporarily disabled)
+# [build-system]
+# requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+# build-backend = "scikit_build_core.build"
+#
+# [tool.scikit-build]
+# wheel.packages = ["docling_metric_text"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["docling_metrics_text"]
+
+[tool.uv]
+package = true
+
+[tool.uv.sources]
+docling-metrics-core = { workspace = true }
+
+[dependency-groups]
+test = [
+    "coverage~=7.6",
+    "pytest~=8.3",
+    "pytest-cov>=6.1.1",
+    "pytest-dependency~=0.6",
+    "pytest-xdist~=3.3",
+]
+
+[tool.semantic_release]
+version_source = "tag_only"
+branch = "main"
+parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
+parser_angular_minor_types = "feat"
+parser_angular_patch_types = "fix,perf"
