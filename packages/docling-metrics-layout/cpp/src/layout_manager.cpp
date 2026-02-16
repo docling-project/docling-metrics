@@ -1,6 +1,5 @@
 #include "layout_manager.h"
 
 namespace docling {
-    LayoutManager::LayoutManager() {}
+LayoutManager::LayoutManager() {}
 } // namespace docling
-

@@ -211,7 +211,8 @@ class MultiLabelConfusionMatrix:
         # Filter out the non-perfect predictions to take the ones where preds contain all GT bits
         # [img_height, img_width]
         selections_case2 = ~selections_case1
-        selections_case2[selections_case2 == True] = (
+        # selections_case2[selections_case2 == True] = (
+        selections_case2[selections_case2] = (
             gt[selections_case2] & preds[selections_case2] == gt[selections_case2]
         )
 
@@ -275,7 +276,8 @@ class MultiLabelConfusionMatrix:
 
         # [img_height, img_width]
         selections_case3 = ~selections_case1
-        selections_case3[selections_case3 == True] = (
+        # selections_case3[selections_case3 == True] = (
+        selections_case3[selections_case3] = (
             gt[selections_case3] | preds[selections_case3] == gt[selections_case3]
         )
 
