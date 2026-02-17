@@ -30,6 +30,7 @@ dev = [
     "docling-metrics-layout",
     "docling-metrics-table",
     "docling-metrics-hello-world-cpp",
+    "docling-metrics-text",
 ]
 build = [
     "cibuildwheel>=2.19",
