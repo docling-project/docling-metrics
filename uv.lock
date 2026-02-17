@@ -851,7 +851,7 @@ test = [
 
 [[package]]
 name = "docling-metrics-table"
-version = "0.6.0"
+version = "0.7.0"
 source = { editable = "packages/docling-metrics-table" }
 dependencies = [
     { name = "apted" },

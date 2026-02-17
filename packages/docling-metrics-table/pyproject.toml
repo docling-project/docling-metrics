@@ -1,6 +1,6 @@
 [project]
 name = "docling-metrics-table"
-version = "0.6.0" # DO NOT EDIT, updated automatically
+version = "0.7.0" # DO NOT EDIT, updated automatically
 description = "Tree-Edit-Distance Score metric"
 license = "MIT"
 keywords = ["docling", "metrics", "evaluation", "example", "table", "teds", "tree-edit-distance-score", "cpp"]
