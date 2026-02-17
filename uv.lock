@@ -16,7 +16,7 @@ members = [
     "docling-metrics-core",
     "docling-metrics-hello-world",
     "docling-metrics-hello-world-cpp",
-    "docling-metrics-teds",
+    "docling-metrics-table",
     "docling-metrics-text",
     "docling-metrics-workspace",
 ]
@@ -850,9 +850,9 @@ test = [
 ]
 
 [[package]]
-name = "docling-metrics-teds"
-version = "0.3.0"
-source = { editable = "packages/docling-metrics-teds" }
+name = "docling-metrics-table"
+version = "0.7.0"
+source = { editable = "packages/docling-metrics-table" }
 dependencies = [
     { name = "apted" },
     { name = "docling-metrics-core" },
@@ -947,7 +947,7 @@ dev = [
     { name = "docling-metrics-core" },
     { name = "docling-metrics-hello-world" },
     { name = "docling-metrics-hello-world-cpp" },
-    { name = "docling-metrics-teds" },
+    { name = "docling-metrics-table" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -973,7 +973,7 @@ dev = [
     { name = "docling-metrics-core", editable = "packages/docling-metrics-core" },
     { name = "docling-metrics-hello-world", editable = "packages/docling-metrics-hello-world" },
     { name = "docling-metrics-hello-world-cpp", editable = "packages/docling-metrics-hello-world-cpp" },
-    { name = "docling-metrics-teds", editable = "packages/docling-metrics-teds" },
+    { name = "docling-metrics-table", editable = "packages/docling-metrics-table" },
     { name = "mypy", specifier = "~=1.10" },
     { name = "pre-commit", specifier = "~=3.7" },
     { name = "pytest", specifier = "~=8.3" },

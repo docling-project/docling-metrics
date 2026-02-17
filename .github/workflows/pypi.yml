@@ -15,6 +15,7 @@ jobs:
       is_native: ${{ steps.meta.outputs.is_native }}
     steps:
       - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
       - name: Identify package from tag
         id: meta
         run: |
