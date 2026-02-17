@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+from typing import List, Optional
+
 import numpy as np
 from docling_metrics_layout.layout_types import (
     BboxResolution,
@@ -6,47 +10,103 @@ from docling_metrics_layout.layout_types import (
 from docling_metrics_layout.pixel.multi_label_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
+from PIL import Image
+from pydantic import BaseModel
 
-# def predictions_to_resolutions(
-#     predictions: DatasetLayoutPredictions,
-#     image_idx: dict[str, int],
-#     categories_idx: Optional[dict[str, int]] = None,
-# ) -> dict[str, list[BboxResolution]]:
-#     r"""
-#     Aggregate the predictions into BboxResolutions
+# Get the directory of this test file
+TEST_DATA_DIR = Path(__file__).parent / "data"
 
-#     Parameters:
-#     -----------
-#     categories_idx: Category name -> cat_id
-#     image_idx: Index image_filename -> image_id
 
-#     Returns:
-#     --------
-#     dict[image_name, list[BboxResolution]]
-#     """
-#     # Build inverse categories index
-#     if not categories_idx:
-#         categories: dict[int, str] = predictions.categories
-#         categories_idx = {cat_name: cat_id for cat_id, cat_name in categories.items()}
+class Stats(BaseModel):
+    max: float
+    min: float
+    mean: float
+    median: float
+    samples: int
 
-#     # image_name -> list[BboxResolution]
-#     resolutions: dict[str, list[BboxResolution]] = {}
-#     pred: ImageLayoutPrediction
-#     for pred in predictions.predictions:
-#         image_name = pred.image_name
-#         if image_name not in image_idx:
-#             continue
-#         image_id = image_idx[image_name]
-#         resolutions[image_name] = []
 
-#         for label, bbox, score in zip(pred.labels, pred.bboxes, pred.scores):
-#             category_id = categories_idx[label]
-#             resolution = BboxResolution(
-#                 category_id=category_id,
-#                 bbox=bbox,
-#             )
-#             resolutions[image_name].append(resolution)
-#     return resolutions
+class RuntimeStats(BaseModel):
+    image_pre_processing: Stats
+    model: Stats
+    image_post_processing: Stats
+
+
+class PredictionsRuntimeInfo(BaseModel):
+    r"""Runtime related info for the predictions"""
+
+    device: str
+    batch_size: int
+    num_batches: int
+    num_threads: int
+    num_workers: int
+    prediction_runtime_sec: float
+    runtime_stats: RuntimeStats
+
+
+class ImageLayoutPrediction(BaseModel):
+    r"""Predictions for a single image"""
+
+    image_name: str
+
+    # Labels and bboxes are in sync
+    labels: List[str]
+    bboxes: List[List[float]]  # [x1, y1, x2, y2]
+    scores: List[float]
+
+
+class DatasetLayoutPredictions(BaseModel):
+    r"""Modeling the predictions for an entire dataset"""
+
+    categories: dict[int, str]
+    predictions: list[ImageLayoutPrediction]
+    runtime: Optional[PredictionsRuntimeInfo] = None
+    threshold: Optional[float] = None
+
+    model_name: Optional[str] = None
+    dataset_name: Optional[str] = None
+    split: Optional[str] = "test"
+    num_images: Optional[int] = None
+
+
+def predictions_to_resolutions(
+    predictions: DatasetLayoutPredictions,
+    image_idx: dict[str, int],
+    categories_idx: Optional[dict[str, int]] = None,
+) -> dict[str, list[BboxResolution]]:
+    r"""
+    Aggregate the predictions into BboxResolutions
+
+    Parameters:
+    -----------
+    categories_idx: Category name -> cat_id
+    image_idx: Index image_filename -> image_id
+
+    Returns:
+    --------
+    dict[image_name, list[BboxResolution]]
+    """
+    # Build inverse categories index
+    if not categories_idx:
+        categories: dict[int, str] = predictions.categories
+        categories_idx = {cat_name: cat_id for cat_id, cat_name in categories.items()}
+
+    # image_name -> list[BboxResolution]
+    resolutions: dict[str, list[BboxResolution]] = {}
+    pred: ImageLayoutPrediction
+    for pred in predictions.predictions:
+        image_name = pred.image_name
+        if image_name not in image_idx:
+            continue
+        resolutions[image_name] = []
+
+        for label, bbox, score in zip(pred.labels, pred.bboxes, pred.scores):
+            category_id = categories_idx[label]
+            resolution = BboxResolution(
+                category_id=category_id,
+                bbox=bbox,
+            )
+            resolutions[image_name].append(resolution)
+    return resolutions
 
 
 def test_multi_label_confusion_matrix():
@@ -235,91 +295,91 @@ def test_multi_label_confusion_matrix_paper():
     )
 
 
-# def test_preds_on_preds():
-#     r"""
-#     Confusion matrix of preds vs preds (identical)
+def test_preds_on_preds():
+    r"""
+    Confusion matrix of preds vs preds (identical)
 
-#     Expected confusion matrix: Only the diagonal elements must be non-zero
-#     """
-#     # Load test predictions
-#     test_preds_fn = "tests/test_data/dlnv1_t1_preds.json"
-#     test_img_fn = "tests/test_data/dlnv1_t1.png"
-#     img = Image.open(test_img_fn)
-#     with open(test_preds_fn, "r") as fd:
-#         predictions_dict = json.load(fd)
-#         predictions = DatasetLayoutPredictions.model_validate(predictions_dict)
+    Expected confusion matrix: Only the diagonal elements must be non-zero
+    """
+    # Load test predictions
+    test_preds_fn = TEST_DATA_DIR / "dlnv1_t1_preds.json"
+    test_img_fn = TEST_DATA_DIR / "dlnv1_t1.png"
+    img = Image.open(test_img_fn)
+    with open(test_preds_fn, "r") as fd:
+        predictions_dict = json.load(fd)
+        predictions = DatasetLayoutPredictions.model_validate(predictions_dict)
 
-#     # Initialize MultiLabelConfusionMatrix
-#     mcm = MultiLabelConfusionMatrix()
+    # Initialize MultiLabelConfusionMatrix
+    mcm = MultiLabelConfusionMatrix()
 
-#     # Make binary representations
-#     test_image_name = (
-#         "132a855ee8b23533d8ae69af0049c038171a06ddfcac892c3c6d7e6b4091c642.png"
-#     )
-#     image_idx: dict[str, int] = {test_image_name: 0}
-#     all_image_resolutions: dict[str, list[LayoutResolution]] = (
-#         predictions_to_resolutions(predictions, image_idx)
-#     )
-#     resolutions = all_image_resolutions[test_image_name]
-#     binary_preds = mcm.make_binary_representation(img.width, img.height, resolutions)
+    # Make binary representations
+    test_image_name = (
+        "132a855ee8b23533d8ae69af0049c038171a06ddfcac892c3c6d7e6b4091c642.png"
+    )
+    image_idx: dict[str, int] = {test_image_name: 0}
+    all_image_resolutions: dict[str, list[BboxResolution]] = predictions_to_resolutions(
+        predictions, image_idx
+    )
+    resolutions = all_image_resolutions[test_image_name]
+    binary_preds = mcm.make_binary_representation(img.width, img.height, resolutions)
 
-#     # Compute the confusion matrix
-#     categories = list(predictions.categories.keys())
-#     confusion_matrix = mcm.generate_confusion_matrix(
-#         binary_preds, binary_preds, categories
-#     )
+    # Compute the confusion matrix
+    categories = list(predictions.categories.keys())
+    confusion_matrix = mcm.generate_confusion_matrix(
+        binary_preds, binary_preds, categories
+    )
 
-#     # All non-diagonal values must be zero
-#     e = np.eye(len(categories))
-#     assert np.all(confusion_matrix * e == confusion_matrix)
+    # All non-diagonal values must be zero
+    e = np.eye(len(categories))
+    assert np.all(confusion_matrix * e == confusion_matrix)
 
 
-# def test_preds_on_empty():
-#     r"""
-#     Confusion matrix preds on gt without any predictions (not even background)
+def test_preds_on_empty():
+    r"""
+    Confusion matrix preds on gt without any predictions (not even background)
 
-#     Expected confusion matrix: All elements must be zero
-#     """
-#     # Load test predictions
-#     test_preds_fn = "tests/test_data/dlnv1_t1_preds.json"
-#     test_img_fn = "tests/test_data/dlnv1_t1.png"
-#     img = Image.open(test_img_fn)
-#     with open(test_preds_fn, "r") as fd:
-#         predictions_dict = json.load(fd)
-#         predictions = DatasetLayoutPredictions.model_validate(predictions_dict)
+    Expected confusion matrix: All elements must be zero
+    """
+    # Load test predictions
+    test_preds_fn = TEST_DATA_DIR / "dlnv1_t1_preds.json"
+    test_img_fn = TEST_DATA_DIR / "dlnv1_t1.png"
+    img = Image.open(test_img_fn)
+    with open(test_preds_fn, "r") as fd:
+        predictions_dict = json.load(fd)
+        predictions = DatasetLayoutPredictions.model_validate(predictions_dict)
 
-#     # Initialize MultiLabelConfusionMatrix
-#     mcm = MultiLabelConfusionMatrix()
+    # Initialize MultiLabelConfusionMatrix
+    mcm = MultiLabelConfusionMatrix()
 
-#     # Make binary representations
-#     test_image_name = (
-#         "132a855ee8b23533d8ae69af0049c038171a06ddfcac892c3c6d7e6b4091c642.png"
-#     )
+    # Make binary representations
+    test_image_name = (
+        "132a855ee8b23533d8ae69af0049c038171a06ddfcac892c3c6d7e6b4091c642.png"
+    )
 
-#     # Create the prediction resolutions
-#     image_idx: dict[str, int] = {test_image_name: 0}
-#     all_pred_resolutions: dict[str, list[BboxResolution]] = (
-#         predictions_to_resolutions(predictions, image_idx)
-#     )
-#     resolutions = all_pred_resolutions[test_image_name]
+    # Create the prediction resolutions
+    image_idx: dict[str, int] = {test_image_name: 0}
+    all_pred_resolutions: dict[str, list[BboxResolution]] = predictions_to_resolutions(
+        predictions, image_idx
+    )
+    resolutions = all_pred_resolutions[test_image_name]
 
-#     # Compute the confusion matrix
-#     binary_gt = mcm.make_binary_representation(
-#         img.width, img.height, [], set_background=False
-#     )
-#     binary_preds = mcm.make_binary_representation(img.width, img.height, resolutions)
-#     categories = list(predictions.categories.keys())
-#     confusion_matrix = mcm.generate_confusion_matrix(
-#         binary_gt, binary_preds, categories
-#     )
+    # Compute the confusion matrix
+    binary_gt = mcm.make_binary_representation(
+        img.width, img.height, [], set_background=False
+    )
+    binary_preds = mcm.make_binary_representation(img.width, img.height, resolutions)
+    categories = list(predictions.categories.keys())
+    confusion_matrix = mcm.generate_confusion_matrix(
+        binary_gt, binary_preds, categories
+    )
 
-#     # Confusion matrix must be all zeros
-#     zeros = np.zeros_like(confusion_matrix)
-#     assert np.all(confusion_matrix == zeros)
+    # Confusion matrix must be all zeros
+    zeros = np.zeros_like(confusion_matrix)
+    assert np.all(confusion_matrix == zeros)
 
 
 if __name__ == "__main__":
     test_multi_label_confusion_matrix()
     test_multi_label_confusion_matrix_paper()
-    # test_preds_on_preds()
-    # test_preds_on_empty()
+    test_preds_on_preds()
+    test_preds_on_empty()
