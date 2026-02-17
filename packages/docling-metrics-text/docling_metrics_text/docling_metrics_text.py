@@ -85,7 +85,7 @@ class TextMetrics(BaseMetric):
         )
         return result
 
-    def aggregate(self, results: Iterable[TextPairSample]):
+    def aggregate(self, results: Iterable[TextPairEvaluation]):
         """Trivial implementation"""
         return None
 

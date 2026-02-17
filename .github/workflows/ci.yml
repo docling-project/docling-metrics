@@ -19,8 +19,8 @@ jobs:
     uses: ./.github/workflows/wheels.yml
     with:
       package: docling-metrics-hello-world-cpp
-  build-wheels-teds:
+  build-wheels-table:
     if: ${{ github.event_name == 'push' || (github.event.pull_request.head.repo.full_name != 'docling-project/docling-metrics') }}
     uses: ./.github/workflows/wheels.yml
     with:
-      package: docling-metrics-teds
+      package: docling-metrics-table
