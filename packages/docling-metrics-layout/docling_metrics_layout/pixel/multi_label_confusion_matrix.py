@@ -3,8 +3,9 @@ import math
 from typing import Any, Optional
 
 import numpy as np
-from docling_eval.evaluators.pixel.pixel_types import (
-    LayoutResolution,
+
+from docling_metrics_layout.layout_types import (
+    BboxResolution,
     MultiLabelMatrixAggMetrics,
     MultiLabelMatrixEvaluation,
     MultiLabelMatrixMetrics,
@@ -75,7 +76,7 @@ class MultiLabelConfusionMatrix:
         self,
         image_width: int,
         image_height: int,
-        resolutions: list[LayoutResolution],
+        resolutions: list[BboxResolution],
         set_background: bool = True,
     ) -> np.ndarray:
         r"""

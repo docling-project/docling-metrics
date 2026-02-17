@@ -27,6 +27,7 @@ dev = [
     # Workspace members — ensures `uv sync` installs all packages
     "docling-metrics-core",
     "docling-metrics-hello-world",
+    "docling-metrics-layout",
     "docling-metrics-table",
     "docling-metrics-hello-world-cpp",
 ]
@@ -38,6 +39,7 @@ build = [
 [tool.uv.sources]
 docling-metrics-core = { workspace = true }
 docling-metrics-hello-world = { workspace = true }
+docling-metrics-layout = { workspace = true }
 docling-metrics-table = { workspace = true }
 docling-metrics-hello-world-cpp = { workspace = true }
 docling-metrics-text = { workspace = true }

@@ -1,0 +1,373 @@
+from typing import Optional
+
+import numpy as np
+from docling_metrics_layout.layout_types import (
+    BboxResolution,
+    MultiLabelMatrixEvaluation,
+)
+from docling_metrics_layout.pixel.multi_label_confusion_matrix import (
+    MultiLabelConfusionMatrix,
+)
+from docling_metrics_layout.utils.utils import xywh_to_xyxy
+from pydantic import BaseModel
+
+
+class ImageLayoutPrediction(BaseModel):
+    r"""Predictions for a single image"""
+
+    image_name: str
+
+    # Labels and bboxes are in sync
+    labels: list[str]
+    bboxes: list[list[float]]  # [x1, y1, x2, y2]
+    scores: list[float]
+
+
+class COCO_LayoutResolution(BaseModel):
+    r"""Single bbox resolution"""
+
+    image_id: int
+    image_name: Optional[str] = None
+    category_id: int
+    category_name: Optional[str] = None
+    bbox: list[
+        float
+    ]  # COCO bbox coords: (x1, y1, w, h) with the origin(0, 0) at the top, left corner
+
+
+def convert_resolutions(
+    coco_resolutions: list[COCO_LayoutResolution],
+) -> list[BboxResolution]:
+    layout_resolutions: list[BboxResolution] = [
+        BboxResolution(
+            category_id=coco_res.category_id, bbox=xywh_to_xyxy(coco_res.bbox)
+        )
+        for coco_res in coco_resolutions
+    ]
+    return layout_resolutions
+
+
+# def predictions_to_resolutions(
+#     predictions: DatasetLayoutPredictions,
+#     image_idx: dict[str, int],
+#     categories_idx: Optional[dict[str, int]] = None,
+# ) -> dict[str, list[BboxResolution]]:
+#     r"""
+#     Aggregate the predictions into BboxResolutions
+
+#     Parameters:
+#     -----------
+#     categories_idx: Category name -> cat_id
+#     image_idx: Index image_filename -> image_id
+
+#     Returns:
+#     --------
+#     dict[image_name, list[BboxResolution]]
+#     """
+#     # Build inverse categories index
+#     if not categories_idx:
+#         categories: dict[int, str] = predictions.categories
+#         categories_idx = {cat_name: cat_id for cat_id, cat_name in categories.items()}
+
+#     # image_name -> list[BboxResolution]
+#     resolutions: dict[str, list[BboxResolution]] = {}
+#     pred: ImageLayoutPrediction
+#     for pred in predictions.predictions:
+#         image_name = pred.image_name
+#         if image_name not in image_idx:
+#             continue
+#         image_id = image_idx[image_name]
+#         resolutions[image_name] = []
+
+#         for label, bbox, score in zip(pred.labels, pred.bboxes, pred.scores):
+#             category_id = categories_idx[label]
+#             resolution = BboxResolution(
+#                 category_id=category_id,
+#                 bbox=bbox,
+#             )
+#             resolutions[image_name].append(resolution)
+#     return resolutions
+
+
+def test_multi_label_confusion_matrix():
+    # Test in microscopic images with artificial data
+    canonical_categories = [0, 1, 2]
+    categories_names = {
+        0: "classA",
+        1: "classB",
+        2: "classC",
+    }
+    image_width = 10
+    image_height = 12
+
+    gt_resolutions = [
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[1, 1, 2.1, 2]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[7, 7, 2, 2]),
+        # GT that does not exist in predictions
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[1, 7, 2, 2]),
+    ]
+    pred_resolutions = [
+        # Exact prediction on bbox1
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[1, 1, 2.1, 2]),
+        # For bbox2 the correct class is found
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[7, 7, 2, 2]),
+        # Two extra wrong class is detected to overlap with bbox2 and lower
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[7, 8, 2, 3]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[7, 8, 2, 3]),
+    ]
+
+    mcm = MultiLabelConfusionMatrix()
+    gt = mcm.make_binary_representation(
+        image_width, image_height, convert_resolutions(gt_resolutions)
+    )
+    pred = mcm.make_binary_representation(
+        image_width, image_height, convert_resolutions(pred_resolutions)
+    )
+    print(gt)
+    print(pred)
+
+    confusion_matrix = mcm.generate_confusion_matrix(gt, pred, canonical_categories)
+    print("Confusion matrix:")
+    print(confusion_matrix)
+
+    metrics = mcm.compute_metrics(confusion_matrix, categories_names)
+    print("Metrics:")
+    print(metrics)
+
+
+def test_multi_label_confusion_matrix_paper():
+    r"""
+    Testing the MultiLabelConfusionMatrix with the example from the paper
+    https://csitcp.org/paper/10/108csit01.pdf
+    """
+    categories_names = {
+        0: "classA",
+        1: "classB",
+        2: "classC",
+        3: "classD",
+    }
+    categories_ids = list(categories_names.keys())
+    image_width = 7
+    image_height = 1
+
+    gt_resolutions = [
+        # x1: 1 1 0 0
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[0, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[0, 0, 1, 1]),
+        # x2: 0 1 1 0
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[1, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[1, 0, 1, 1]),
+        # x3: 0 0 0 1
+        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[2, 0, 1, 1]),
+        # x4: 1 1 1 1
+        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[3, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[3, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[3, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[3, 0, 1, 1]),
+        # x5: 0 1 1 0
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[4, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[4, 0, 1, 1]),
+        # x6: 0 1 1 0
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[5, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[5, 0, 1, 1]),
+        # x7: 0 1 0 1
+        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[6, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[6, 0, 1, 1]),
+    ]
+    pred_resolutions = [
+        # x1: 1 1 0 0
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[0, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[0, 0, 1, 1]),
+        # x2: 1 1 1 0
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[1, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[1, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[1, 0, 1, 1]),
+        # x3: 1 0 0 1
+        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[2, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[2, 0, 1, 1]),
+        # x4: 0 1 1 1
+        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[3, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[3, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[3, 0, 1, 1]),
+        # x5: 0 0 1 0
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[4, 0, 1, 1]),
+        # x6: 1 1 0 0
+        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[5, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[5, 0, 1, 1]),
+        # x7: 1 0 1 0
+        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[6, 0, 1, 1]),
+        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[6, 0, 1, 1]),
+    ]
+
+    # Initialize MultiLabelConfusionMatrix
+    mcm = MultiLabelConfusionMatrix()
+
+    # Make the binary representations without adding the background class
+    gt = mcm.make_binary_representation(
+        image_width,
+        image_height,
+        convert_resolutions(gt_resolutions),
+        set_background=False,
+    )
+    pred = mcm.make_binary_representation(
+        image_width,
+        image_height,
+        convert_resolutions(pred_resolutions),
+        set_background=False,
+    )
+    print(gt)
+    print()
+    print(pred)
+
+    # Compute the confusion matrix
+    confusion_matrix = mcm.generate_confusion_matrix(gt, pred, categories_ids)
+    print("Confusion matrix:")
+    print(confusion_matrix)
+    print()
+
+    # Compute metrics
+    metrics: MultiLabelMatrixEvaluation = mcm.compute_metrics(
+        confusion_matrix, categories_names
+    )
+    precision_matrix = metrics.detailed.precision_matrix
+    recall_matrix = metrics.detailed.recall_matrix
+    print("Precision matrix:")
+    print(precision_matrix)
+    print()
+    print("Recall matrix:")
+    print(recall_matrix)
+
+    # Evaluate with the numbers from the paper
+    correct_confusion_matrix = np.asarray(
+        [
+            [1.00, 0.33, 0.33, 0.33],
+            [0.83, 4.67, 0.50, 0.00],
+            [1.33, 1.00, 1.67, 0.00],
+            [1.00, 0.00, 0.50, 1.50],
+        ]
+    )
+    correct_precision_matrix = np.asarray(
+        [
+            [0.24, 0.06, 0.11, 0.18],
+            [0.20, 0.78, 0.17, 0.00],
+            [0.32, 0.17, 0.56, 0.00],
+            [0.24, 0.00, 0.17, 0.82],
+        ]
+    )
+    correct_recall_matrix = np.asarray(
+        [
+            [0.50, 0.17, 0.17, 0.17],
+            [0.14, 0.78, 0.08, 0.00],
+            [0.33, 0.25, 0.42, 0.00],
+            [0.33, 0.00, 0.17, 0.50],
+        ]
+    )
+
+    precision_col_sums = np.sum(precision_matrix, axis=0)
+    recall_row_sums = np.sum(recall_matrix, axis=1)
+    assert np.allclose(precision_col_sums, 1.0, rtol=0, atol=1e-08), (
+        "Col sums of precision matrix must be 1"
+    )
+    assert np.allclose(recall_row_sums, 1.0, rtol=0, atol=1e-08), (
+        "Row sums of recall matrix must be 1"
+    )
+
+    assert not np.allclose(
+        confusion_matrix, correct_confusion_matrix, rtol=0, atol=1e-08
+    ), "Wrong confusion matrix"
+    assert not np.allclose(
+        precision_matrix, correct_precision_matrix, rtol=0, atol=1e-08
+    ), "Wrong precision matrix"
+    assert not np.allclose(recall_matrix, correct_recall_matrix, rtol=0, atol=1e-08), (
+        "Wrong recall matrix"
+    )
+
+
+# def test_preds_on_preds():
+#     r"""
+#     Confusion matrix of preds vs preds (identical)
+
+#     Expected confusion matrix: Only the diagonal elements must be non-zero
+#     """
+#     # Load test predictions
+#     test_preds_fn = "tests/test_data/dlnv1_t1_preds.json"
+#     test_img_fn = "tests/test_data/dlnv1_t1.png"
+#     img = Image.open(test_img_fn)
+#     with open(test_preds_fn, "r") as fd:
+#         predictions_dict = json.load(fd)
+#         predictions = DatasetLayoutPredictions.model_validate(predictions_dict)
+
+#     # Initialize MultiLabelConfusionMatrix
+#     mcm = MultiLabelConfusionMatrix()
+
+#     # Make binary representations
+#     test_image_name = (
+#         "132a855ee8b23533d8ae69af0049c038171a06ddfcac892c3c6d7e6b4091c642.png"
+#     )
+#     image_idx: dict[str, int] = {test_image_name: 0}
+#     all_image_resolutions: dict[str, list[LayoutResolution]] = (
+#         predictions_to_resolutions(predictions, image_idx)
+#     )
+#     resolutions = all_image_resolutions[test_image_name]
+#     binary_preds = mcm.make_binary_representation(img.width, img.height, resolutions)
+
+#     # Compute the confusion matrix
+#     categories = list(predictions.categories.keys())
+#     confusion_matrix = mcm.generate_confusion_matrix(
+#         binary_preds, binary_preds, categories
+#     )
+
+#     # All non-diagonal values must be zero
+#     e = np.eye(len(categories))
+#     assert np.all(confusion_matrix * e == confusion_matrix)
+
+
+# def test_preds_on_empty():
+#     r"""
+#     Confusion matrix preds on gt without any predictions (not even background)
+
+#     Expected confusion matrix: All elements must be zero
+#     """
+#     # Load test predictions
+#     test_preds_fn = "tests/test_data/dlnv1_t1_preds.json"
+#     test_img_fn = "tests/test_data/dlnv1_t1.png"
+#     img = Image.open(test_img_fn)
+#     with open(test_preds_fn, "r") as fd:
+#         predictions_dict = json.load(fd)
+#         predictions = DatasetLayoutPredictions.model_validate(predictions_dict)
+
+#     # Initialize MultiLabelConfusionMatrix
+#     mcm = MultiLabelConfusionMatrix()
+
+#     # Make binary representations
+#     test_image_name = (
+#         "132a855ee8b23533d8ae69af0049c038171a06ddfcac892c3c6d7e6b4091c642.png"
+#     )
+
+#     # Create the prediction resolutions
+#     image_idx: dict[str, int] = {test_image_name: 0}
+#     all_pred_resolutions: dict[str, list[BboxResolution]] = (
+#         predictions_to_resolutions(predictions, image_idx)
+#     )
+#     resolutions = all_pred_resolutions[test_image_name]
+
+#     # Compute the confusion matrix
+#     binary_gt = mcm.make_binary_representation(
+#         img.width, img.height, [], set_background=False
+#     )
+#     binary_preds = mcm.make_binary_representation(img.width, img.height, resolutions)
+#     categories = list(predictions.categories.keys())
+#     confusion_matrix = mcm.generate_confusion_matrix(
+#         binary_gt, binary_preds, categories
+#     )
+
+#     # Confusion matrix must be all zeros
+#     zeros = np.zeros_like(confusion_matrix)
+#     assert np.all(confusion_matrix == zeros)
+
+
+if __name__ == "__main__":
+    test_multi_label_confusion_matrix()
+    test_multi_label_confusion_matrix_paper()
+    # test_preds_on_preds()
+    # test_preds_on_empty()

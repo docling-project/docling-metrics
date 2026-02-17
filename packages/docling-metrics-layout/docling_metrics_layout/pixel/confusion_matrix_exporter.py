@@ -5,15 +5,18 @@ from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
-from docling_eval.evaluators.pixel.multi_label_confusion_matrix import (
-    MultiLabelConfusionMatrix,
-)
-from docling_eval.evaluators.pixel.pixel_types import MultiLabelMatrixEvaluation
 from openpyxl import Workbook
 from openpyxl.styles import Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 from pandas import ExcelWriter
+
+from docling_metrics_layout.layout_types import (
+    MultiLabelMatrixEvaluation,
+)
+from docling_metrics_layout.pixel.multi_label_confusion_matrix import (
+    MultiLabelConfusionMatrix,
+)
 
 _log = logging.getLogger(__name__)
 

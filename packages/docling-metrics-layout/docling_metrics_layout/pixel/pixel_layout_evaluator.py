@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 import numpy as np
+from tqdm import tqdm  # type: ignore
+
 from docling_metrics_layout.layout_types import (
     BboxResolution,
     DatasetPixelLayoutEvaluation,
@@ -18,7 +20,6 @@ from docling_metrics_layout.pixel.confusion_matrix_exporter import (
 from docling_metrics_layout.pixel.multi_label_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
-from tqdm import tqdm  # type: ignore
 
 _log = logging.getLogger(__name__)
 
