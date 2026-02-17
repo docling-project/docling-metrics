@@ -1,14 +1,15 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import numpy as np
-from docling_eval.evaluators.base_evaluator import (
-    DatasetEvaluation,
+from docling_metrics_core.base_types import (
+    BaseAggregateResult,
+    BaseInputSample,
+    BaseSampleResult,
 )
-from docling_eval.evaluators.stats import DatasetStatistics
 from pydantic import BaseModel, model_serializer, model_validator
 
 
-class LayoutResolution(BaseModel):
+class BboxResolution(BaseModel):
     r"""Single bbox resolution"""
 
     category_id: int
@@ -68,19 +69,39 @@ class MultiLabelMatrixEvaluation(BaseModel):
 
 
 class PagePixelLayoutEvaluation(BaseModel):
-    doc_id: str
-    page_no: int
+    id: str
     num_pixels: int
     matrix_evaluation: MultiLabelMatrixEvaluation
 
 
-class DatasetPixelLayoutEvaluation(DatasetEvaluation):
-    layout_model_name: Optional[str]
+class DatasetPixelLayoutEvaluation(BaseModel):
     num_pages: int
     num_pixels: int
     matrix_evaluation: MultiLabelMatrixEvaluation
     page_evaluations: Dict[str, PagePixelLayoutEvaluation]
 
-    # Statistics across all images for f1 on all classes and on the collapsed classes
-    f1_all_classes_stats: DatasetStatistics
-    f1_collapsed_classes_stats: DatasetStatistics
+    # TODO: Compute the statistics in the "aggregate()"
+    #  Statistics across all images for f1 on all classes and on the collapsed classes
+    # f1_all_classes_stats: DatasetStatistics
+    # f1_collapsed_classes_stats: DatasetStatistics
+
+
+class LayoutMetricSample(BaseInputSample):
+    page_width: int
+    page_height: int
+    page_resolution_a: list[BboxResolution]
+    page_resolution_b: list[BboxResolution]
+
+
+class LayoutMetricSampleEvaluation(BaseSampleResult):
+    r"""Layout evaluation for one page"""
+
+    # TODO: Add the mAP page evaluation
+    page_pixel_layout_evaluation: PagePixelLayoutEvaluation
+
+
+class LayoutMetricDatasetEvaluation(BaseAggregateResult):
+    r"""Layout evaluation for the entire dataset"""
+
+    # TODO: Add the mAP ds evaluation
+    dataset_pixel_layout_evaluation: DatasetPixelLayoutEvaluation

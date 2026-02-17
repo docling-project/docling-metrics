@@ -1,6 +1,6 @@
 import logging
 import math
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 from docling_eval.evaluators.pixel.pixel_types import (
@@ -20,7 +20,7 @@ def unpackbits(x: np.ndarray, num_bits: int):
     """
     xshape = list(x.shape)
     x = x.reshape([-1, 1])
-    mask = 2 ** np.arange(num_bits, dtype=x.dtype).reshape([1, num_bits])
+    mask: np.ndarray = 2 ** np.arange(num_bits, dtype=x.dtype).reshape([1, num_bits])
     return (x & mask).astype(bool).astype(int).reshape(xshape + [num_bits])
 
 
@@ -91,7 +91,7 @@ class MultiLabelConfusionMatrix:
         np.ndarray with the binary representation of the resolutions. Dims are equal to the image size
         """
         # Initialize the representation matrix with 0
-        matrix = np.zeros(
+        matrix: np.ndarray = np.zeros(
             (
                 image_height,
                 image_width,
@@ -172,7 +172,9 @@ class MultiLabelConfusionMatrix:
         num_categories = len(categories)
 
         # confusion_matrix: [num_categories, num_categories]
-        confusion_matrix = np.zeros((num_categories, num_categories), dtype=float)
+        confusion_matrix: np.ndarray = np.zeros(
+            (num_categories, num_categories), dtype=float
+        )
         eye = np.eye(num_categories)
 
         ############################################################################################
@@ -525,8 +527,8 @@ class MultiLabelConfusionMatrix:
             self._handle_error(f"{info}: Wrong contributions row sums")
 
         # Full sum check
-        full_sum = np.sum(row_sum)
-        expected_full_sum = np.sum(np.bitwise_count(selected_gt))
+        full_sum: np.floating[Any] = np.sum(row_sum)
+        expected_full_sum: np.uint64 = np.sum(np.bitwise_count(selected_gt))
         if full_sum != expected_full_sum:
             self._handle_error(f"{info}: Wrong contributions full sums")
 

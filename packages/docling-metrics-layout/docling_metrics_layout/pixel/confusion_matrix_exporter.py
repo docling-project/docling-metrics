@@ -1,7 +1,7 @@
 import colorsys
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
@@ -241,8 +241,8 @@ class ConfusionMatrixExporter:
         )
 
         # Get data min/max values
-        vmin = np.min(data)
-        vmax = np.max(data)
+        vmin: np.floating[Any] = np.min(data)
+        vmax: np.floating[Any] = np.max(data)
 
         # Apply background colors to data cells
         row_start = 2 + startrow  # start from 1
@@ -420,8 +420,8 @@ class ConfusionMatrixExporter:
             # Don't account for the first value
             confusion_mask = np.ones(data.shape, dtype=np.uint8)
             confusion_mask[0, 0] = 0
-            vmin = np.min(data, initial=0, where=confusion_mask != 0)
-            vmax = np.max(data, initial=0, where=confusion_mask != 0)
+            vmin: np.floating[Any] = np.min(data, initial=0, where=confusion_mask != 0)
+            vmax: np.floating[Any] = np.max(data, initial=0, where=confusion_mask != 0)
         else:
             vmin = np.min(data)
             vmax = np.max(data)
