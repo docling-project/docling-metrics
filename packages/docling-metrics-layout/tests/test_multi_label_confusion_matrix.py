@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 from docling_metrics_layout.layout_types import (
     BboxResolution,
@@ -8,44 +6,6 @@ from docling_metrics_layout.layout_types import (
 from docling_metrics_layout.pixel.multi_label_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
-from docling_metrics_layout.utils.utils import xywh_to_xyxy
-from pydantic import BaseModel
-
-
-class ImageLayoutPrediction(BaseModel):
-    r"""Predictions for a single image"""
-
-    image_name: str
-
-    # Labels and bboxes are in sync
-    labels: list[str]
-    bboxes: list[list[float]]  # [x1, y1, x2, y2]
-    scores: list[float]
-
-
-class COCO_LayoutResolution(BaseModel):
-    r"""Single bbox resolution"""
-
-    image_id: int
-    image_name: Optional[str] = None
-    category_id: int
-    category_name: Optional[str] = None
-    bbox: list[
-        float
-    ]  # COCO bbox coords: (x1, y1, w, h) with the origin(0, 0) at the top, left corner
-
-
-def convert_resolutions(
-    coco_resolutions: list[COCO_LayoutResolution],
-) -> list[BboxResolution]:
-    layout_resolutions: list[BboxResolution] = [
-        BboxResolution(
-            category_id=coco_res.category_id, bbox=xywh_to_xyxy(coco_res.bbox)
-        )
-        for coco_res in coco_resolutions
-    ]
-    return layout_resolutions
-
 
 # def predictions_to_resolutions(
 #     predictions: DatasetLayoutPredictions,
@@ -100,29 +60,26 @@ def test_multi_label_confusion_matrix():
     image_width = 10
     image_height = 12
 
+    # BboxResolution expects (x1, y1, x2, y2) format
     gt_resolutions = [
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[1, 1, 2.1, 2]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[7, 7, 2, 2]),
+        BboxResolution(category_id=0, bbox=[1, 1, 3.1, 3]),
+        BboxResolution(category_id=1, bbox=[7, 7, 9, 9]),
         # GT that does not exist in predictions
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[1, 7, 2, 2]),
+        BboxResolution(category_id=2, bbox=[1, 7, 3, 9]),
     ]
     pred_resolutions = [
         # Exact prediction on bbox1
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[1, 1, 2.1, 2]),
+        BboxResolution(category_id=0, bbox=[1, 1, 3.1, 3]),
         # For bbox2 the correct class is found
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[7, 7, 2, 2]),
+        BboxResolution(category_id=1, bbox=[7, 7, 9, 9]),
         # Two extra wrong class is detected to overlap with bbox2 and lower
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[7, 8, 2, 3]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[7, 8, 2, 3]),
+        BboxResolution(category_id=2, bbox=[7, 8, 9, 11]),
+        BboxResolution(category_id=0, bbox=[7, 8, 9, 11]),
     ]
 
     mcm = MultiLabelConfusionMatrix()
-    gt = mcm.make_binary_representation(
-        image_width, image_height, convert_resolutions(gt_resolutions)
-    )
-    pred = mcm.make_binary_representation(
-        image_width, image_height, convert_resolutions(pred_resolutions)
-    )
+    gt = mcm.make_binary_representation(image_width, image_height, gt_resolutions)
+    pred = mcm.make_binary_representation(image_width, image_height, pred_resolutions)
     print(gt)
     print(pred)
 
@@ -150,53 +107,54 @@ def test_multi_label_confusion_matrix_paper():
     image_width = 7
     image_height = 1
 
+    # BboxResolution expects (x1, y1, x2, y2) format
     gt_resolutions = [
         # x1: 1 1 0 0
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[0, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[0, 0, 1, 1]),
+        BboxResolution(category_id=1, bbox=[0, 0, 1, 1]),
+        BboxResolution(category_id=0, bbox=[0, 0, 1, 1]),
         # x2: 0 1 1 0
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[1, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[1, 0, 1, 1]),
+        BboxResolution(category_id=2, bbox=[1, 0, 2, 1]),
+        BboxResolution(category_id=1, bbox=[1, 0, 2, 1]),
         # x3: 0 0 0 1
-        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[2, 0, 1, 1]),
+        BboxResolution(category_id=3, bbox=[2, 0, 3, 1]),
         # x4: 1 1 1 1
-        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[3, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[3, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[3, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[3, 0, 1, 1]),
+        BboxResolution(category_id=3, bbox=[3, 0, 4, 1]),
+        BboxResolution(category_id=2, bbox=[3, 0, 4, 1]),
+        BboxResolution(category_id=1, bbox=[3, 0, 4, 1]),
+        BboxResolution(category_id=0, bbox=[3, 0, 4, 1]),
         # x5: 0 1 1 0
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[4, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[4, 0, 1, 1]),
+        BboxResolution(category_id=2, bbox=[4, 0, 5, 1]),
+        BboxResolution(category_id=1, bbox=[4, 0, 5, 1]),
         # x6: 0 1 1 0
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[5, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[5, 0, 1, 1]),
+        BboxResolution(category_id=2, bbox=[5, 0, 6, 1]),
+        BboxResolution(category_id=1, bbox=[5, 0, 6, 1]),
         # x7: 0 1 0 1
-        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[6, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[6, 0, 1, 1]),
+        BboxResolution(category_id=3, bbox=[6, 0, 7, 1]),
+        BboxResolution(category_id=1, bbox=[6, 0, 7, 1]),
     ]
     pred_resolutions = [
         # x1: 1 1 0 0
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[0, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[0, 0, 1, 1]),
+        BboxResolution(category_id=1, bbox=[0, 0, 1, 1]),
+        BboxResolution(category_id=0, bbox=[0, 0, 1, 1]),
         # x2: 1 1 1 0
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[1, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[1, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[1, 0, 1, 1]),
+        BboxResolution(category_id=2, bbox=[1, 0, 2, 1]),
+        BboxResolution(category_id=1, bbox=[1, 0, 2, 1]),
+        BboxResolution(category_id=0, bbox=[1, 0, 2, 1]),
         # x3: 1 0 0 1
-        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[2, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[2, 0, 1, 1]),
+        BboxResolution(category_id=3, bbox=[2, 0, 3, 1]),
+        BboxResolution(category_id=0, bbox=[2, 0, 3, 1]),
         # x4: 0 1 1 1
-        COCO_LayoutResolution(image_id=1, category_id=3, bbox=[3, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[3, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[3, 0, 1, 1]),
+        BboxResolution(category_id=3, bbox=[3, 0, 4, 1]),
+        BboxResolution(category_id=2, bbox=[3, 0, 4, 1]),
+        BboxResolution(category_id=1, bbox=[3, 0, 4, 1]),
         # x5: 0 0 1 0
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[4, 0, 1, 1]),
+        BboxResolution(category_id=1, bbox=[4, 0, 5, 1]),
         # x6: 1 1 0 0
-        COCO_LayoutResolution(image_id=1, category_id=1, bbox=[5, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[5, 0, 1, 1]),
+        BboxResolution(category_id=1, bbox=[5, 0, 6, 1]),
+        BboxResolution(category_id=0, bbox=[5, 0, 6, 1]),
         # x7: 1 0 1 0
-        COCO_LayoutResolution(image_id=1, category_id=2, bbox=[6, 0, 1, 1]),
-        COCO_LayoutResolution(image_id=1, category_id=0, bbox=[6, 0, 1, 1]),
+        BboxResolution(category_id=2, bbox=[6, 0, 7, 1]),
+        BboxResolution(category_id=0, bbox=[6, 0, 7, 1]),
     ]
 
     # Initialize MultiLabelConfusionMatrix
@@ -204,16 +162,10 @@ def test_multi_label_confusion_matrix_paper():
 
     # Make the binary representations without adding the background class
     gt = mcm.make_binary_representation(
-        image_width,
-        image_height,
-        convert_resolutions(gt_resolutions),
-        set_background=False,
+        image_width, image_height, gt_resolutions, set_background=False
     )
     pred = mcm.make_binary_representation(
-        image_width,
-        image_height,
-        convert_resolutions(pred_resolutions),
-        set_background=False,
+        image_width, image_height, pred_resolutions, set_background=False
     )
     print(gt)
     print()
