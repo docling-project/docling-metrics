@@ -1152,7 +1152,6 @@ dependencies = [
     { name = "evaluate" },
     { name = "nltk" },
     { name = "pydantic" },
-    { name = "rapidfuzz" },
 ]
 
 [package.dev-dependencies]
@@ -1170,7 +1169,6 @@ requires-dist = [
     { name = "evaluate", specifier = ">=0.4.3,<0.5.0" },
     { name = "nltk", specifier = ">=3.9.1,<4.0.0" },
     { name = "pydantic" },
-    { name = "rapidfuzz" },
 ]
 
 [package.metadata.requires-dev]
