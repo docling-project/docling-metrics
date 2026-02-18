@@ -253,9 +253,6 @@ class PixelLayoutEvaluator:
             num_pixels=ds_num_pixels,
             matrix_evaluation=ds_matrix_evaluation,
             page_evaluations=all_pages_evaluations,
-            # TODO: Compute the statistics in the "aggregate()"
-            # f1_all_classes_stats=compute_stats(pages_detailed_f1),
-            # f1_collapsed_classes_stats=compute_stats(pages_collapsed_f1),
         )
 
         return ds_evaluation

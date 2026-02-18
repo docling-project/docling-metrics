@@ -61,12 +61,10 @@ class LayoutMetrics(BaseMetric):
     ) -> LayoutMetricSampleEvaluation:
         r"""Evaluate a single sample with pixel-level and mAP metrics"""
         # Evaluate pixel-level metrics
-        page_pixel_layout_evaluation: PagePixelLayoutEvaluation = (
-            self._pixel_evaluator.evaluate_sample(sample)
-        )
+        page_pixel_layout_evaluation = self._evaluate_pixel_sample(sample)
 
         # Evaluate mAP metrics
-        page_map_layout_evaluation = self._map_evaluator.evaluate_sample(sample)
+        page_map_layout_evaluation = self._evaluate_map_sample(sample)
 
         sample_evaluation = LayoutMetricSampleEvaluation(
             id=sample.id,
@@ -88,12 +86,10 @@ class LayoutMetrics(BaseMetric):
         sample_list = list(samples)
 
         # Evaluate pixel-level metrics
-        ds_pixel_layout_evaluation: DatasetPixelLayoutEvaluation = (
-            self._pixel_evaluator.evaluate_dataset(sample_list)
-        )
+        ds_pixel_layout_evaluation = self._evaluate_pixel_dataset(sample_list)
 
         # Evaluate mAP metrics
-        ds_map_layout_evaluation = self._map_evaluator.evaluate_dataset(sample_list)
+        ds_map_layout_evaluation = self._evaluate_map_dataset(sample_list)
 
         # Save export
         if self._save_root:
@@ -109,3 +105,23 @@ class LayoutMetrics(BaseMetric):
         )
 
         return result
+
+    def _evaluate_pixel_sample(
+        self, sample: LayoutMetricSample
+    ) -> PagePixelLayoutEvaluation:
+        r"""Evaluate pixel-level metrics for a single sample"""
+        return self._pixel_evaluator.evaluate_sample(sample)
+
+    def _evaluate_map_sample(self, sample: LayoutMetricSample):
+        r"""Evaluate mAP metrics for a single sample"""
+        return self._map_evaluator.evaluate_sample(sample)
+
+    def _evaluate_pixel_dataset(
+        self, samples: list[LayoutMetricSample]
+    ) -> DatasetPixelLayoutEvaluation:
+        r"""Evaluate pixel-level metrics for a dataset"""
+        return self._pixel_evaluator.evaluate_dataset(samples)
+
+    def _evaluate_map_dataset(self, samples: list[LayoutMetricSample]):
+        r"""Evaluate mAP metrics for a dataset"""
+        return self._map_evaluator.evaluate_dataset(samples)

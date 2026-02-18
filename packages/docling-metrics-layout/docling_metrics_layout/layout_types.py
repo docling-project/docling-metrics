@@ -9,6 +9,23 @@ from docling_metrics_core.base_types import (
 from pydantic import BaseModel, model_serializer, model_validator
 
 
+class DatasetStatistics(BaseModel):
+    total: int
+
+    mean: float
+    median: float
+    std: float
+
+    bins: list[float]
+    hist: list[float]
+
+    @model_validator(mode="after")
+    def check_bins_and_hist_lengths(self):
+        if len(self.bins) != len(self.hist) + 1:
+            raise ValueError("`bins` must have exactly one more element than `hist`.")
+        return self
+
+
 class BboxResolution(BaseModel):
     r"""Single bbox resolution"""
 
@@ -81,11 +98,6 @@ class DatasetPixelLayoutEvaluation(BaseModel):
     matrix_evaluation: MultiLabelMatrixEvaluation
     page_evaluations: dict[str, PagePixelLayoutEvaluation]
 
-    # TODO: Compute the statistics in the "aggregate()"
-    #  Statistics across all images for f1 on all classes and on the collapsed classes
-    # f1_all_classes_stats: DatasetStatistics
-    # f1_collapsed_classes_stats: DatasetStatistics
-
 
 class MAPMetrics(BaseModel):
     map: float
@@ -110,6 +122,10 @@ class MAPPageLayoutEvaluation(MAPMetrics):
 
 class MAPDatasetLayoutEvaluation(MAPMetrics):
     page_evaluations: dict[str, MAPPageLayoutEvaluation]
+
+    # map_stats: DatasetStatistics  # Stats for the mAP[0.5:0.05:0.95] across all images
+    # map_50_stats: DatasetStatistics
+    # map_75_stats: DatasetStatistics
 
 
 class LayoutMetricSample(BaseInputSample):
