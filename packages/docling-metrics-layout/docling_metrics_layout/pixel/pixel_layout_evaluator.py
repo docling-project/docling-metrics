@@ -2,7 +2,7 @@ import json
 import logging
 from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import Iterable, Optional
 
 import numpy as np
 from tqdm import tqdm  # type: ignore
@@ -52,7 +52,7 @@ def evaluate_page(
         preds_binary = np.ones((pg_height, pg_width), dtype=np.uint64)
 
     # Compute confusion matrix
-    matrix_categories_ids: List[int] = list(matrix_id_to_name.keys())
+    matrix_categories_ids: list[int] = list(matrix_id_to_name.keys())
     confusion_matrix = mlcm.generate_confusion_matrix(
         gt_binary, preds_binary, matrix_categories_ids
     )
@@ -92,12 +92,16 @@ class PixelLayoutEvaluator:
 
         # Build matrix categories with background at index 0
         self._matrix_id_to_name: dict[int, str]  # Matrix ID to category name
+
+        # TODO: Check the usage of _category_id_to_matrix_id, _matrix_id_to_category_id
         self._category_id_to_matrix_id: dict[
             int, int
         ]  # Original category ID to matrix ID
+
         self._matrix_id_to_category_id: dict[
             int, int
         ]  # Matrix ID to original category ID
+
         (
             self._matrix_id_to_name,
             self._category_id_to_matrix_id,
@@ -169,10 +173,10 @@ class PixelLayoutEvaluator:
         self, samples: Iterable[LayoutMetricSample]
     ) -> DatasetPixelLayoutEvaluation:
         r""" """
-        matrix_categories_ids: List[int] = list(self._matrix_id_to_name.keys())
+        matrix_categories_ids: list[int] = list(self._matrix_id_to_name.keys())
         num_categories = len(matrix_categories_ids)
         ds_confusion_matrix = np.zeros((num_categories, num_categories))
-        all_pages_evaluations: Dict[
+        all_pages_evaluations: dict[
             str, PagePixelLayoutEvaluation
         ] = {}  # Key is doc_id-page-no
         ds_num_pixels = 0
@@ -291,7 +295,7 @@ class PixelLayoutEvaluator:
                 "cls/cls",
             ]
         ]
-        image_collapsed_aggs: Dict[str, np.ndarray] = {}
+        image_collapsed_aggs: dict[str, np.ndarray] = {}
         for doc_page_id, page_evaluations in ds_evaluation.page_evaluations.items():
             pm = page_evaluations.matrix_evaluation.collapsed
             if not pm:
