@@ -30,7 +30,8 @@ dependencies = [
     "pandas",
     "openpyxl",
     "torch",
-    "torchmetrics",
+    "torchmetrics[detection]",
+    "faster-coco-eval",
 ]
 
 [project.urls]

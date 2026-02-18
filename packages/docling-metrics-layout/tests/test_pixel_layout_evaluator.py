@@ -4,10 +4,10 @@ from pathlib import Path
 
 from docling_metrics_layout.layout_types import (
     BboxResolution,
-    LayoutMetricSample,
-    PagePixelLayoutEvaluation,
     DatasetPixelLayoutEvaluation,
+    LayoutMetricSample,
     MultiLabelMatrixEvaluation,
+    PagePixelLayoutEvaluation,
 )
 from docling_metrics_layout.pixel.pixel_layout_evaluator import (
     PixelLayoutEvaluator,
@@ -69,9 +69,7 @@ def test_pixel_layout_evaluator():
     assert sample_result.id == test_data["id"], (
         f"sample_result.id should be {test_data['id']}, got {sample_result.id}"
     )
-    assert sample_result.num_pixels > 0, (
-        "num_pixels should be greater than 0"
-    )
+    assert sample_result.num_pixels > 0, "num_pixels should be greater than 0"
     assert (
         sample_result.num_pixels == test_data["page_width"] * test_data["page_height"]
     ), "num_pixels should equal page_width * page_height"
@@ -175,15 +173,13 @@ def test_pixel_layout_evaluator():
     assert dataset_result.num_pages == 1, (
         f"num_pages should be 1, got {dataset_result.num_pages}"
     )
-    assert dataset_result.num_pixels > 0, (
-        "num_pixels should be greater than 0"
-    )
+    assert dataset_result.num_pixels > 0, "num_pixels should be greater than 0"
     assert (
         dataset_result.num_pixels == test_data["page_width"] * test_data["page_height"]
     ), "num_pixels should equal page_width * page_height"
-    assert (
-        test_data["id"] in dataset_result.page_evaluations
-    ), f"page_evaluations should contain {test_data['id']}"
+    assert test_data["id"] in dataset_result.page_evaluations, (
+        f"page_evaluations should contain {test_data['id']}"
+    )
     assert len(dataset_result.page_evaluations) == 1, (
         f"page_evaluations should have 1 entry, got {len(dataset_result.page_evaluations)}"
     )
