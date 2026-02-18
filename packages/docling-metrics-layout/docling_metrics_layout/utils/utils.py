@@ -1,3 +1,6 @@
+from torch import Tensor
+
+
 def dict_get(data: dict, keys: list[str], default=None):
     r"""
     Traverse the given path of keys and return the value of dict
@@ -44,3 +47,10 @@ def xywh_to_xyxy(bbox: list[float]) -> list[float]:
         bbox[1] + bbox[3],
     ]
     return xyxy_bbox
+
+
+def tensor_to_float(t: Tensor | float) -> float:
+    r"""Get float from tensor item"""
+    if isinstance(t, Tensor):
+        return float(t.item())
+    return t

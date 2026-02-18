@@ -2,11 +2,11 @@ import json
 import tempfile
 from pathlib import Path
 
-from docling_metrics_layout.docling_metrics_layout import LayoutMetrics
 from docling_metrics_layout.layout_types import (
     BboxResolution,
     LayoutMetricSample,
-    LayoutMetricSampleEvaluation,
+    PagePixelLayoutEvaluation,
+    DatasetPixelLayoutEvaluation,
     MultiLabelMatrixEvaluation,
 )
 from docling_metrics_layout.pixel.pixel_layout_evaluator import (
@@ -20,7 +20,7 @@ TEST_DATA_DIR = Path(__file__).parent / "data"
 FLOATING_POINT_TOLERANCE = 1e-6
 
 
-def test_pixel_layout_evaluations():
+def test_pixel_layout_evaluator():
     r"""Test LayoutMetrics evaluation on sample and dataset level."""
     # Load test data
     test_data_path = TEST_DATA_DIR / "dlnv1_t1_preds.json"
@@ -55,41 +55,33 @@ def test_pixel_layout_evaluations():
     )
 
     # Test 1: Initialize LayoutMetrics and evaluate single sample
-    metrics = LayoutMetrics(
+    evaluator = PixelLayoutEvaluator(
         category_id_to_name=category_id_to_name,
         concurrency=4,
     )
 
-    sample_result = metrics.evaluate_sample(sample)
+    sample_result = evaluator.evaluate_sample(sample)
 
     # Verify sample result structure
-    assert isinstance(sample_result, LayoutMetricSampleEvaluation), (
-        "sample_result must be LayoutMetricSampleEvaluation instance"
+    assert isinstance(sample_result, PagePixelLayoutEvaluation), (
+        "sample_result must be PagePixelLayoutEvaluation instance"
     )
     assert sample_result.id == test_data["id"], (
         f"sample_result.id should be {test_data['id']}, got {sample_result.id}"
     )
-    assert sample_result.page_pixel_layout_evaluation is not None, (
-        "page_pixel_layout_evaluation should not be None"
+    assert sample_result.num_pixels > 0, (
+        "num_pixels should be greater than 0"
     )
-    assert sample_result.page_pixel_layout_evaluation.id == test_data["id"], (
-        f"page_pixel_layout_evaluation.id should be {test_data['id']}, got {sample_result.page_pixel_layout_evaluation.id}"
-    )
-    # assert sample_result.page_pixel_layout_evaluation.num_pixels > 0, \
-    #     "num_pixels should be greater than 0"
     assert (
-        sample_result.page_pixel_layout_evaluation.num_pixels
-        == test_data["page_width"] * test_data["page_height"]
+        sample_result.num_pixels == test_data["page_width"] * test_data["page_height"]
     ), "num_pixels should equal page_width * page_height"
     assert isinstance(
-        sample_result.page_pixel_layout_evaluation.matrix_evaluation,
+        sample_result.matrix_evaluation,
         MultiLabelMatrixEvaluation,
     ), "matrix_evaluation should be MultiLabelMatrixEvaluation instance"
 
     # Verify detailed metrics
-    detailed_metrics = (
-        sample_result.page_pixel_layout_evaluation.matrix_evaluation.detailed
-    )
+    detailed_metrics = sample_result.matrix_evaluation.detailed
     assert detailed_metrics.confusion_matrix.shape[0] == 6, (
         f"detailed confusion matrix should have 6 classes, got {detailed_metrics.confusion_matrix.shape[0]}"
     )
@@ -141,9 +133,7 @@ def test_pixel_layout_evaluations():
     )
 
     # Verify collapsed metrics
-    collapsed_metrics = (
-        sample_result.page_pixel_layout_evaluation.matrix_evaluation.collapsed
-    )
+    collapsed_metrics = sample_result.matrix_evaluation.collapsed
     assert collapsed_metrics.confusion_matrix.shape == (2, 2), (
         f"collapsed confusion matrix shape should be (2, 2), got {collapsed_metrics.confusion_matrix.shape}"
     )
@@ -176,49 +166,42 @@ def test_pixel_layout_evaluations():
     )
 
     # Test 2: Evaluate dataset (single sample in this case)
-    dataset_result = metrics.evaluate_dataset([sample])
+    dataset_result = evaluator.evaluate_dataset([sample])
 
     # Verify dataset result structure
-    assert dataset_result.dataset_pixel_layout_evaluation is not None, (
-        "dataset_pixel_layout_evaluation should not be None"
+    assert isinstance(dataset_result, DatasetPixelLayoutEvaluation), (
+        "dataset_result must be DatasetPixelLayoutEvaluation instance"
     )
-    assert dataset_result.dataset_pixel_layout_evaluation.num_pages == 1, (
-        f"num_pages should be 1, got {dataset_result.dataset_pixel_layout_evaluation.num_pages}"
+    assert dataset_result.num_pages == 1, (
+        f"num_pages should be 1, got {dataset_result.num_pages}"
     )
-    # assert dataset_result.dataset_pixel_layout_evaluation.num_pixels > 0, \
-    #     "num_pixels should be greater than 0"
+    assert dataset_result.num_pixels > 0, (
+        "num_pixels should be greater than 0"
+    )
     assert (
-        dataset_result.dataset_pixel_layout_evaluation.num_pixels
-        == test_data["page_width"] * test_data["page_height"]
+        dataset_result.num_pixels == test_data["page_width"] * test_data["page_height"]
     ), "num_pixels should equal page_width * page_height"
-    assert dataset_result.sample_count == 1, (
-        f"sample_count should be 1, got {dataset_result.sample_count}"
-    )
     assert (
-        test_data["id"]
-        in dataset_result.dataset_pixel_layout_evaluation.page_evaluations
+        test_data["id"] in dataset_result.page_evaluations
     ), f"page_evaluations should contain {test_data['id']}"
-    assert len(dataset_result.dataset_pixel_layout_evaluation.page_evaluations) == 1, (
-        f"page_evaluations should have 1 entry, got {len(dataset_result.dataset_pixel_layout_evaluation.page_evaluations)}"
+    assert len(dataset_result.page_evaluations) == 1, (
+        f"page_evaluations should have 1 entry, got {len(dataset_result.page_evaluations)}"
     )
 
     # Test 3: Evaluate dataset with save functionality
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_root = Path(tmp_dir)
-        metrics_with_save = LayoutMetrics(
-            category_id_to_name=category_id_to_name,
-            concurrency=4,
-            save_root=tmp_root,
-        )
 
-        dataset_result_with_save = metrics_with_save.evaluate_dataset([sample])
+        # Evaluate and export
+        dataset_result_with_save = evaluator.evaluate_dataset([sample])
+        evaluator.export_evaluations(dataset_result_with_save, tmp_root)
 
         # Verify dataset result is created
-        assert dataset_result_with_save.dataset_pixel_layout_evaluation is not None, (
-            "dataset_pixel_layout_evaluation should not be None"
+        assert isinstance(dataset_result_with_save, DatasetPixelLayoutEvaluation), (
+            "dataset_result_with_save must be DatasetPixelLayoutEvaluation instance"
         )
-        assert dataset_result_with_save.sample_count == 1, (
-            f"sample_count should be 1, got {dataset_result_with_save.sample_count}"
+        assert dataset_result_with_save.num_pages == 1, (
+            f"num_pages should be 1, got {dataset_result_with_save.num_pages}"
         )
 
         # Get expected filenames from PixelLayoutEvaluator

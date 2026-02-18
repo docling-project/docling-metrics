@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Optional
 
 import numpy as np
 from docling_metrics_core.base_types import (
@@ -17,6 +17,8 @@ class BboxResolution(BaseModel):
     # bbox coords: (x1, y1, x2, y2) with the origin(0, 0) at the top, left corner, no normalization
     bbox: list[float]
 
+    confidence: Optional[float] = None
+
 
 class MultiLabelMatrixAggMetrics(BaseModel):
     classes_precision: dict[str, float]
@@ -31,7 +33,7 @@ class MultiLabelMatrixAggMetrics(BaseModel):
 class MultiLabelMatrixMetrics(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
-    class_names: Dict[int, str]
+    class_names: dict[int, str]
     confusion_matrix: np.ndarray
     precision_matrix: np.ndarray
     recall_matrix: np.ndarray
@@ -78,12 +80,37 @@ class DatasetPixelLayoutEvaluation(BaseModel):
     num_pages: int
     num_pixels: int
     matrix_evaluation: MultiLabelMatrixEvaluation
-    page_evaluations: Dict[str, PagePixelLayoutEvaluation]
+    page_evaluations: dict[str, PagePixelLayoutEvaluation]
 
     # TODO: Compute the statistics in the "aggregate()"
     #  Statistics across all images for f1 on all classes and on the collapsed classes
     # f1_all_classes_stats: DatasetStatistics
     # f1_collapsed_classes_stats: DatasetStatistics
+
+
+class MAPMetrics(BaseModel):
+    map: float
+    map_50: float
+    map_75: float
+    map_large: float
+    map_medium: float
+    map_per_class: dict[str, float]
+    map_small: float
+    mar_1: float
+    mar_10: float
+    mar_100: float
+    mar_100_per_class: dict[str, float]
+    mar_large: float
+    mar_medium: float
+    mar_small: float
+
+
+class MAPPageLayoutEvaluation(MAPMetrics):
+    id: str
+
+
+class MAPDatasetLayoutEvaluation(MAPMetrics):
+    page_evaluations: dict[str, MAPPageLayoutEvaluation]
 
 
 class LayoutMetricSample(BaseInputSample):

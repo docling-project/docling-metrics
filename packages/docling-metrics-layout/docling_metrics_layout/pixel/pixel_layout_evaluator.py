@@ -150,7 +150,7 @@ class PixelLayoutEvaluator:
         sample: LayoutMetricSample,
     ) -> PagePixelLayoutEvaluation:
         r"""
-        Single process evaluation of a single page
+        Evaluation of a single page
         """
         page_pixels: int
         page_metrics: MultiLabelMatrixEvaluation
