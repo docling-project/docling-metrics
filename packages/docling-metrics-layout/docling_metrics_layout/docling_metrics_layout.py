@@ -1,9 +1,11 @@
 from enum import Enum
+from pathlib import Path
 from typing import Iterable, Optional
 
 from docling_metrics_core.base_types import (
     BaseMetric,
 )
+
 from docling_metrics_layout.layout_types import (
     DatasetPixelLayoutEvaluation,
     LayoutMetricDatasetEvaluation,
@@ -30,12 +32,20 @@ class LayoutMetrics(BaseMetric):
         self,
         category_id_to_name: dict[int, str],
         concurrency: int = 4,
+        save_root: Optional[Path] = None,
         mode: LayoutMetricsMode = LayoutMetricsMode.PYTHON,
     ):
         r"""
+        Initialize the LayoutMetrics evaluator.
+
         Parameters:
-        Mappings of category_id to category_name
+            category_id_to_name: Mapping of category IDs to their string names.
+            concurrency: Number of concurrent workers for parallel evaluation (default: 4).
+            save_root: Optional root directory path for saving evaluation results.
+                       If None, results will not be saved to disk.
+            mode: Execution mode for layout evaluation, either PYTHON or C++ (default: PYTHON).
         """
+        self._save_root = save_root
         self._category_id_to_name = category_id_to_name
         self._mode = mode
 
@@ -51,6 +61,7 @@ class LayoutMetrics(BaseMetric):
         )
 
         sample_evaluation = LayoutMetricSampleEvaluation(
+            id=sample.id,
             page_pixel_layout_evaluation=page_pixel_layout_evaluation,
         )
         return sample_evaluation
@@ -58,21 +69,30 @@ class LayoutMetrics(BaseMetric):
     def aggregate(
         self, results: Iterable[LayoutMetricSampleEvaluation]
     ) -> Optional[LayoutMetricDatasetEvaluation]:
-        r"""
-        Aggregate multiple sample results
-        """
+        r""" """
         return None
 
     def evaluate_dataset(
         self, samples: Iterable[LayoutMetricSample]
     ) -> LayoutMetricDatasetEvaluation:
         r"""
-        Evaluate a dataset.
+        Evaluate a dataset
         """
+        sample_list = list(samples)
         ds_pixel_layout_evaluation: DatasetPixelLayoutEvaluation = (
-            self._pixel_evaluator.evaluate_dataset(samples)
+            self._pixel_evaluator.evaluate_dataset(sample_list)
         )
+
+        # Save export
+        if self._save_root:
+            self._pixel_evaluator.export_evaluations(
+                ds_pixel_layout_evaluation, self._save_root
+            )
+
+        # Build return object
         result = LayoutMetricDatasetEvaluation(
+            sample_count=len(sample_list),
             dataset_pixel_layout_evaluation=ds_pixel_layout_evaluation,
         )
+
         return result
