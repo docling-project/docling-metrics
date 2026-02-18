@@ -41,7 +41,7 @@ def test_map_layout_evaluations():
             BboxResolution(
                 category_id=bbox["category_id"],
                 bbox=bbox["bbox"],
-                confidence=bbox.get("score", 1.0),
+                score=bbox.get("score", 1.0),
             )
             for bbox in test_data["page_resolution_a"]
         ],
@@ -49,7 +49,7 @@ def test_map_layout_evaluations():
             BboxResolution(
                 category_id=bbox["category_id"],
                 bbox=bbox["bbox"],
-                confidence=bbox.get("score", 1.0),
+                score=bbox.get("score", 1.0),
             )
             for bbox in test_data["page_resolution_b"]
         ],

@@ -16,8 +16,7 @@ class BboxResolution(BaseModel):
 
     # bbox coords: (x1, y1, x2, y2) with the origin(0, 0) at the top, left corner, no normalization
     bbox: list[float]
-
-    confidence: Optional[float] = None
+    score: Optional[float] = None
 
 
 class MultiLabelMatrixAggMetrics(BaseModel):
@@ -123,12 +122,12 @@ class LayoutMetricSample(BaseInputSample):
 class LayoutMetricSampleEvaluation(BaseSampleResult):
     r"""Layout evaluation for one page"""
 
-    # TODO: Add the mAP page evaluation
     page_pixel_layout_evaluation: PagePixelLayoutEvaluation
+    page_map_layout_evaluation: MAPPageLayoutEvaluation
 
 
 class LayoutMetricDatasetEvaluation(BaseAggregateResult):
     r"""Layout evaluation for the entire dataset"""
 
-    # TODO: Add the mAP ds evaluation
     dataset_pixel_layout_evaluation: DatasetPixelLayoutEvaluation
+    dataset_map_layout_evaluation: MAPDatasetLayoutEvaluation

@@ -13,6 +13,9 @@ from docling_metrics_layout.layout_types import (
     LayoutMetricSampleEvaluation,
     PagePixelLayoutEvaluation,
 )
+from docling_metrics_layout.map.map_layout_evaluator import (
+    MAPLayoutEvaluator,
+)
 from docling_metrics_layout.pixel.pixel_layout_evaluator import (
     PixelLayoutEvaluator,
 )
@@ -51,18 +54,24 @@ class LayoutMetrics(BaseMetric):
 
         # Evaluators
         self._pixel_evaluator = PixelLayoutEvaluator(category_id_to_name, concurrency)
+        self._map_evaluator = MAPLayoutEvaluator(category_id_to_name)
 
     def evaluate_sample(
         self, sample: LayoutMetricSample
     ) -> LayoutMetricSampleEvaluation:
-        r""" """
+        r"""Evaluate a single sample with pixel-level and mAP metrics"""
+        # Evaluate pixel-level metrics
         page_pixel_layout_evaluation: PagePixelLayoutEvaluation = (
             self._pixel_evaluator.evaluate_sample(sample)
         )
 
+        # Evaluate mAP metrics
+        page_map_layout_evaluation = self._map_evaluator.evaluate_sample(sample)
+
         sample_evaluation = LayoutMetricSampleEvaluation(
             id=sample.id,
             page_pixel_layout_evaluation=page_pixel_layout_evaluation,
+            page_map_layout_evaluation=page_map_layout_evaluation,
         )
         return sample_evaluation
 
@@ -75,13 +84,16 @@ class LayoutMetrics(BaseMetric):
     def evaluate_dataset(
         self, samples: Iterable[LayoutMetricSample]
     ) -> LayoutMetricDatasetEvaluation:
-        r"""
-        Evaluate a dataset
-        """
+        r"""Evaluate a dataset with pixel-level and mAP metrics"""
         sample_list = list(samples)
+
+        # Evaluate pixel-level metrics
         ds_pixel_layout_evaluation: DatasetPixelLayoutEvaluation = (
             self._pixel_evaluator.evaluate_dataset(sample_list)
         )
+
+        # Evaluate mAP metrics
+        ds_map_layout_evaluation = self._map_evaluator.evaluate_dataset(sample_list)
 
         # Save export
         if self._save_root:
@@ -93,6 +105,7 @@ class LayoutMetrics(BaseMetric):
         result = LayoutMetricDatasetEvaluation(
             sample_count=len(sample_list),
             dataset_pixel_layout_evaluation=ds_pixel_layout_evaluation,
+            dataset_map_layout_evaluation=ds_map_layout_evaluation,
         )
 
         return result

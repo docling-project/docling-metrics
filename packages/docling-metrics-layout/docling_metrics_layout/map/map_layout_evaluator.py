@@ -137,7 +137,7 @@ class MAPLayoutEvaluator:
         )
         pred_scores = torch.tensor(
             [
-                bbox.confidence if bbox.confidence is not None else 1.0
+                bbox.score if bbox.score is not None else 1.0
                 for bbox in sample.page_resolution_b
             ],
             dtype=torch.float32,
