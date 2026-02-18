@@ -12,7 +12,7 @@ from docling_metrics_layout.layout_types import DatasetStatistics
 _log = logging.getLogger(__name__)
 
 
-def to_table(
+def stats_to_table(
     dataset_stats: DatasetStatistics, metric_name: str
 ) -> Tuple[List[List[str]], List[str]]:
     """Convert dataset statistics to a formatted table."""
@@ -41,7 +41,7 @@ def to_table(
     return table, headers
 
 
-def save_histogram(dataset_stats: DatasetStatistics, figname: Path, name: str = ""):
+def stats_to_histogram(dataset_stats: DatasetStatistics, figname: Path, name: str = ""):
     """Save dataset statistics as a histogram figure."""
     # Calculate bin widths
     bin_widths = [

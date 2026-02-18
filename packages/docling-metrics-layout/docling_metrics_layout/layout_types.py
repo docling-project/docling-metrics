@@ -123,9 +123,10 @@ class MAPPageLayoutEvaluation(MAPMetrics):
 class MAPDatasetLayoutEvaluation(MAPMetrics):
     page_evaluations: dict[str, MAPPageLayoutEvaluation]
 
-    # map_stats: DatasetStatistics  # Stats for the mAP[0.5:0.05:0.95] across all images
-    # map_50_stats: DatasetStatistics
-    # map_75_stats: DatasetStatistics
+    # Statistics across the corresponding mAP metrics across all dataset pages
+    map_stats: DatasetStatistics
+    map_50_stats: DatasetStatistics
+    map_75_stats: DatasetStatistics
 
 
 class LayoutMetricSample(BaseInputSample):

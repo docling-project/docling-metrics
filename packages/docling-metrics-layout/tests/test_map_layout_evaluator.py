@@ -169,6 +169,40 @@ def test_map_layout_evaluations():
         f"page_eval.map_50 should match sample_result.map_50: {page_eval.map_50} vs {sample_result.map_50}"
     )
 
+    # Verify dataset-level stats exist and are correct (single page → total=1, mean=median=page value, std=0)
+    assert dataset_result.map_stats.total == 1
+    assert (
+        abs(dataset_result.map_stats.mean - sample_result.map)
+        < FLOATING_POINT_TOLERANCE
+    )
+    assert (
+        abs(dataset_result.map_stats.median - sample_result.map)
+        < FLOATING_POINT_TOLERANCE
+    )
+    assert dataset_result.map_stats.std == 0.0
+
+    assert dataset_result.map_50_stats.total == 1
+    assert (
+        abs(dataset_result.map_50_stats.mean - sample_result.map_50)
+        < FLOATING_POINT_TOLERANCE
+    )
+    assert (
+        abs(dataset_result.map_50_stats.median - sample_result.map_50)
+        < FLOATING_POINT_TOLERANCE
+    )
+    assert dataset_result.map_50_stats.std == 0.0
+
+    assert dataset_result.map_75_stats.total == 1
+    assert (
+        abs(dataset_result.map_75_stats.mean - sample_result.map_75)
+        < FLOATING_POINT_TOLERANCE
+    )
+    assert (
+        abs(dataset_result.map_75_stats.median - sample_result.map_75)
+        < FLOATING_POINT_TOLERANCE
+    )
+    assert dataset_result.map_75_stats.std == 0.0
+
 
 if __name__ == "__main__":
     test_map_layout_evaluations()

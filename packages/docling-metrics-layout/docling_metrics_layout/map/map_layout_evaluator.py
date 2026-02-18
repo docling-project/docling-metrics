@@ -8,6 +8,7 @@ from docling_metrics_layout.layout_types import (
     MAPMetrics,
     MAPPageLayoutEvaluation,
 )
+from docling_metrics_layout.utils.stats import compute_stats
 from docling_metrics_layout.utils.utils import tensor_to_float
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
@@ -66,6 +67,10 @@ class MAPLayoutEvaluator:
         ds_predictions = []
         page_evaluations: dict[str, MAPPageLayoutEvaluation] = {}
 
+        map_values: list[float] = []
+        map_50_values: list[float] = []
+        map_75_values: list[float] = []
+
         for sample in samples:
             # Extract targets and predictions for this page
             page_targets = []
@@ -81,10 +86,15 @@ class MAPLayoutEvaluator:
             map_processor.update(preds=page_predictions, target=page_targets)
             page_map_result = map_processor.compute()
 
+            page_map_metrics = self._create_map_metrics(page_map_result)
             page_evaluation = MAPPageLayoutEvaluation(
-                id=sample.id, **self._create_map_metrics(page_map_result).__dict__
+                id=sample.id, **page_map_metrics.__dict__
             )
             page_evaluations[sample.id] = page_evaluation
+
+            map_values.append(page_map_metrics.map)
+            map_50_values.append(page_map_metrics.map_50)
+            map_75_values.append(page_map_metrics.map_75)
 
         # Compute dataset-level metrics
         map_processor = self._get_map_processor()
@@ -94,6 +104,9 @@ class MAPLayoutEvaluator:
         ds_evaluation = MAPDatasetLayoutEvaluation(
             page_evaluations=page_evaluations,
             **self._create_map_metrics(map_result).__dict__,
+            map_stats=compute_stats(map_values),
+            map_50_stats=compute_stats(map_50_values),
+            map_75_stats=compute_stats(map_75_values),
         )
         return ds_evaluation
 
