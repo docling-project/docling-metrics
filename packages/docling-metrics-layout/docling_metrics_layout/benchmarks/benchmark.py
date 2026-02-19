@@ -9,6 +9,7 @@ from typing import Any
 
 from docling_metrics_layout import LayoutMetrics
 from docling_metrics_layout.benchmarks.tools import load_layout_samples
+from docling_metrics_layout.layout_types import LayoutMetricSample
 
 _log = logging.getLogger(__name__)
 
@@ -24,38 +25,99 @@ class Benchmarker:
       - _evaluate_map_dataset   (dataset-level)
     """
 
-    def __init__(self, save_root: Path) -> None:
+    def __init__(self, save_root: Path, concurrency: int = 4) -> None:
         r""" """
         self._save_root = save_root
         self._save_root.mkdir(parents=True, exist_ok=True)
+        self._concurrency = concurrency
 
     def benchmark(
         self,
         gt_coco_fn: Path,
         preds_coco_fn: Path,
-        concurrency: int = 4,
+        limit: int | None = None,
     ):
         r""" """
         _log.info("Convert COCO data to internal representation...")
         category_id_to_name, samples = load_layout_samples(gt_coco_fn, preds_coco_fn)
+        if limit is not None:
+            samples = samples[:limit]
+        _log.info("Samples to evaluate: %d", len(samples))
+
         lm = LayoutMetrics(
             category_id_to_name=category_id_to_name,
-            concurrency=concurrency,
+            concurrency=self._concurrency,
         )
 
         report: dict[str, Any] = {
+            "concurrency": self._concurrency,
             "stats": {},
             "samples": {},
             "dataset": {},
         }
+
+        if False:
+            self._evaluate_individual_samples(samples, lm, report)
+
+        # Measure dataset-level pixel evaluation time
+        _log.info("Benchmarking pixel-layout metrics for the entire dataset...")
+        t0 = time.perf_counter()
+        # pixel_dataset_eval = lm._evaluate_pixel_dataset(samples)
+        pixel_dataset_ms = (time.perf_counter() - t0) * 1000
+        n = len(samples)
+        report["dataset"]["size"] = n
+        report["dataset"]["pixel_dataset"] = {
+            "ms": pixel_dataset_ms,
+            "average_ms": pixel_dataset_ms / n if n else 0.0,
+            # Debug: Disable dumping the full metrics
+            # "metrics": pixel_dataset_eval.model_dump(),
+        }
+        _log.info(
+            "pixel_dataset: %.2fms for %d samples (%.4fms/sample)",
+            pixel_dataset_ms,
+            n,
+            pixel_dataset_ms / n if n else 0.0,
+        )
+
+        # Measure dataset-level mAP evaluation time
+        _log.info("Benchmarking mAP metrics for the entire dataset...")
+        t0 = time.perf_counter()
+        # map_dataset_eval = lm._evaluate_map_dataset(samples)
+        map_dataset_ms = (time.perf_counter() - t0) * 1000
+        report["dataset"]["map_dataset"] = {
+            "ms": map_dataset_ms,
+            "average_ms": map_dataset_ms / n if n else 0.0,
+            # Debug: Disable dumping the full metrics
+            # "metrics": map_dataset_eval.model_dump(),
+        }
+        _log.info(
+            "map_dataset: %.2fms for %d samples (%.4fms/sample)",
+            map_dataset_ms,
+            n,
+            map_dataset_ms / n if n else 0.0,
+        )
+
+        # Save report
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_path = self._save_root / f"benchmark_report_{timestamp}.json"
+        with open(report_path, "w") as f:
+            json.dump(report, f, indent=2, sort_keys=True)
+        _log.info("Benchmark report saved to: %s", report_path)
+
+    def _evaluate_individual_samples(
+        self,
+        samples: list[LayoutMetricSample],
+        lm: LayoutMetrics,
+        report: dict[str, Any],
+    ):
+        r""" """
+        _log.info("Benchmarking metrics for individual samples...")
 
         # Collect per-sample timing data
         timing_data: dict[str, list[float]] = {
             "pixel_sample": [],
             "map_sample": [],
         }
-
-        _log.info("Benchmarking layout metrics...")
         for sample in samples:
             id = sample.id
             sample_bench: dict[str, dict[str, float]] = {}
@@ -99,29 +161,7 @@ class Benchmarker:
                     mean(times),
                     median(times),
                 )
-
-        # Measure dataset-level pixel evaluation time
-        t0 = time.perf_counter()
-        lm._evaluate_pixel_dataset(samples)
-        pixel_dataset_ms = (time.perf_counter() - t0) * 1000
-        report["dataset"]["pixel_dataset"] = {"ms": pixel_dataset_ms}
-        _log.info(
-            "pixel_dataset: %.2fms for %d samples", pixel_dataset_ms, len(samples)
-        )
-
-        # Measure dataset-level mAP evaluation time
-        t0 = time.perf_counter()
-        lm._evaluate_map_dataset(samples)
-        map_dataset_ms = (time.perf_counter() - t0) * 1000
-        report["dataset"]["map_dataset"] = {"ms": map_dataset_ms}
-        _log.info("map_dataset: %.2fms for %d samples", map_dataset_ms, len(samples))
-
-        # Save report
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_path = self._save_root / f"benchmark_report_{timestamp}.json"
-        with open(report_path, "w") as f:
-            json.dump(report, f, indent=2, sort_keys=True)
-        _log.info("Benchmark report saved to: %s", report_path)
+        return report
 
 
 def main():
@@ -148,6 +188,14 @@ def main():
         help="Path to the directory to save generated data",
     )
     parser.add_argument(
+        "-l",
+        "--limit",
+        type=int,
+        default=None,
+        help="Maximum number of samples to benchmark (default: all)",
+    )
+    parser.add_argument(
+        "-c",
         "--concurrency",
         type=int,
         default=4,
@@ -162,11 +210,11 @@ def main():
     # logging.getLogger("pycocotools").setLevel(logging.WARNING)
 
     _log.info("Benchmark LayoutMetrics implementations")
-    benchmarker = Benchmarker(args.save_root)
+    benchmarker = Benchmarker(args.save_root, concurrency=args.concurrency)
     benchmarker.benchmark(
         gt_coco_fn=args.gt_coco,
         preds_coco_fn=args.preds_coco,
-        concurrency=args.concurrency,
+        limit=args.limit,
     )
 
 

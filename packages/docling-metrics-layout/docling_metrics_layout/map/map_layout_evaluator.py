@@ -24,19 +24,6 @@ class MAPLayoutEvaluator:
         r""" """
         self._category_id_to_name = category_id_to_name
 
-        # Compress the category_ids to have them "without holes" for torchmetrics
-        # Create mapping from original category_id to compressed index (0, 1, 2, ...)
-        sorted_category_ids = sorted(category_id_to_name.keys())
-        self._category_id_to_compressed: dict[int, int] = {
-            orig_id: compressed_idx
-            for compressed_idx, orig_id in enumerate(sorted_category_ids)
-        }
-        # Reverse mapping for extracting per-class metrics
-        self._compressed_to_category_id: dict[int, int] = {
-            compressed_idx: orig_id
-            for orig_id, compressed_idx in self._category_id_to_compressed.items()
-        }
-
     def evaluate_sample(
         self,
         sample: LayoutMetricSample,
@@ -120,15 +107,12 @@ class MAPLayoutEvaluator:
         r"""
         Extract layout data from the sample and populate the targets/predictions
         """
-        # Target - use compressed category IDs
+        # Target
         target_boxes = torch.tensor(
             [bbox.bbox for bbox in sample.page_resolution_a], dtype=torch.float32
         )
         target_labels = torch.tensor(
-            [
-                self._category_id_to_compressed[bbox.category_id]
-                for bbox in sample.page_resolution_a
-            ],
+            [bbox.category_id for bbox in sample.page_resolution_a],
             dtype=torch.int64,
         )
         targets.append(
@@ -138,15 +122,12 @@ class MAPLayoutEvaluator:
             }
         )
 
-        # Predictions with confidence scores - use compressed category IDs
+        # Predictions with confidence scores
         pred_boxes = torch.tensor(
             [bbox.bbox for bbox in sample.page_resolution_b], dtype=torch.float32
         )
         pred_labels = torch.tensor(
-            [
-                self._category_id_to_compressed[bbox.category_id]
-                for bbox in sample.page_resolution_b
-            ],
+            [bbox.category_id for bbox in sample.page_resolution_b],
             dtype=torch.int64,
         )
         pred_scores = torch.tensor(
@@ -200,7 +181,11 @@ class MAPLayoutEvaluator:
         if per_class_tensor is None:
             return {}
 
-        evaluated_classes: list[int] = classes_tensor.tolist()
+        evaluated_classes: list[int] = (
+            [classes_tensor.tolist()]
+            if classes_tensor.numel() == 1
+            else classes_tensor.tolist()
+        )
         map_classes = (
             [per_class_tensor.tolist()]
             if per_class_tensor.numel() == 1
