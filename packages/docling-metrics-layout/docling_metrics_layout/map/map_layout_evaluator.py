@@ -10,6 +10,7 @@ from docling_metrics_layout.layout_types import (
 )
 from docling_metrics_layout.utils.stats import compute_stats
 from docling_metrics_layout.utils.utils import tensor_to_float
+from torch import Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 _log = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class MAPLayoutEvaluator:
 
         # Prepare return object with all metrics
         result = MAPPageLayoutEvaluation(
-            id=sample.id, **self._create_map_metrics(map_result).__dict__
+            id=sample.id, **self._export_as_map_metrics(map_result).__dict__
         )
         return result
 
@@ -86,7 +87,7 @@ class MAPLayoutEvaluator:
             map_processor.update(preds=page_predictions, target=page_targets)
             page_map_result = map_processor.compute()
 
-            page_map_metrics = self._create_map_metrics(page_map_result)
+            page_map_metrics = self._export_as_map_metrics(page_map_result)
             page_evaluation = MAPPageLayoutEvaluation(
                 id=sample.id, **page_map_metrics.__dict__
             )
@@ -103,7 +104,7 @@ class MAPLayoutEvaluator:
 
         ds_evaluation = MAPDatasetLayoutEvaluation(
             page_evaluations=page_evaluations,
-            **self._create_map_metrics(map_result).__dict__,
+            **self._export_as_map_metrics(map_result).__dict__,
             map_stats=compute_stats(map_values),
             map_50_stats=compute_stats(map_50_values),
             map_75_stats=compute_stats(map_75_values),
@@ -163,7 +164,7 @@ class MAPLayoutEvaluator:
             }
         )
 
-    def _create_map_metrics(self, map_result: dict) -> MAPMetrics:
+    def _export_as_map_metrics(self, map_result: dict) -> MAPMetrics:
         r"""Convert the map_result to MAPMetrics"""
         # Extract scalar metrics
         map_metrics = MAPMetrics(
@@ -180,34 +181,36 @@ class MAPLayoutEvaluator:
             mar_medium=tensor_to_float(map_result.get("mar_medium", -1.0)),
             mar_small=tensor_to_float(map_result.get("mar_small", -1.0)),
             # Extract per-class metrics
-            map_per_class=self._extract_per_class_metrics(
-                map_result.get("map_per_class", None)
+            map_per_class=self._extract_metrics_per_class(
+                map_result.get("classes", None), map_result.get("map_per_class", None)
             ),
-            mar_100_per_class=self._extract_per_class_metrics(
-                map_result.get("mar_100_per_class", None)
+            mar_100_per_class=self._extract_metrics_per_class(
+                map_result.get("classes", None),
+                map_result.get("mar_100_per_class", None),
             ),
         )
         return map_metrics
 
-    def _extract_per_class_metrics(self, per_class_tensor) -> dict[str, float]:
-        r"""Extract per-class metrics from tensor and map to class names"""
+    def _extract_metrics_per_class(
+        self, classes_tensor: Tensor, per_class_tensor: Tensor
+    ) -> dict[str, float]:
+        r"""
+        Extract per-class metrics from tensor and map to class names
+        """
         if per_class_tensor is None:
             return {}
 
-        # Convert the tensor with map per compressed_id to dict keyed with category names
+        evaluated_classes: list[int] = classes_tensor.tolist()
+        map_classes = (
+            [per_class_tensor.tolist()]
+            if per_class_tensor.numel() == 1
+            else per_class_tensor.tolist()
+        )
         per_class_dict: dict[str, float] = {}
-        classes_maps: list[float] = per_class_tensor.tolist()
-        categories_len = len(self._category_id_to_name)
-        class_len = len(classes_maps)
-        assert categories_len == class_len
-
-        for compressed_idx in range(len(classes_maps)):
-            # Map compressed index back to original category_id
-            original_category_id = self._compressed_to_category_id[compressed_idx]
-            category_name = self._category_id_to_name[original_category_id]
-            category_map = classes_maps[compressed_idx]
+        for idx, category_map in enumerate(map_classes):
+            category_id = evaluated_classes[idx]
+            category_name = self._category_id_to_name[category_id]
             per_class_dict[category_name] = category_map
-
         return per_class_dict
 
     def _get_map_processor(self) -> MeanAveragePrecision:
