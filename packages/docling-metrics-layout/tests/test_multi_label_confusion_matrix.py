@@ -208,7 +208,7 @@ def test_preds_on_preds():
     Expected confusion matrix: Only the diagonal elements must be non-zero
     """
     # Load test layout sample
-    test_data_fn = TEST_DATA_DIR / "dlnv1_t1_preds.json"
+    test_data_fn = TEST_DATA_DIR / "dlnv1_t1_preds_score.json"
     with open(test_data_fn, "r") as fd:
         sample_dict = json.load(fd)
         sample = LayoutMetricSample.model_validate(sample_dict)

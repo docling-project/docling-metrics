@@ -23,7 +23,7 @@ FLOATING_POINT_TOLERANCE = 1e-6
 def test_pixel_layout_evaluator():
     r"""Test LayoutMetrics evaluation on sample and dataset level."""
     # Load test data
-    test_data_path = TEST_DATA_DIR / "dlnv1_t1_preds.json"
+    test_data_path = TEST_DATA_DIR / "dlnv1_t1_preds_score.json"
     with open(test_data_path) as f:
         test_data = json.load(f)
 
