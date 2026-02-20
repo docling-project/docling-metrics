@@ -62,7 +62,7 @@ class Benchmarker:
         # Measure dataset-level pixel evaluation time
         _log.info("Benchmarking pixel-layout metrics for the entire dataset...")
         t0 = time.perf_counter()
-        # pixel_dataset_eval = lm._evaluate_pixel_dataset(samples)
+        pixel_dataset_eval = lm._evaluate_pixel_dataset(samples)  # noqa: F841
         pixel_dataset_ms = (time.perf_counter() - t0) * 1000
         n = len(samples)
         report["dataset"]["size"] = n
@@ -82,7 +82,7 @@ class Benchmarker:
         # Measure dataset-level mAP evaluation time
         _log.info("Benchmarking mAP metrics for the entire dataset...")
         t0 = time.perf_counter()
-        # map_dataset_eval = lm._evaluate_map_dataset(samples)
+        map_dataset_eval = lm._evaluate_map_dataset(samples)  # noqa: F841
         map_dataset_ms = (time.perf_counter() - t0) * 1000
         report["dataset"]["map_dataset"] = {
             "ms": map_dataset_ms,
