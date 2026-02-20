@@ -207,7 +207,6 @@ def main():
     logging.basicConfig(level=logging.INFO, format=log_format)
     logging.getLogger("torchmetrics").setLevel(logging.WARNING)
     logging.getLogger("faster_coco_eval").setLevel(logging.WARNING)
-    # logging.getLogger("pycocotools").setLevel(logging.WARNING)
 
     _log.info("Benchmark LayoutMetrics implementations")
     benchmarker = Benchmarker(args.save_root, concurrency=args.concurrency)
