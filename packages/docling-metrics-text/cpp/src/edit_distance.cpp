@@ -18,8 +18,8 @@ EditDistanceCalculator::EditDistanceCalculator() {}
 // Pv/Mv encode the vertical deltas, Eq is the match vector for the current target token,
 // hin is the horizontal delta entering from the block above.
 // Returns hout (+1, 0, or -1) propagated to the next block.
-int EditDistanceCalculator::calculate_block(Word Pv, Word Mv, Word Eq, int hin, Word &PvOut,
-                                            Word &MvOut) {
+int EditDistanceCalculator::calculate_block(Word Pv, // Element of Pv to read
+                                            Word Mv, Word Eq, int hin, Word &PvOut, Word &MvOut) {
   Word hinIsNeg = static_cast<Word>(hin >> 2) & WORD_1;
 
   Word Xv = Eq | Mv;
@@ -116,8 +116,8 @@ int EditDistanceCalculator::edit_distance_raw(const std::vector<std::string> &qu
 
   // --- Process each target token ---
   for (int j = 0; j < m; j++) {
-    const std::vector<Word> &eq = Peq[t_idx[j]];
-    int hin = 1; // NW: gap before query is penalised
+    const std::vector<Word> &eq = Peq[t_idx[j]]; // The Peq vector corresponding to the target token
+    int hin = 1;                                 // NW: gap before query is penalised
 
     for (int b = 0; b < num_blocks; b++) {
       hin = calculate_block(Pv[b], Mv[b], eq[b], hin, Pv[b], Mv[b]);
