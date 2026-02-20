@@ -32,6 +32,7 @@ dependencies = [
     "torch",
     "torchmetrics[detection]",
     "faster-coco-eval",
+    "tqdm",
 ]
 
 [project.urls]
