@@ -19,3 +19,13 @@ uv sync --all-packages
 
 Check the [demo code](demo/demo_docling_metrics_layout.py)
 
+
+## Links
+
+[Multi-Label Classifier Performance Evaluation with Confusion Matrix](https://csitcp.org/paper/10/108csit01.pdf)
+
+
+## License
+
+MIT
+

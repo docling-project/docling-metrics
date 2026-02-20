@@ -25,3 +25,7 @@ uv sync --all-packages
 
 Check the [demo code](demo/demo_docling_metrics_layout.py)
 
+
+## License
+
+MIT
