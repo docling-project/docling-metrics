@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+#include "edit_distance.h"
 #include "treebank.h"
 
 namespace docling {
@@ -15,6 +16,7 @@ public:
 
 private:
   TreeBankTokenizer treebank_tokenizer_;
+  EditDistanceCalculator ed_calculator_;
 };
 
 } // namespace docling

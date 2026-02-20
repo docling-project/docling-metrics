@@ -1,7 +1,5 @@
 #include "text_manager.h"
 
-#include "edit_distance.h"
-
 namespace docling {
 
 std::vector<std::string> TextManager::tokenize(const std::string &text, bool convert_parentheses) {
@@ -15,7 +13,7 @@ std::vector<std::string> TextManager::tokenize(const std::string &text, bool con
 
 double TextManager::edit_distance(const std::vector<std::string> &tokens_a,
                                   const std::vector<std::string> &tokens_b) {
-  return docling::edit_distance(tokens_a, tokens_b);
+  return ed_calculator_.edit_distance(tokens_a, tokens_b);
 }
 
 } // namespace docling
