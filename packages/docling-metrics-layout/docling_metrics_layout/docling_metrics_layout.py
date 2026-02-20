@@ -25,6 +25,9 @@ from docling_metrics_layout.pixel.pixel_layout_evaluator import (
 
 _log = logging.getLogger(__name__)
 
+# Silence the coco tools
+logging.getLogger("faster_coco_eval").setLevel(logging.WARNING)
+
 
 class LayoutMetricsMode(str, Enum):
     PYTHON = "Python"
@@ -145,6 +148,4 @@ class LayoutMetrics(BaseMetric):
     ) -> MAPDatasetLayoutEvaluation:
         r"""Evaluate mAP metrics for a dataset"""
         _log.info("Evaluate mAP layout metrics for a dataset")
-        # Debug
-        print("Evaluate mAP dataset")
         return self._map_evaluator.evaluate_dataset(samples)
