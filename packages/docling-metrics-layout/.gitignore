@@ -325,6 +325,7 @@ Temporary Items
 # Additional dirs/files to ignore
 externals/
 install_root/
+**/reports/
 
 **/docling_metrics_layout_cli
 
