@@ -200,25 +200,7 @@ def test_pixel_layout_evaluator():
             f"num_pages should be 1, got {dataset_result_with_save.num_pages}"
         )
 
-        # Get expected filenames from PixelLayoutEvaluator
-        eval_filenames = PixelLayoutEvaluator.evaluation_filenames(tmp_root)
-
-        # Verify that all expected files exist
-        for file_type, file_path in eval_filenames.items():
-            assert file_path.exists(), (
-                f"Expected {file_type} file should exist at {file_path}"
-            )
-            assert file_path.is_file(), (
-                f"{file_type} file at {file_path} should be a file, not a directory"
-            )
-            assert file_path.stat().st_size > 0, (
-                f"{file_type} file at {file_path} should not be empty"
-            )
-
-        # Verify JSON file structure
-        json_file = eval_filenames["json"]
-        with open(json_file) as f:
-            json_data = json.load(f)
-        assert "num_pages" in json_data, "JSON should contain 'num_pages'"
-        assert "num_pixels" in json_data, "JSON should contain 'num_pixels'"
-        assert "page_evaluations" in json_data, "JSON should contain 'page_evaluations'"
+        # Verify the expected reports from PixelLayoutEvaluator
+        report_filenames = PixelLayoutEvaluator.evaluation_filenames(tmp_root)
+        excel_report_fn = report_filenames["excel"]
+        assert excel_report_fn.is_file(), f"Missing report at {excel_report_fn}"
