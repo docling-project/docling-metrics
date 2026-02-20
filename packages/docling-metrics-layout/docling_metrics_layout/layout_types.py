@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
@@ -148,3 +149,4 @@ class LayoutMetricDatasetEvaluation(BaseAggregateResult):
 
     dataset_pixel_layout_evaluation: DatasetPixelLayoutEvaluation
     dataset_map_layout_evaluation: MAPDatasetLayoutEvaluation
+    reports: Optional[list[Path]] = None

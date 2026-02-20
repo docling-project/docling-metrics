@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from pathlib import Path
 from typing import Iterable, Optional
@@ -11,6 +12,8 @@ from docling_metrics_layout.layout_types import (
     LayoutMetricDatasetEvaluation,
     LayoutMetricSample,
     LayoutMetricSampleEvaluation,
+    MAPDatasetLayoutEvaluation,
+    MAPPageLayoutEvaluation,
     PagePixelLayoutEvaluation,
 )
 from docling_metrics_layout.map.map_layout_evaluator import (
@@ -19,6 +22,8 @@ from docling_metrics_layout.map.map_layout_evaluator import (
 from docling_metrics_layout.pixel.pixel_layout_evaluator import (
     PixelLayoutEvaluator,
 )
+
+_log = logging.getLogger(__name__)
 
 
 class LayoutMetricsMode(str, Enum):
@@ -85,16 +90,23 @@ class LayoutMetrics(BaseMetric):
         r"""Evaluate a dataset with pixel-level and mAP metrics"""
         sample_list = list(samples)
 
-        # Evaluate pixel-level metrics
-        ds_pixel_layout_evaluation = self._evaluate_pixel_dataset(sample_list)
-
         # Evaluate mAP metrics
         ds_map_layout_evaluation = self._evaluate_map_dataset(sample_list)
 
+        # Evaluate pixel-level metrics
+        ds_pixel_layout_evaluation = self._evaluate_pixel_dataset(sample_list)
+
         # Save export
+        reports: list[Path] = []
         if self._save_root:
+            _log.info(
+                "Exporting pixel-wise layout evalution in %s", str(self._save_root)
+            )
             self._pixel_evaluator.export_evaluations(
                 ds_pixel_layout_evaluation, self._save_root
+            )
+            reports.append(
+                PixelLayoutEvaluator.evaluation_filenames(self._save_root)["excel"]
             )
 
         # Build return object
@@ -102,6 +114,7 @@ class LayoutMetrics(BaseMetric):
             sample_count=len(sample_list),
             dataset_pixel_layout_evaluation=ds_pixel_layout_evaluation,
             dataset_map_layout_evaluation=ds_map_layout_evaluation,
+            reports=reports,
         )
 
         return result
@@ -110,18 +123,28 @@ class LayoutMetrics(BaseMetric):
         self, sample: LayoutMetricSample
     ) -> PagePixelLayoutEvaluation:
         r"""Evaluate pixel-level metrics for a single sample"""
+        _log.info("Evaluate pixel-level layout metrics for a single sample")
         return self._pixel_evaluator.evaluate_sample(sample)
 
-    def _evaluate_map_sample(self, sample: LayoutMetricSample):
+    def _evaluate_map_sample(
+        self, sample: LayoutMetricSample
+    ) -> MAPPageLayoutEvaluation:
         r"""Evaluate mAP metrics for a single sample"""
+        _log.info("Evaluate mAP layout metrics for a single sample")
         return self._map_evaluator.evaluate_sample(sample)
 
     def _evaluate_pixel_dataset(
         self, samples: list[LayoutMetricSample]
     ) -> DatasetPixelLayoutEvaluation:
         r"""Evaluate pixel-level metrics for a dataset"""
+        _log.info("Evaluate pixel-level layout metrics for a dataset")
         return self._pixel_evaluator.evaluate_dataset(samples)
 
-    def _evaluate_map_dataset(self, samples: list[LayoutMetricSample]):
+    def _evaluate_map_dataset(
+        self, samples: list[LayoutMetricSample]
+    ) -> MAPDatasetLayoutEvaluation:
         r"""Evaluate mAP metrics for a dataset"""
+        _log.info("Evaluate mAP layout metrics for a dataset")
+        # Debug
+        print("Evaluate mAP dataset")
         return self._map_evaluator.evaluate_dataset(samples)

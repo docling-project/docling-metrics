@@ -1,4 +1,3 @@
-import json
 import logging
 from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -93,7 +92,6 @@ class PixelLayoutEvaluator:
         # Build matrix categories with background at index 0
         self._matrix_id_to_name: dict[int, str]  # Matrix ID to category name
 
-        # TODO: Check the usage of _category_id_to_matrix_id, _matrix_id_to_category_id
         self._category_id_to_matrix_id: dict[
             int, int
         ]  # Original category ID to matrix ID
@@ -271,10 +269,10 @@ class PixelLayoutEvaluator:
         # Get the evaluation filenames
         eval_fns = PixelLayoutEvaluator.evaluation_filenames(save_root)
 
-        # Save the dataset evaluation as a json
-        json_fn = eval_fns["json"]
-        with open(json_fn, "w") as fd:
-            json.dump(ds_evaluation.model_dump(), fd, indent=2, sort_keys=True)
+        # # Save the dataset evaluation as a json
+        # json_fn = eval_fns["json"]
+        # with open(json_fn, "w") as fd:
+        #     json.dump(ds_evaluation.model_dump(), fd, indent=2, sort_keys=True)
 
         # Export excel reports
         if not export_excel_reports:
