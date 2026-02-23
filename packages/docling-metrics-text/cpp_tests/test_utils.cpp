@@ -1,7 +1,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "memory.h"
+#include "utils.h"
 
 void test_system_memory_gt_1gb() {
   uint64_t total_gb = docling::GetTotalSystemGB();
