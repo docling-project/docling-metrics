@@ -113,7 +113,7 @@ int EditDistanceCalculator::edit_distance_raw(const std::vector<std::string> &qu
   std::vector<Word> Mv(num_blocks, 0);
   std::vector<int> scores(num_blocks);
   for (int b = 0; b < num_blocks; b++) {
-    scores[b] = (b + 1) * WORD_SIZE; // TODO: How do we know there is no overflow?
+    scores[b] = (b + 1) * WORD_SIZE;
   }
 
   // --- Process each target token ---
