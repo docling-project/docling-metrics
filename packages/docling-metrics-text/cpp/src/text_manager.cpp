@@ -1,6 +1,14 @@
 #include "text_manager.h"
+#include "utils.h"
 
 namespace docling {
+
+TextManager::TextManager(const std::string &level) {
+  std::string lower_level = level;
+  std::transform(lower_level.begin(), lower_level.end(), lower_level.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  set_loglevel(lower_level);
+}
 
 std::vector<std::string> TextManager::tokenize(const std::string &text, bool convert_parentheses) {
   // The tokenization should be:

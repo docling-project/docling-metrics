@@ -83,10 +83,6 @@ int EditDistanceCalculator::edit_distance_raw(const std::vector<std::string> &qu
     t_idx[i] = it->second;
   }
 
-  // Debug
-  // std::cout << "q_idx[0]=" << q_idx[0] << "\n";
-  // std::cout << "t_idx[0]=" << t_idx[0] << "\n";
-
   // --- Build Peq table ---
   // Peq[token_id][block] has bit i set iff query position (block*64 + i) matches token_id.
   // Tokens that only appear in the target get all-zero rows (no matches), which is the default.
