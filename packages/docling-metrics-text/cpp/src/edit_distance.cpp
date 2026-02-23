@@ -160,7 +160,7 @@ bool EditDistanceCalculator::sanity_checks(size_t token_map_size, size_t num_of_
   const uint64_t peq_gb = peq_bytes / kBytesPerGB;
   bool mem_ok = peq_gb < system_gb_;
   if (!mem_ok) {
-    LOG_F(WARNING, "Peq table will exceed available system RAM(GB) (%d/%d)", peq_gb, system_gb_);
+    LOG_F(WARNING, "Peq table will exceed available system RAM(GB) (%lu/%lu)", peq_gb, system_gb_);
   }
   return mem_ok;
 }
