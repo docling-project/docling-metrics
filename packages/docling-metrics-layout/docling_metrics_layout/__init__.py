@@ -3,19 +3,19 @@ from docling_metrics_layout.docling_metrics_layout import (
 )
 from docling_metrics_layout.layout_types import (
     BboxResolution,
-    DatasetPixelLayoutEvaluation,
+    DatasetToreLayoutEvaluation,
     LayoutMetricDatasetEvaluation,
     LayoutMetricSample,
     LayoutMetricSampleEvaluation,
     MultiLabelMatrixAggMetrics,
     MultiLabelMatrixEvaluation,
     MultiLabelMatrixMetrics,
-    PagePixelLayoutEvaluation,
+    PageToreEvaluation,
 )
 
 __all__ = [
     "BboxResolution",
-    "DatasetPixelLayoutEvaluation",
+    "DatasetToreLayoutEvaluation",
     "LayoutMetricDatasetEvaluation",
     "LayoutMetricSample",
     "LayoutMetricSampleEvaluation",
@@ -23,5 +23,5 @@ __all__ = [
     "MultiLabelMatrixAggMetrics",
     "MultiLabelMatrixEvaluation",
     "MultiLabelMatrixMetrics",
-    "PagePixelLayoutEvaluation",
+    "PageToreEvaluation",
 ]

@@ -87,17 +87,17 @@ class MultiLabelMatrixEvaluation(BaseModel):
     collapsed: MultiLabelMatrixMetrics  # Only the background the other classes summed up together
 
 
-class PagePixelLayoutEvaluation(BaseModel):
+class PageToreEvaluation(BaseModel):
     id: str
     num_pixels: int
     matrix_evaluation: MultiLabelMatrixEvaluation
 
 
-class DatasetPixelLayoutEvaluation(BaseModel):
+class DatasetToreLayoutEvaluation(BaseModel):
     num_pages: int
     num_pixels: int
     matrix_evaluation: MultiLabelMatrixEvaluation
-    page_evaluations: dict[str, PagePixelLayoutEvaluation]
+    page_evaluations: dict[str, PageToreEvaluation]
 
 
 class MAPMetrics(BaseModel):
@@ -140,13 +140,13 @@ class LayoutMetricSample(BaseInputSample):
 class LayoutMetricSampleEvaluation(BaseSampleResult):
     r"""Layout evaluation for one page"""
 
-    page_pixel_layout_evaluation: PagePixelLayoutEvaluation
+    page_tore_evaluation: PageToreEvaluation
     page_map_layout_evaluation: MAPPageLayoutEvaluation
 
 
 class LayoutMetricDatasetEvaluation(BaseAggregateResult):
     r"""Layout evaluation for the entire dataset"""
 
-    dataset_pixel_layout_evaluation: DatasetPixelLayoutEvaluation
+    dataset_tore_evaluation: DatasetToreLayoutEvaluation
     dataset_map_layout_evaluation: MAPDatasetLayoutEvaluation
     reports: Optional[list[Path]] = None

@@ -62,7 +62,7 @@ class Benchmarker:
         # Measure dataset-level pixel evaluation time
         _log.info("Benchmarking pixel-layout metrics for the entire dataset...")
         t0 = time.perf_counter()
-        pixel_dataset_eval = lm._evaluate_pixel_dataset(samples)  # noqa: F841
+        pixel_dataset_eval = lm._evaluate_tore_dataset(samples)  # noqa: F841
         pixel_dataset_ms = (time.perf_counter() - t0) * 1000
         n = len(samples)
         report["dataset"]["size"] = n
@@ -124,7 +124,7 @@ class Benchmarker:
 
             # Measure pixel sample evaluation time
             t0 = time.perf_counter()
-            lm._evaluate_pixel_sample(sample)
+            lm._evaluate_tore_sample(sample)
             pixel_sample_ms = (time.perf_counter() - t0) * 1000
             sample_bench["pixel_sample"] = {"ms": pixel_sample_ms}
             timing_data["pixel_sample"].append(pixel_sample_ms)

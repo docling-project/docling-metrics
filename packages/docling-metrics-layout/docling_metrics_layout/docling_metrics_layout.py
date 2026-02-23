@@ -8,13 +8,13 @@ from docling_metrics_core.base_types import (
 )
 
 from docling_metrics_layout.layout_types import (
-    DatasetPixelLayoutEvaluation,
+    DatasetToreLayoutEvaluation,
     LayoutMetricDatasetEvaluation,
     LayoutMetricSample,
     LayoutMetricSampleEvaluation,
     MAPDatasetLayoutEvaluation,
     MAPPageLayoutEvaluation,
-    PagePixelLayoutEvaluation,
+    PageToreEvaluation,
 )
 from docling_metrics_layout.map.map_layout_evaluator import (
     MAPLayoutEvaluator,
@@ -61,22 +61,22 @@ class LayoutMetrics(BaseMetric):
         self._mode = mode
 
         # Evaluators
-        self._pixel_evaluator = ToreLayoutEvaluator(category_id_to_name, concurrency)
+        self._tore_evaluator = ToreLayoutEvaluator(category_id_to_name, concurrency)
         self._map_evaluator = MAPLayoutEvaluator(category_id_to_name)
 
     def evaluate_sample(
         self, sample: LayoutMetricSample
     ) -> LayoutMetricSampleEvaluation:
-        r"""Evaluate a single sample with pixel-level and mAP metrics"""
-        # Evaluate pixel-level metrics
-        page_pixel_layout_evaluation = self._evaluate_pixel_sample(sample)
+        r"""Evaluate a single sample with TORE and mAP metrics"""
+        # Evaluate TORE metric
+        page_tore_evaluation = self._evaluate_tore_sample(sample)
 
-        # Evaluate mAP metrics
+        # Evaluate mAP metric
         page_map_layout_evaluation = self._evaluate_map_sample(sample)
 
         sample_evaluation = LayoutMetricSampleEvaluation(
             id=sample.id,
-            page_pixel_layout_evaluation=page_pixel_layout_evaluation,
+            page_tore_evaluation=page_tore_evaluation,
             page_map_layout_evaluation=page_map_layout_evaluation,
         )
         return sample_evaluation
@@ -90,24 +90,20 @@ class LayoutMetrics(BaseMetric):
     def evaluate_dataset(
         self, samples: Iterable[LayoutMetricSample]
     ) -> LayoutMetricDatasetEvaluation:
-        r"""Evaluate a dataset with pixel-level and mAP metrics"""
+        r"""Evaluate a dataset with TORE and mAP metrics"""
         sample_list = list(samples)
 
         # Evaluate mAP metrics
         ds_map_layout_evaluation = self._evaluate_map_dataset(sample_list)
 
-        # Evaluate pixel-level metrics
-        ds_pixel_layout_evaluation = self._evaluate_pixel_dataset(sample_list)
+        # Evaluate TORE metrics
+        ds_tore_evaluation = self._evaluate_tore_dataset(sample_list)
 
         # Save export
         reports: list[Path] = []
         if self._save_root:
-            _log.info(
-                "Exporting pixel-wise layout evalution in %s", str(self._save_root)
-            )
-            self._pixel_evaluator.export_evaluations(
-                ds_pixel_layout_evaluation, self._save_root
-            )
+            _log.info("Exporting TORE evalution in %s", str(self._save_root))
+            self._tore_evaluator.export_evaluations(ds_tore_evaluation, self._save_root)
             reports.append(
                 ToreLayoutEvaluator.evaluation_filenames(self._save_root)["excel"]
             )
@@ -115,19 +111,17 @@ class LayoutMetrics(BaseMetric):
         # Build return object
         result = LayoutMetricDatasetEvaluation(
             sample_count=len(sample_list),
-            dataset_pixel_layout_evaluation=ds_pixel_layout_evaluation,
+            dataset_tore_evaluation=ds_tore_evaluation,
             dataset_map_layout_evaluation=ds_map_layout_evaluation,
             reports=reports,
         )
 
         return result
 
-    def _evaluate_pixel_sample(
-        self, sample: LayoutMetricSample
-    ) -> PagePixelLayoutEvaluation:
-        r"""Evaluate pixel-level metrics for a single sample"""
-        _log.info("Evaluate pixel-level layout metrics for a single sample")
-        return self._pixel_evaluator.evaluate_sample(sample)
+    def _evaluate_tore_sample(self, sample: LayoutMetricSample) -> PageToreEvaluation:
+        r"""Evaluate TORE metrics for a single sample"""
+        _log.info("Evaluate TORE metrics for a single sample")
+        return self._tore_evaluator.evaluate_sample(sample)
 
     def _evaluate_map_sample(
         self, sample: LayoutMetricSample
@@ -136,12 +130,12 @@ class LayoutMetrics(BaseMetric):
         _log.info("Evaluate mAP layout metrics for a single sample")
         return self._map_evaluator.evaluate_sample(sample)
 
-    def _evaluate_pixel_dataset(
+    def _evaluate_tore_dataset(
         self, samples: list[LayoutMetricSample]
-    ) -> DatasetPixelLayoutEvaluation:
-        r"""Evaluate pixel-level metrics for a dataset"""
-        _log.info("Evaluate pixel-level layout metrics for a dataset")
-        return self._pixel_evaluator.evaluate_dataset(samples)
+    ) -> DatasetToreLayoutEvaluation:
+        r"""Evaluate TORE for a dataset"""
+        _log.info("Evaluate TORE metrics for a dataset")
+        return self._tore_evaluator.evaluate_dataset(samples)
 
     def _evaluate_map_dataset(
         self, samples: list[LayoutMetricSample]

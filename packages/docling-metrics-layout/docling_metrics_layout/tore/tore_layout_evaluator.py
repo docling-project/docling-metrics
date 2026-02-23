@@ -8,10 +8,10 @@ from tqdm import tqdm  # type: ignore
 
 from docling_metrics_layout.layout_types import (
     BboxResolution,
-    DatasetPixelLayoutEvaluation,
+    DatasetToreLayoutEvaluation,
     LayoutMetricSample,
     MultiLabelMatrixEvaluation,
-    PagePixelLayoutEvaluation,
+    PageToreEvaluation,
 )
 from docling_metrics_layout.tore.confusion_matrix_exporter import (
     ConfusionMatrixExporter,
@@ -145,7 +145,7 @@ class ToreLayoutEvaluator:
     def evaluate_sample(
         self,
         sample: LayoutMetricSample,
-    ) -> PagePixelLayoutEvaluation:
+    ) -> PageToreEvaluation:
         r"""
         Evaluation of a single page
         """
@@ -160,7 +160,7 @@ class ToreLayoutEvaluator:
             sample.page_resolution_a,
             sample.page_resolution_b,
         )
-        return PagePixelLayoutEvaluation(
+        return PageToreEvaluation(
             id=sample.id,
             num_pixels=page_pixels,
             matrix_evaluation=page_metrics,
@@ -168,13 +168,13 @@ class ToreLayoutEvaluator:
 
     def evaluate_dataset(
         self, samples: Iterable[LayoutMetricSample]
-    ) -> DatasetPixelLayoutEvaluation:
+    ) -> DatasetToreLayoutEvaluation:
         r""" """
         matrix_categories_ids: list[int] = list(self._matrix_id_to_name.keys())
         num_categories = len(matrix_categories_ids)
         ds_confusion_matrix = np.zeros((num_categories, num_categories))
         all_pages_evaluations: dict[
-            str, PagePixelLayoutEvaluation
+            str, PageToreEvaluation
         ] = {}  # Key is doc_id-page-no
         ds_num_pixels = 0
         pages_detailed_f1: list[
@@ -223,7 +223,7 @@ class ToreLayoutEvaluator:
                 )
                 ds_num_pixels += page_pixels
                 ds_confusion_matrix += page_confusion_matrix
-                page_evaluation = PagePixelLayoutEvaluation(
+                page_evaluation = PageToreEvaluation(
                     id=doc_page_id,
                     num_pixels=page_pixels,
                     matrix_evaluation=page_metrics,
@@ -244,7 +244,7 @@ class ToreLayoutEvaluator:
             self._matrix_id_to_name,
         )
 
-        ds_evaluation = DatasetPixelLayoutEvaluation(
+        ds_evaluation = DatasetToreLayoutEvaluation(
             evaluated_samples=evaluated_samples,
             num_pages=len(all_pages_evaluations),
             num_pixels=ds_num_pixels,
@@ -256,7 +256,7 @@ class ToreLayoutEvaluator:
 
     def export_evaluations(
         self,
-        ds_evaluation: DatasetPixelLayoutEvaluation,
+        ds_evaluation: DatasetToreLayoutEvaluation,
         save_root: Path,
         export_excel_reports: bool = True,
     ):

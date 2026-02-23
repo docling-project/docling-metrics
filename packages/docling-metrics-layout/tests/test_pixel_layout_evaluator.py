@@ -4,10 +4,10 @@ from pathlib import Path
 
 from docling_metrics_layout.layout_types import (
     BboxResolution,
-    DatasetPixelLayoutEvaluation,
+    DatasetToreLayoutEvaluation,
     LayoutMetricSample,
     MultiLabelMatrixEvaluation,
-    PagePixelLayoutEvaluation,
+    PageToreEvaluation,
 )
 from docling_metrics_layout.tore.tore_layout_evaluator import (
     ToreLayoutEvaluator,
@@ -63,7 +63,7 @@ def test_pixel_layout_evaluator():
     sample_result = evaluator.evaluate_sample(sample)
 
     # Verify sample result structure
-    assert isinstance(sample_result, PagePixelLayoutEvaluation), (
+    assert isinstance(sample_result, PageToreEvaluation), (
         "sample_result must be PagePixelLayoutEvaluation instance"
     )
     assert sample_result.id == test_data["id"], (
@@ -167,7 +167,7 @@ def test_pixel_layout_evaluator():
     dataset_result = evaluator.evaluate_dataset([sample])
 
     # Verify dataset result structure
-    assert isinstance(dataset_result, DatasetPixelLayoutEvaluation), (
+    assert isinstance(dataset_result, DatasetToreLayoutEvaluation), (
         "dataset_result must be DatasetPixelLayoutEvaluation instance"
     )
     assert dataset_result.num_pages == 1, (
@@ -193,7 +193,7 @@ def test_pixel_layout_evaluator():
         evaluator.export_evaluations(dataset_result_with_save, tmp_root)
 
         # Verify dataset result is created
-        assert isinstance(dataset_result_with_save, DatasetPixelLayoutEvaluation), (
+        assert isinstance(dataset_result_with_save, DatasetToreLayoutEvaluation), (
             "dataset_result_with_save must be DatasetPixelLayoutEvaluation instance"
         )
         assert dataset_result_with_save.num_pages == 1, (

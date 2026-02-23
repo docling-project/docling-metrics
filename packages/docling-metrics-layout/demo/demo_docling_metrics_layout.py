@@ -49,7 +49,7 @@ def demo():
     print(f"mAP per class: {map_eval.map_per_class}")
 
     # Pixel metrics — detailed MultiLabelMatrixMetrics
-    detailed = evaluation.dataset_pixel_layout_evaluation.matrix_evaluation.detailed
+    detailed = evaluation.dataset_tore_evaluation.matrix_evaluation.detailed
     print(f"\nPrecision matrix:\n{detailed.precision_matrix}")
     print(f"\nRecall matrix:\n{detailed.recall_matrix}")
 
