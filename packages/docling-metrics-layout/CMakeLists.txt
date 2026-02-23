@@ -16,7 +16,7 @@ add_compile_definitions(PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR})
 add_compile_definitions(PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 # Debug: Show make commands
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 ###########################################################################################
