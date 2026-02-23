@@ -19,8 +19,8 @@ from docling_metrics_layout.layout_types import (
 from docling_metrics_layout.map.map_layout_evaluator import (
     MAPLayoutEvaluator,
 )
-from docling_metrics_layout.pixel.pixel_layout_evaluator import (
-    PixelLayoutEvaluator,
+from docling_metrics_layout.tore.tore_layout_evaluator import (
+    ToreLayoutEvaluator,
 )
 
 _log = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class LayoutMetrics(BaseMetric):
         self._mode = mode
 
         # Evaluators
-        self._pixel_evaluator = PixelLayoutEvaluator(category_id_to_name, concurrency)
+        self._pixel_evaluator = ToreLayoutEvaluator(category_id_to_name, concurrency)
         self._map_evaluator = MAPLayoutEvaluator(category_id_to_name)
 
     def evaluate_sample(
@@ -109,7 +109,7 @@ class LayoutMetrics(BaseMetric):
                 ds_pixel_layout_evaluation, self._save_root
             )
             reports.append(
-                PixelLayoutEvaluator.evaluation_filenames(self._save_root)["excel"]
+                ToreLayoutEvaluator.evaluation_filenames(self._save_root)["excel"]
             )
 
         # Build return object

@@ -7,7 +7,7 @@ from docling_metrics_layout.layout_types import (
     LayoutMetricSample,
     MultiLabelMatrixEvaluation,
 )
-from docling_metrics_layout.pixel.multi_label_confusion_matrix import (
+from docling_metrics_layout.tore.multi_label_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
 

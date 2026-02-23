@@ -13,10 +13,10 @@ from docling_metrics_layout.layout_types import (
     MultiLabelMatrixEvaluation,
     PagePixelLayoutEvaluation,
 )
-from docling_metrics_layout.pixel.confusion_matrix_exporter import (
+from docling_metrics_layout.tore.confusion_matrix_exporter import (
     ConfusionMatrixExporter,
 )
-from docling_metrics_layout.pixel.multi_label_confusion_matrix import (
+from docling_metrics_layout.tore.multi_label_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
 
@@ -65,10 +65,9 @@ def evaluate_page(
     return id, page_pixels, page_metrics
 
 
-class PixelLayoutEvaluator:
+class ToreLayoutEvaluator:
     r"""
-    Evaluate the document layout by computing a pixel-level confusion matrix and derivative matrices
-    (precision, recall, f1).
+    TORE: Taxonomy-invariant Object Recognition Evaluation
     """
 
     def __init__(
@@ -267,7 +266,7 @@ class PixelLayoutEvaluator:
         save_root.mkdir(parents=True, exist_ok=True)
 
         # Get the evaluation filenames
-        eval_fns = PixelLayoutEvaluator.evaluation_filenames(save_root)
+        eval_fns = ToreLayoutEvaluator.evaluation_filenames(save_root)
 
         # # Save the dataset evaluation as a json
         # json_fn = eval_fns["json"]

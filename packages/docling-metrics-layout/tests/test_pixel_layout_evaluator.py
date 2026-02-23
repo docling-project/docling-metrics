@@ -9,8 +9,8 @@ from docling_metrics_layout.layout_types import (
     MultiLabelMatrixEvaluation,
     PagePixelLayoutEvaluation,
 )
-from docling_metrics_layout.pixel.pixel_layout_evaluator import (
-    PixelLayoutEvaluator,
+from docling_metrics_layout.tore.tore_layout_evaluator import (
+    ToreLayoutEvaluator,
 )
 
 # Get the directory of this test file
@@ -55,7 +55,7 @@ def test_pixel_layout_evaluator():
     )
 
     # Test 1: Initialize LayoutMetrics and evaluate single sample
-    evaluator = PixelLayoutEvaluator(
+    evaluator = ToreLayoutEvaluator(
         category_id_to_name=category_id_to_name,
         concurrency=4,
     )
@@ -201,6 +201,6 @@ def test_pixel_layout_evaluator():
         )
 
         # Verify the expected reports from PixelLayoutEvaluator
-        report_filenames = PixelLayoutEvaluator.evaluation_filenames(tmp_root)
+        report_filenames = ToreLayoutEvaluator.evaluation_filenames(tmp_root)
         excel_report_fn = report_filenames["excel"]
         assert excel_report_fn.is_file(), f"Missing report at {excel_report_fn}"
