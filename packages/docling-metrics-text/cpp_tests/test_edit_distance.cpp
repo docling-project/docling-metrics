@@ -111,9 +111,7 @@ void test_single_token_mismatch() {
 
 void test_long_sequence() {
   std::cout << "test_long_sequence\n";
-  // int num_tokens = 100000000;  // 100M tokens
-  // int num_tokens = 500000;  // 500k tokens
-  int num_tokens = 5;
+  int num_tokens = 100000; // 100k tokens
   int token_size = 20;
 
   // Generate input_a: num_tokens random strings of length token_size.
