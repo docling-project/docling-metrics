@@ -19,9 +19,9 @@ class Benchmarker:
     Benchmark layout evaluation runtime on a COCO-format dataset.
 
     Measures the runtime of each private _evaluate_xxx method of LayoutMetrics:
-      - _evaluate_pixel_sample  (per-sample)
+      - _evaluate_tore_sample  (per-sample)
       - _evaluate_map_sample    (per-sample)
-      - _evaluate_pixel_dataset (dataset-level)
+      - _evaluate_tore_dataset (dataset-level)
       - _evaluate_map_dataset   (dataset-level)
     """
 
@@ -59,24 +59,24 @@ class Benchmarker:
         if False:
             self._evaluate_individual_samples(samples, lm, report)
 
-        # Measure dataset-level pixel evaluation time
-        _log.info("Benchmarking pixel-layout metrics for the entire dataset...")
+        # Measure dataset-level TORE evaluation time
+        _log.info("Benchmarking TORE metrics for the entire dataset...")
         t0 = time.perf_counter()
-        pixel_dataset_eval = lm._evaluate_tore_dataset(samples)  # noqa: F841
-        pixel_dataset_ms = (time.perf_counter() - t0) * 1000
+        tore_dataset_eval = lm._evaluate_tore_dataset(samples)  # noqa: F841
+        tore_dataset_ms = (time.perf_counter() - t0) * 1000
         n = len(samples)
         report["dataset"]["size"] = n
-        report["dataset"]["pixel_dataset"] = {
-            "ms": pixel_dataset_ms,
-            "average_ms": pixel_dataset_ms / n if n else 0.0,
+        report["dataset"]["tore_dataset"] = {
+            "ms": tore_dataset_ms,
+            "average_ms": tore_dataset_ms / n if n else 0.0,
             # Debug: Disable dumping the full metrics
-            # "metrics": pixel_dataset_eval.model_dump(),
+            # "metrics": tore_dataset_eval.model_dump(),
         }
         _log.info(
-            "pixel_dataset: %.2fms for %d samples (%.4fms/sample)",
-            pixel_dataset_ms,
+            "tore_dataset: %.2fms for %d samples (%.4fms/sample)",
+            tore_dataset_ms,
             n,
-            pixel_dataset_ms / n if n else 0.0,
+            tore_dataset_ms / n if n else 0.0,
         )
 
         # Measure dataset-level mAP evaluation time
@@ -115,19 +115,19 @@ class Benchmarker:
 
         # Collect per-sample timing data
         timing_data: dict[str, list[float]] = {
-            "pixel_sample": [],
+            "tore_sample": [],
             "map_sample": [],
         }
         for sample in samples:
             id = sample.id
             sample_bench: dict[str, dict[str, float]] = {}
 
-            # Measure pixel sample evaluation time
+            # Measure TORE sample evaluation time
             t0 = time.perf_counter()
             lm._evaluate_tore_sample(sample)
-            pixel_sample_ms = (time.perf_counter() - t0) * 1000
-            sample_bench["pixel_sample"] = {"ms": pixel_sample_ms}
-            timing_data["pixel_sample"].append(pixel_sample_ms)
+            tore_sample_ms = (time.perf_counter() - t0) * 1000
+            sample_bench["tore_sample"] = {"ms": tore_sample_ms}
+            timing_data["tore_sample"].append(tore_sample_ms)
 
             # Measure mAP sample evaluation time
             t0 = time.perf_counter()
@@ -138,9 +138,9 @@ class Benchmarker:
 
             report["samples"][id] = sample_bench
             _log.info(
-                "%s | pixel_sample: %.2fms | map_sample: %.2fms",
+                "%s | tore_sample: %.2fms | map_sample: %.2fms",
                 id,
-                pixel_sample_ms,
+                tore_sample_ms,
                 map_sample_ms,
             )
 
@@ -199,7 +199,7 @@ def main():
         "--concurrency",
         type=int,
         default=4,
-        help="Number of concurrent workers for pixel evaluation (default: 4)",
+        help="Number of concurrent workers for TORE (default: 4)",
     )
     args = parser.parse_args()
 
