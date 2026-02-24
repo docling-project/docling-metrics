@@ -30,6 +30,7 @@ rm -rf "${BUILD_DIR}" "${EXTERNALS_DIR}"
 # Compile
 #
 cmake \
+    -G Ninja \
     -S . \
     -B "${BUILD_DIR}" \
     -DPython3_EXECUTABLE="${python_bin}" \

@@ -14,39 +14,8 @@ else()
     include(ExternalProject)
     include(CMakeParseArguments)
 
-    # Abseil GitHub
-    set(abseil_git_url https://github.com/abseil/abseil-cpp.git)
-    set(abseil_git_tag 20260107.0)
-    ExternalProject_Add(extlib_abseil_source
-        PREFIX extlib_abseil
-
-        UPDATE_COMMAND ""
-        GIT_REPOSITORY "${abseil_git_url}"
-        GIT_TAG "${abseil_git_tag}"
-
-        BUILD_ALWAYS OFF
-
-        INSTALL_DIR ${EXTERNALS_PREFIX_PATH}
-
-        # By default it builds static *.a files
-        # Add flag to switch into dynamic libraries -DBUILD_SHARED_LIBS=ON \\
-        CMAKE_ARGS \\
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \\
-        -DCMAKE_INSTALL_PREFIX=${EXTERNALS_PREFIX_PATH} \\
-        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR} \\
-        -DCMAKE_CXX_STANDARD=20
-
-        BUILD_IN_SOURCE ON
-        LOG_DOWNLOAD ON
-    )
-
-    # Collect all abseil libraries that will be built
-    add_library("${ext_name_abseil}" INTERFACE)
-    add_dependencies("${ext_name_abseil}" extlib_abseil_source)
-    target_include_directories(
-        "${ext_name_abseil}" INTERFACE
-        ${EXTERNALS_PREFIX_PATH}/include
-    )
+    # Collect all abseil libraries that will be built.
+    # Must be defined before ExternalProject_Add so the paths can be used in BUILD_BYPRODUCTS.
     set(abseil_libs
         libabsl_base.a
         libabsl_borrowed_fixup_buffer.a
@@ -145,6 +114,44 @@ else()
     foreach(abseil_lib ${abseil_libs})
         list(APPEND abseil_lib_paths "${EXTERNALS_LIB_PATH}/${abseil_lib}")
     endforeach()
+
+    # Abseil GitHub
+    set(abseil_git_url https://github.com/abseil/abseil-cpp.git)
+    set(abseil_git_tag 20260107.0)
+    ExternalProject_Add(extlib_abseil_source
+        PREFIX extlib_abseil
+
+        UPDATE_COMMAND ""
+        GIT_REPOSITORY "${abseil_git_url}"
+        GIT_TAG "${abseil_git_tag}"
+
+        BUILD_ALWAYS OFF
+
+        INSTALL_DIR ${EXTERNALS_PREFIX_PATH}
+
+        # By default it builds static *.a files
+        # Add flag to switch into dynamic libraries -DBUILD_SHARED_LIBS=ON \\
+        CMAKE_ARGS \\
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \\
+        -DCMAKE_INSTALL_PREFIX=${EXTERNALS_PREFIX_PATH} \\
+        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR} \\
+        -DCMAKE_CXX_STANDARD=20
+
+        BUILD_IN_SOURCE ON
+        LOG_DOWNLOAD ON
+
+        # Declare outputs so Ninja knows this ExternalProject produces the abseil static libs.
+        # Without BUILD_BYPRODUCTS, Ninja treats these paths as required inputs with no
+        # build rule and fails with "missing and no known rule to make it".
+        BUILD_BYPRODUCTS ${abseil_lib_paths}
+    )
+
+    add_library("${ext_name_abseil}" INTERFACE)
+    add_dependencies("${ext_name_abseil}" extlib_abseil_source)
+    target_include_directories(
+        "${ext_name_abseil}" INTERFACE
+        ${EXTERNALS_PREFIX_PATH}/include
+    )
 
     if(APPLE)
         find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)

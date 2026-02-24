@@ -42,6 +42,11 @@ else()
 
         BUILD_IN_SOURCE ON
         LOG_DOWNLOAD ON
+
+        # Declare the output so Ninja knows this ExternalProject produces libre2.a.
+        # Without BUILD_BYPRODUCTS, Ninja sees libre2.a as a required input with no
+        # build rule and fails with "missing and no known rule to make it".
+        BUILD_BYPRODUCTS ${EXTERNALS_LIB_PATH}/libre2.a
     )
 
     add_library("${ext_name_re2}" INTERFACE)
