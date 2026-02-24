@@ -14,6 +14,111 @@ else()
     include(ExternalProject)
     include(CMakeParseArguments)
 
+    # Collect all abseil base names (without platform-specific prefix/suffix).
+    # Must be defined before ExternalProject_Add so the paths can be used in BUILD_BYPRODUCTS.
+    # CMAKE_STATIC_LIBRARY_PREFIX/SUFFIX resolve to:
+    #   Linux/macOS: "lib" / ".a"  →  libabsl_base.a
+    #   Windows MSVC: ""   / ".lib" →  absl_base.lib
+    set(abseil_base_names
+        absl_base
+        absl_borrowed_fixup_buffer
+        absl_city
+        absl_civil_time
+        absl_cord_internal
+        absl_cord
+        absl_cordz_functions
+        absl_cordz_handle
+        absl_cordz_info
+        absl_cordz_sample_token
+        absl_crc_cord_state
+        absl_crc_cpu_detect
+        absl_crc_internal
+        absl_crc32c
+        absl_debugging_internal
+        absl_decode_rust_punycode
+        absl_demangle_internal
+        absl_demangle_rust
+        absl_die_if_null
+        absl_examine_stack
+        absl_exponential_biased
+        absl_failure_signal_handler
+        absl_flags_commandlineflag_internal
+        absl_flags_commandlineflag
+        absl_flags_config
+        absl_flags_internal
+        absl_flags_marshalling
+        absl_flags_parse
+        absl_flags_private_handle_accessor
+        absl_flags_program_name
+        absl_flags_reflection
+        absl_flags_usage_internal
+        absl_flags_usage
+        absl_generic_printer_internal
+        absl_graphcycles_internal
+        absl_hash
+        absl_hashtable_profiler
+        absl_hashtablez_sampler
+        absl_int128
+        absl_kernel_timeout_internal
+        absl_leak_check
+        absl_log_entry
+        absl_log_flags
+        absl_log_globals
+        absl_log_initialize
+        absl_log_internal_check_op
+        absl_log_internal_conditions
+        absl_log_internal_fnmatch
+        absl_log_internal_format
+        absl_log_internal_globals
+        absl_log_internal_log_sink_set
+        absl_log_internal_message
+        absl_log_internal_nullguard
+        absl_log_internal_proto
+        absl_log_internal_structured_proto
+        absl_log_severity
+        absl_log_sink
+        absl_malloc_internal
+        absl_periodic_sampler
+        absl_poison
+        absl_profile_builder
+        absl_random_distributions
+        absl_random_internal_distribution_test_util
+        absl_random_internal_entropy_pool
+        absl_random_internal_platform
+        absl_random_internal_randen_hwaes_impl
+        absl_random_internal_randen_hwaes
+        absl_random_internal_randen_slow
+        absl_random_internal_randen
+        absl_random_internal_seed_material
+        absl_random_seed_gen_exception
+        absl_random_seed_sequences
+        absl_raw_hash_set
+        absl_raw_logging_internal
+        absl_scoped_set_env
+        absl_spinlock_wait
+        absl_stacktrace
+        absl_status
+        absl_statusor
+        absl_str_format_internal
+        absl_strerror
+        absl_strings_internal
+        absl_strings
+        absl_symbolize
+        absl_synchronization
+        absl_throw_delegate
+        absl_time_zone
+        absl_time
+        absl_tracing_internal
+        absl_utf8_for_code_point
+        absl_vlog_config_internal
+    )
+
+    set(abseil_lib_paths "")
+    foreach(name ${abseil_base_names})
+        list(APPEND abseil_lib_paths
+            "${EXTERNALS_LIB_PATH}/${CMAKE_STATIC_LIBRARY_PREFIX}${name}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    endforeach()
+
     # Abseil GitHub
     set(abseil_git_url https://github.com/abseil/abseil-cpp.git)
     set(abseil_git_tag 20260107.0)
@@ -38,113 +143,19 @@ else()
 
         BUILD_IN_SOURCE ON
         LOG_DOWNLOAD ON
+
+        # Declare outputs so Ninja knows this ExternalProject produces the abseil static libs.
+        # Without BUILD_BYPRODUCTS, Ninja treats these paths as required inputs with no
+        # build rule and fails with "missing and no known rule to make it".
+        BUILD_BYPRODUCTS ${abseil_lib_paths}
     )
 
-    # Collect all abseil libraries that will be built
     add_library("${ext_name_abseil}" INTERFACE)
     add_dependencies("${ext_name_abseil}" extlib_abseil_source)
     target_include_directories(
         "${ext_name_abseil}" INTERFACE
         ${EXTERNALS_PREFIX_PATH}/include
     )
-    set(abseil_libs
-        libabsl_base.a
-        libabsl_borrowed_fixup_buffer.a
-        libabsl_city.a
-        libabsl_civil_time.a
-        libabsl_cord_internal.a
-        libabsl_cord.a
-        libabsl_cordz_functions.a
-        libabsl_cordz_handle.a
-        libabsl_cordz_info.a
-        libabsl_cordz_sample_token.a
-        libabsl_crc_cord_state.a
-        libabsl_crc_cpu_detect.a
-        libabsl_crc_internal.a
-        libabsl_crc32c.a
-        libabsl_debugging_internal.a
-        libabsl_decode_rust_punycode.a
-        libabsl_demangle_internal.a
-        libabsl_demangle_rust.a
-        libabsl_die_if_null.a
-        libabsl_examine_stack.a
-        libabsl_exponential_biased.a
-        libabsl_failure_signal_handler.a
-        libabsl_flags_commandlineflag_internal.a
-        libabsl_flags_commandlineflag.a
-        libabsl_flags_config.a
-        libabsl_flags_internal.a
-        libabsl_flags_marshalling.a
-        libabsl_flags_parse.a
-        libabsl_flags_private_handle_accessor.a
-        libabsl_flags_program_name.a
-        libabsl_flags_reflection.a
-        libabsl_flags_usage_internal.a
-        libabsl_flags_usage.a
-        libabsl_generic_printer_internal.a
-        libabsl_graphcycles_internal.a
-        libabsl_hash.a
-        libabsl_hashtable_profiler.a
-        libabsl_hashtablez_sampler.a
-        libabsl_int128.a
-        libabsl_kernel_timeout_internal.a
-        libabsl_leak_check.a
-        libabsl_log_entry.a
-        libabsl_log_flags.a
-        libabsl_log_globals.a
-        libabsl_log_initialize.a
-        libabsl_log_internal_check_op.a
-        libabsl_log_internal_conditions.a
-        libabsl_log_internal_fnmatch.a
-        libabsl_log_internal_format.a
-        libabsl_log_internal_globals.a
-        libabsl_log_internal_log_sink_set.a
-        libabsl_log_internal_message.a
-        libabsl_log_internal_nullguard.a
-        libabsl_log_internal_proto.a
-        libabsl_log_internal_structured_proto.a
-        libabsl_log_severity.a
-        libabsl_log_sink.a
-        libabsl_malloc_internal.a
-        libabsl_periodic_sampler.a
-        libabsl_poison.a
-        libabsl_profile_builder.a
-        libabsl_random_distributions.a
-        libabsl_random_internal_distribution_test_util.a
-        libabsl_random_internal_entropy_pool.a
-        libabsl_random_internal_platform.a
-        libabsl_random_internal_randen_hwaes_impl.a
-        libabsl_random_internal_randen_hwaes.a
-        libabsl_random_internal_randen_slow.a
-        libabsl_random_internal_randen.a
-        libabsl_random_internal_seed_material.a
-        libabsl_random_seed_gen_exception.a
-        libabsl_random_seed_sequences.a
-        libabsl_raw_hash_set.a
-        libabsl_raw_logging_internal.a
-        libabsl_scoped_set_env.a
-        libabsl_spinlock_wait.a
-        libabsl_stacktrace.a
-        libabsl_status.a
-        libabsl_statusor.a
-        libabsl_str_format_internal.a
-        libabsl_strerror.a
-        libabsl_strings_internal.a
-        libabsl_strings.a
-        libabsl_symbolize.a
-        libabsl_synchronization.a
-        libabsl_throw_delegate.a
-        libabsl_time_zone.a
-        libabsl_time.a
-        libabsl_tracing_internal.a
-        libabsl_utf8_for_code_point.a
-        libabsl_vlog_config_internal.a
-    )
-
-    set(abseil_lib_paths "")
-    foreach(abseil_lib ${abseil_libs})
-        list(APPEND abseil_lib_paths "${EXTERNALS_LIB_PATH}/${abseil_lib}")
-    endforeach()
 
     if(APPLE)
         find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
@@ -153,13 +164,23 @@ else()
             ${abseil_lib_paths}
             ${COREFOUNDATION_LIBRARY}
         )
+    elseif(WIN32)
+        # MSVC does not support -Wl,--start-group / --end-group; the MSVC linker
+        # handles static library ordering automatically.
+        target_link_libraries(
+            "${ext_name_abseil}" INTERFACE
+            ${abseil_lib_paths}
+        )
     else()
-        # Use linker group to handle circular dependencies between abseil static libs
+        # Use linker group to handle circular dependencies between abseil static libs.
+        # ${CMAKE_DL_LIBS} is required on Linux (glibc < 2.34) because libabsl_symbolize
+        # calls dladdr, which lives in libdl on those systems.
         target_link_libraries(
             "${ext_name_abseil}" INTERFACE
             -Wl,--start-group
             ${abseil_lib_paths}
             -Wl,--end-group
+            ${CMAKE_DL_LIBS}
         )
     endif()
 endif()

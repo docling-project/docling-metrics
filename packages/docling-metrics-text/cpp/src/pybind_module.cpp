@@ -11,7 +11,11 @@ PYBIND11_MODULE(docling_metrics_text_cpp, m) {
   m.doc() = "Text metrics module";
 
   pybind11::class_<TextManager>(m, "TextManager", "Manager for computing text metrics")
-      .def(py::init<>(), "Initialize a new TextManager instance")
+      .def(py::init<std::string>(), py::arg("level") = "info",
+           "Initialize a new TextManager instance\n\n"
+           "Args:\n"
+           "    level: Log level for the text manager. One of 'info', 'warning', 'error', "
+           "'fatal'. Defaults to 'info'")
       .def("tokenize", &TextManager::tokenize, py::arg("text"), py::arg("convert_parentheses"),
            "Tokenize text according to the Tree Bank Tokenizer\n\n"
            "Args:\n"

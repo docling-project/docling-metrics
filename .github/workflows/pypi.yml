@@ -44,7 +44,7 @@ jobs:
         with:
           enable-cache: true
       - name: Install dependencies
-        run: uv sync --frozen --all-extras --all-packages
+        run: uv sync --frozen --all-extras --all-packages -v
       - name: Build
         run: uv build --package ${{ needs.meta.outputs.package }}
       - name: Publish distribution 📦 to PyPI

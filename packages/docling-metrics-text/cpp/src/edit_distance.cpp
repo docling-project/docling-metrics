@@ -1,24 +1,30 @@
-#include "edit_distance.h"
-
 #include <algorithm>
 #include <cstdint>
+#include <iostream>
+#include <stdexcept>
 #include <unordered_map>
 #include <vector>
 
+#include "edit_distance.h"
+#include "loguru.hpp"
+#include "utils.h"
+
 namespace docling {
 
-using Word = uint64_t;
 constexpr int WORD_SIZE = sizeof(Word) * 8;
 constexpr Word WORD_1 = static_cast<Word>(1);
 constexpr Word HIGH_BIT = WORD_1 << (WORD_SIZE - 1);
 
-inline int ceil_div(int x, int y) { return x % y ? x / y + 1 : x / y; }
+EditDistanceCalculator::EditDistanceCalculator(bool memory_safe) : memory_safe_(memory_safe) {
+  system_gb_ = GetTotalSystemGB();
+}
 
 // Myers "Advance_Block": processes one block of one column.
-// Pv/Mv encode the vertical deltas, Eq is the match vector for the current
-// target token, hin is the horizontal delta entering from the block above.
+// Pv/Mv encode the vertical deltas, Eq is the match vector for the current target token,
+// hin is the horizontal delta entering from the block above.
 // Returns hout (+1, 0, or -1) propagated to the next block.
-inline int calculate_block(Word Pv, Word Mv, Word Eq, int hin, Word &PvOut, Word &MvOut) {
+int EditDistanceCalculator::calculate_block(Word Pv, // Element of Pv to read
+                                            Word Mv, Word Eq, int hin, Word &PvOut, Word &MvOut) {
   Word hinIsNeg = static_cast<Word>(hin >> 2) & WORD_1;
 
   Word Xv = Eq | Mv;
@@ -43,33 +49,37 @@ inline int calculate_block(Word Pv, Word Mv, Word Eq, int hin, Word &PvOut, Word
   return hout;
 }
 
-int edit_distance_raw(const std::vector<std::string> &query,
-                      const std::vector<std::string> &target) {
+int EditDistanceCalculator::edit_distance_raw(const std::vector<std::string> &query,
+                                              const std::vector<std::string> &target) {
   const int n = static_cast<int>(query.size());
   const int m = static_cast<int>(target.size());
 
-  if (n == 0)
+  if (n == 0) {
     return m;
-  if (m == 0)
+  }
+  if (m == 0) {
     return n;
+  }
 
   // --- Map tokens to contiguous integer indices ---
   std::unordered_map<std::string, int> token_map;
   int next_id = 0;
 
-  std::vector<int> q_idx(n);
+  std::vector<int> q_idx(n); // vector with indices in the token_map
   for (int i = 0; i < n; i++) {
     auto [it, inserted] = token_map.try_emplace(query[i], next_id);
-    if (inserted)
+    if (inserted) {
       next_id++;
+    }
     q_idx[i] = it->second;
   }
 
-  std::vector<int> t_idx(m);
+  std::vector<int> t_idx(m); // vector with indices in the token_map
   for (int i = 0; i < m; i++) {
     auto [it, inserted] = token_map.try_emplace(target[i], next_id);
-    if (inserted)
+    if (inserted) {
       next_id++;
+    }
     t_idx[i] = it->second;
   }
 
@@ -78,6 +88,20 @@ int edit_distance_raw(const std::vector<std::string> &query,
   // Tokens that only appear in the target get all-zero rows (no matches), which is the default.
   const int num_blocks = ceil_div(n, WORD_SIZE);
   const int W = num_blocks * WORD_SIZE - n; // padding bits in the last block
+  // std::cout << "n=" << n << ", m=" << m << "\n";
+  // std::cout << "num_blocks=" << num_blocks << "\n";
+  // std::cout << "WORD_SIZE=" << WORD_SIZE << "\n";
+  // std::cout << "W=" << W << "\n";
+  // std::cout << "token_map.size()=" << token_map.size() << ", next_id=" << next_id << "\n";
+
+  // Initialize the dynamic matrix
+  // Dimension: size-of-token_map x num-of-blocks
+  bool mem_ok = sanity_checks(next_id, num_blocks);
+  if (!mem_ok) {
+    if (memory_safe_) {
+      throw std::runtime_error("Insufficient system memory for Peq table; Aborting.");
+    }
+  }
 
   std::vector<std::vector<Word>> Peq(next_id, std::vector<Word>(num_blocks, 0));
   for (int i = 0; i < n; i++) {
@@ -94,8 +118,8 @@ int edit_distance_raw(const std::vector<std::string> &query,
 
   // --- Process each target token ---
   for (int j = 0; j < m; j++) {
-    const auto &eq = Peq[t_idx[j]];
-    int hin = 1; // NW: gap before query is penalised
+    const std::vector<Word> &eq = Peq[t_idx[j]]; // The Peq vector corresponding to the target token
+    int hin = 1;                                 // NW: gap before query is penalised
 
     for (int b = 0; b < num_blocks; b++) {
       hin = calculate_block(Pv[b], Mv[b], eq[b], hin, Pv[b], Mv[b]);
@@ -109,22 +133,36 @@ int edit_distance_raw(const std::vector<std::string> &query,
   int score = scores[num_blocks - 1];
   Word mask = HIGH_BIT;
   for (int i = 0; i < W; i++) {
-    if (Pv[num_blocks - 1] & mask)
+    if (Pv[num_blocks - 1] & mask) {
       score--;
-    if (Mv[num_blocks - 1] & mask)
+    }
+    if (Mv[num_blocks - 1] & mask) {
       score++;
+    }
     mask >>= 1;
   }
 
   return score;
 }
 
-double edit_distance(const std::vector<std::string> &query,
-                     const std::vector<std::string> &target) {
+double EditDistanceCalculator::edit_distance(const std::vector<std::string> &query,
+                                             const std::vector<std::string> &target) {
   const int max_len = std::max(static_cast<int>(query.size()), static_cast<int>(target.size()));
-  if (max_len == 0)
+  if (max_len == 0) {
     return 0.0;
+  }
   return static_cast<double>(edit_distance_raw(query, target)) / max_len;
+}
+
+bool EditDistanceCalculator::sanity_checks(size_t token_map_size, size_t num_of_blocks) {
+  // Total size (bytes): size-of-token_map x num-of-blocks x 8
+  const size_t peq_bytes = token_map_size * num_of_blocks * sizeof(Word);
+  const uint64_t peq_gb = peq_bytes / kBytesPerGB;
+  bool mem_ok = peq_gb < system_gb_;
+  if (!mem_ok) {
+    LOG_F(WARNING, "Peq table will exceed available system RAM(GB) (%lu/%lu)", peq_gb, system_gb_);
+  }
+  return mem_ok;
 }
 
 } // namespace docling

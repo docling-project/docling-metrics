@@ -17,6 +17,7 @@ else()
     # Re2 GitHub
     set(re_git_url https://github.com/google/re2.git)
     set(re_git_tag 2025-11-05)
+    set(re2_lib "${EXTERNALS_LIB_PATH}/${CMAKE_STATIC_LIBRARY_PREFIX}re2${CMAKE_STATIC_LIBRARY_SUFFIX}")
     ExternalProject_Add(extlib_re2_source
         # Add dependency on abseil to ensure that the source code of Abseil builds first
         DEPENDS extlib_abseil_source
@@ -42,6 +43,11 @@ else()
 
         BUILD_IN_SOURCE ON
         LOG_DOWNLOAD ON
+
+        # Declare the output so Ninja knows this ExternalProject produces the re2 static lib.
+        # Without BUILD_BYPRODUCTS, Ninja sees the lib as a required input with no
+        # build rule and fails with "missing and no known rule to make it".
+        BUILD_BYPRODUCTS ${re2_lib}
     )
 
     add_library("${ext_name_re2}" INTERFACE)
@@ -53,7 +59,7 @@ else()
     )
     target_link_libraries(
         "${ext_name_re2}" INTERFACE
-        ${EXTERNALS_LIB_PATH}/libre2.a
+        ${re2_lib}
         "${ext_name_abseil}"
     )
 endif()
