@@ -27,8 +27,10 @@ dev = [
     # Workspace members — ensures `uv sync` installs all packages
     "docling-metrics-core",
     "docling-metrics-hello-world",
+    "docling-metrics-layout",
     "docling-metrics-table",
     "docling-metrics-hello-world-cpp",
+    "docling-metrics-text",
 ]
 build = [
     "cibuildwheel>=2.19",
@@ -38,6 +40,7 @@ build = [
 [tool.uv.sources]
 docling-metrics-core = { workspace = true }
 docling-metrics-hello-world = { workspace = true }
+docling-metrics-layout = { workspace = true }
 docling-metrics-table = { workspace = true }
 docling-metrics-hello-world-cpp = { workspace = true }
 docling-metrics-text = { workspace = true }
@@ -57,6 +60,10 @@ exclude = [
 
 ignore_missing_imports = true
 follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = ["docling_metrics_layout.*"]
+disable_error_code = ["var-annotated"]
 
 [tool.ruff]
 target-version = "py310"
@@ -88,6 +95,11 @@ ignore = [
     "F811", # "redefinition of the same function"
     "PL", # Pylint
     "RUF012", # Mutable Class Attributes
+
+    #
+    "PD901",  # Allow generic DataFrame variable name `df`
+    "C901",   # Allow complex functions
+    "RUF005", # Allow list concatenation
 ]
 
 [tool.ruff.lint.pep8-naming]
