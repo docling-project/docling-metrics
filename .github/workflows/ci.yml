@@ -24,3 +24,8 @@ jobs:
     uses: ./.github/workflows/wheels.yml
     with:
       package: docling-metrics-table
+  build-wheels-text:
+    if: ${{ github.event_name == 'push' || (github.event.pull_request.head.repo.full_name != 'docling-project/docling-metrics') }}
+    uses: ./.github/workflows/wheels.yml
+    with:
+      package: docling-metrics-text

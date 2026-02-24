@@ -8,6 +8,7 @@ from statistics import mean, median
 from typing import Any
 
 from docling_metrics_text import TextMetrics
+from docling_metrics_text.docling_metrics_text import TextMetricsMode
 from docling_metrics_text.utils.data_loader import FileEntry, TextFileLoader
 
 _log = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ class Benchmarker:
     ):
         r""" """
         loader = TextFileLoader(data_root)
-        mc = TextMetrics()
+        mc = TextMetrics(mode=TextMetricsMode.CPP)
 
         report: dict[str, dict[str, Any]] = {
             "stats": {},

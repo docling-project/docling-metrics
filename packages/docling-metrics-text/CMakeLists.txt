@@ -16,7 +16,7 @@ add_compile_definitions(PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR})
 add_compile_definitions(PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 # Debug: Show make commands
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 ###########################################################################################
@@ -125,7 +125,7 @@ message(STATUS "Include dirs: ${text_include_dirs_str}")
 
 # List of source files that are not the CLI or the python bindings
 file(GLOB_RECURSE text_sources "cpp/[!_]*.cpp")
-file(GLOB_RECURSE text_sources_EXCLUSIONS "cpp/src/main.cpp" "cpp/src/pybind_module.cpp")
+file(GLOB_RECURSE text_sources_EXCLUSIONS "cpp/src/pybind_module.cpp")
 list(REMOVE_ITEM text_sources ${text_sources_EXCLUSIONS})
 message(STATUS "Source files: ${text_sources}")
 
@@ -155,11 +155,10 @@ if(NOT USE_SYSTEM_DEPS)
 endif()
 
 # Include external dependencies
-include(cmake/extlib_cxxopts.cmake)
+# include(cmake/extlib_cxxopts.cmake)
 include(cmake/extlib_loguru.cmake)
 include(cmake/extlib_abseil.cmake)
 include(cmake/extlib_re2.cmake)
-# include(cmake/extlib_edlib.cmake)
 
 # Use the Python from the python venv
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
@@ -188,7 +187,7 @@ message(STATUS "PyBind11 libs: ${pybind11_LIBRARIES}")
 set(dependencies
     text_interface
     "${ext_name_loguru}"
-    "${ext_name_cxxopts}"
+    # "${ext_name_cxxopts}"
     "${ext_name_re2}"
 )
 
@@ -205,14 +204,14 @@ target_link_libraries(text_objects PUBLIC ${dependencies})
 #
 
 # Compile CLI
-add_executable("${cli_name}" "cpp/src/main.cpp")
-add_dependencies("${cli_name}" ${dependencies})
-target_link_libraries(
-    "${cli_name}" PUBLIC
-    text_objects
-    ${dependencies}
-    ${CMAKE_DL_LIBS}
-)
+# add_executable("${cli_name}" "cpp/src/main.cpp")
+# add_dependencies("${cli_name}" ${dependencies})
+# target_link_libraries(
+#     "${cli_name}" PUBLIC
+#     text_objects
+#     ${dependencies}
+#     ${CMAKE_DL_LIBS}
+# )
 
 
 ###########################################################################################
@@ -236,7 +235,7 @@ target_link_libraries(
 #
 
 # CLI
-install(TARGETS "${cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
+# install(TARGETS "${cli_name}" RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 # Python bindings
 install(TARGETS "${project_name}" LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}")

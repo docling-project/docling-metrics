@@ -31,6 +31,7 @@ rm -rf "${BUILD_DIR}" "${EXTERNALS_DIR}"
 #
 
 # cmake \
+#     -G Ninja \
 #     -S . \
 #     -B "${BUILD_DIR}" \
 #     -DPython3_EXECUTABLE="${python_bin}" \
@@ -39,6 +40,7 @@ rm -rf "${BUILD_DIR}" "${EXTERNALS_DIR}"
 #     -DUSE_SYSTEM_DEPS=ON
 
 cmake \
+    -G Ninja \
     -S . \
     -B "${BUILD_DIR}" \
     -DPython3_EXECUTABLE="${python_bin}" \

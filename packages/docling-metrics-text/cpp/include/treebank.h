@@ -8,10 +8,20 @@
 
 namespace docling {
 
+/**
+ * Tokenizer based on the Tree Bank tokenization rules.
+ */
 class TreeBankTokenizer {
 public:
   TreeBankTokenizer();
 
+  /**
+   * Tokenize the input text.
+   *
+   * @param text                The input text to tokenize.
+   * @param convert_parentheses When true, convert parentheses to PTB bracket tokens.
+   * @return                    List of tokens.
+   */
   std::vector<std::string> tokenize(const std::string &text, bool convert_parentheses = false);
 
 private:

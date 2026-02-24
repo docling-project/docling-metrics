@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -108,14 +109,51 @@ void test_single_token_mismatch() {
   std::cout << "  OK!\n";
 }
 
-void test_longer_sequence() {
+void test_long_sequence() {
+  std::cout << "test_long_sequence\n";
+  int num_tokens = 100000; // 100k tokens
+  int token_size = 20;
+
+  // Generate input_a: num_tokens random strings of length token_size.
+  std::mt19937 rng(42);
+  std::uniform_int_distribution<int> char_dist('a', 'z');
+
+  std::cout << "Generating input sequence A";
+  std::cout << " (num_tokens=" << num_tokens << ", token_size=" << token_size << ") ...\n";
+  std::vector<std::string> input_a;
+  input_a.reserve(num_tokens);
+  for (int i = 0; i < num_tokens; ++i) {
+    std::string token(token_size, ' ');
+    for (int j = 0; j < token_size; ++j) {
+      token[j] = static_cast<char>(char_dist(rng));
+    }
+    input_a.push_back(std::move(token));
+  }
+  std::cout << "Input sequence A ready\n";
+
+  // Compute edit distance for input_a vs input_a. Should be 0.
   docling::TextManager tm;
-  std::vector<std::string> a = {"the", "quick", "brown", "fox", "jumps"};
-  std::vector<std::string> b = {"the", "slow", "brown", "fox", "sits"};
-  double dist = tm.edit_distance(a, b);
-  // 2 substitutions (quick->slow, jumps->sits), edit distance = 2, max len = 5
-  std::cout << "test_longer_sequence: dist=" << dist << "\n";
-  assert_near(dist, 2.0 / 5.0, 1e-9, "longer sequence");
+  double dist_same = tm.edit_distance(input_a, input_a);
+  std::cout << "test_long_sequence (same): dist=" << dist_same << "\n";
+  assert_near(dist_same, 0.0, 1e-9, "long sequence identical");
+  std::cout << "  OK!\n";
+
+  // Generate input_b by altering the first character of each token in input_a.
+  // This ensures every token in input_b differs from the corresponding token in input_a.
+  std::cout << "Generating input sequence B ...\n";
+  std::vector<std::string> input_b = input_a;
+  for (int i = 0; i < num_tokens; ++i) {
+    char c = input_b[i][0];
+    input_b[i][0] = (c == 'z') ? 'a' : c + 1;
+  }
+  std::cout << "Input sequence A ready\n";
+
+  // All tokens in input_a and input_b are unique random strings, so no token
+  // from input_b matches any token in input_a. Edit distance = num_tokens,
+  // normalized = num_tokens / max(num_tokens, num_tokens) = 1.0.
+  double dist_diff = tm.edit_distance(input_a, input_b);
+  std::cout << "test_long_sequence (different): dist=" << dist_diff << "\n";
+  assert_near(dist_diff, 1.0, 1e-9, "long sequence all different");
   std::cout << "  OK!\n";
 }
 
@@ -129,7 +167,7 @@ int main(int argc, char *argv[]) {
   test_empty_one();
   test_single_token_match();
   test_single_token_mismatch();
-  test_longer_sequence();
+  test_long_sequence();
 
   std::cout << "\nAll edit_distance tests passed!\n";
   return 0;

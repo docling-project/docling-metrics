@@ -37,19 +37,19 @@ repository = "https://github.com/docling-project/docling-metrics"
 issues = "https://github.com/docling-project/docling-metrics/issues"
 
 # C++ build (temporarily disabled)
-# [build-system]
-# requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
-# build-backend = "scikit_build_core.build"
-#
-# [tool.scikit-build]
-# wheel.packages = ["docling_metric_text"]
-
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+build-backend = "scikit_build_core.build"
 
-[tool.hatch.build.targets.wheel]
-packages = ["docling_metrics_text"]
+[tool.scikit-build]
+wheel.packages = ["docling_metrics_text"]
+
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"
+# 
+# [tool.hatch.build.targets.wheel]
+# packages = ["docling_metrics_text"]
 
 [tool.uv]
 package = true
