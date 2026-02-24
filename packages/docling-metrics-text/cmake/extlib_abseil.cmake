@@ -161,12 +161,15 @@ else()
             ${COREFOUNDATION_LIBRARY}
         )
     else()
-        # Use linker group to handle circular dependencies between abseil static libs
+        # Use linker group to handle circular dependencies between abseil static libs.
+        # ${CMAKE_DL_LIBS} is required on Linux (glibc < 2.34) because libabsl_symbolize
+        # calls dladdr, which lives in libdl on those systems.
         target_link_libraries(
             "${ext_name_abseil}" INTERFACE
             -Wl,--start-group
             ${abseil_lib_paths}
             -Wl,--end-group
+            ${CMAKE_DL_LIBS}
         )
     endif()
 endif()
