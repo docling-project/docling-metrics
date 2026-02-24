@@ -30,15 +30,8 @@ rm -rf "${BUILD_DIR}" "${EXTERNALS_DIR}"
 # Compile
 #
 
-# cmake \
-#     -S . \
-#     -B "${BUILD_DIR}" \
-#     -DPython3_EXECUTABLE="${python_bin}" \
-#     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-#     -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-#     -DUSE_SYSTEM_DEPS=ON
-
 cmake \
+    -G Ninja \
     -S . \
     -B "${BUILD_DIR}" \
     -DPython3_EXECUTABLE="${python_bin}" \
