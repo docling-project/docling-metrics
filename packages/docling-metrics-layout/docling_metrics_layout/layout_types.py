@@ -1,0 +1,152 @@
+from pathlib import Path
+from typing import Any, Optional
+
+import numpy as np
+from docling_metrics_core.base_types import (
+    BaseAggregateResult,
+    BaseInputSample,
+    BaseSampleResult,
+)
+from pydantic import BaseModel, model_serializer, model_validator
+
+
+class DatasetStatistics(BaseModel):
+    total: int
+
+    mean: float
+    median: float
+    std: float
+
+    bins: list[float]
+    hist: list[float]
+
+    @model_validator(mode="after")
+    def check_bins_and_hist_lengths(self):
+        if len(self.bins) != len(self.hist) + 1:
+            raise ValueError("`bins` must have exactly one more element than `hist`.")
+        return self
+
+
+class BboxResolution(BaseModel):
+    r"""Single bbox resolution"""
+
+    category_id: int
+
+    # bbox coords: (x1, y1, x2, y2) with the origin(0, 0) at the top, left corner, no normalization
+    bbox: list[float]
+    score: Optional[float] = None
+
+
+class MultiLabelMatrixAggMetrics(BaseModel):
+    classes_precision: dict[str, float]
+    classes_recall: dict[str, float]
+    classes_f1: dict[str, float]
+
+    classes_precision_mean: float
+    classes_recall_mean: float
+    classes_f1_mean: float
+
+
+class MultiLabelMatrixMetrics(BaseModel):
+    model_config = {"arbitrary_types_allowed": True}
+
+    class_names: dict[int, str]
+    confusion_matrix: np.ndarray
+    precision_matrix: np.ndarray
+    recall_matrix: np.ndarray
+    f1_matrix: np.ndarray
+
+    agg_metrics: MultiLabelMatrixAggMetrics
+
+    @model_serializer(mode="wrap")
+    def serialize_model(self, serializer: Any) -> dict:
+        data = serializer(self)
+        for field_name, field_value in self.__dict__.items():
+            if isinstance(field_value, np.ndarray):
+                data[field_name] = field_value.tolist()
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def deserialize_arrays(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            array_fields = [
+                "confusion_matrix",
+                "precision_matrix",
+                "recall_matrix",
+                "f1_matrix",
+            ]
+            for field_name in array_fields:
+                if field_name in data:
+                    data[field_name] = np.asarray(data[field_name])
+        return data
+
+
+class MultiLabelMatrixEvaluation(BaseModel):
+    detailed: MultiLabelMatrixMetrics  # All classes included
+    collapsed: MultiLabelMatrixMetrics  # Only the background the other classes summed up together
+
+
+class PageToreEvaluation(BaseModel):
+    id: str
+    num_pixels: int
+    matrix_evaluation: MultiLabelMatrixEvaluation
+
+
+class DatasetToreLayoutEvaluation(BaseModel):
+    num_pages: int
+    num_pixels: int
+    matrix_evaluation: MultiLabelMatrixEvaluation
+    page_evaluations: dict[str, PageToreEvaluation]
+
+
+class MAPMetrics(BaseModel):
+    map: float
+    map_50: float
+    map_75: float
+    map_large: float
+    map_medium: float
+    map_per_class: dict[str, float]
+    map_small: float
+    mar_1: float
+    mar_10: float
+    mar_100: float
+    mar_100_per_class: dict[str, float]
+    mar_large: float
+    mar_medium: float
+    mar_small: float
+
+
+class MAPPageLayoutEvaluation(MAPMetrics):
+    id: str
+
+
+class MAPDatasetLayoutEvaluation(MAPMetrics):
+    page_evaluations: dict[str, MAPPageLayoutEvaluation]
+
+    # Statistics across the corresponding mAP metrics across all dataset pages
+    map_stats: DatasetStatistics
+    map_50_stats: DatasetStatistics
+    map_75_stats: DatasetStatistics
+
+
+class LayoutMetricSample(BaseInputSample):
+    page_width: int
+    page_height: int
+    page_resolution_a: list[BboxResolution]
+    page_resolution_b: list[BboxResolution]
+
+
+class LayoutMetricSampleEvaluation(BaseSampleResult):
+    r"""Layout evaluation for one page"""
+
+    page_tore_evaluation: PageToreEvaluation
+    page_map_layout_evaluation: MAPPageLayoutEvaluation
+
+
+class LayoutMetricDatasetEvaluation(BaseAggregateResult):
+    r"""Layout evaluation for the entire dataset"""
+
+    dataset_tore_evaluation: DatasetToreLayoutEvaluation
+    dataset_map_layout_evaluation: MAPDatasetLayoutEvaluation
+    reports: Optional[list[Path]] = None

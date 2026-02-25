@@ -444,3 +444,6 @@ pip-selfcheck.json
 # AI tools
 **/.bob/
 
+# Utility scripts
+**/create_venv.sh
+

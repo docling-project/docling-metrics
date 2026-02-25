@@ -1,6 +1,6 @@
 [project]
-name = "docling-metrics-text"
-version = "0.8.0" # DO NOT EDIT, updated automatically
+name = "docling-metrics-layout"
+version = "0.2.0" # DO NOT EDIT, updated automatically
 description = "Text metrics"
 license = "MIT"
 keywords = ["docling", "metrics", "evaluation", "example", "text", "BLEU, edit-distance, METEOR, precision, recall, f1", "cpp"]
@@ -25,10 +25,14 @@ dependencies = [
     "docling-metrics-core>=0.0.1",
     # "pybind11",  # C++ build (temporarily disabled)
     "pydantic",
-
-    # Metrics used in the benchmarks
-    'evaluate (>=0.4.3,<0.5.0)',
-    'nltk (>=3.9.1,<4.0.0)',
+    "numpy",
+    "matplotlib",
+    "pandas",
+    "openpyxl",
+    "torch",
+    "torchmetrics[detection]",
+    "faster-coco-eval",
+    "tqdm",
 ]
 
 [project.urls]
@@ -37,19 +41,19 @@ repository = "https://github.com/docling-project/docling-metrics"
 issues = "https://github.com/docling-project/docling-metrics/issues"
 
 # C++ build (temporarily disabled)
-[build-system]
-requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
-build-backend = "scikit_build_core.build"
-
-[tool.scikit-build]
-wheel.packages = ["docling_metrics_text"]
-
 # [build-system]
-# requires = ["hatchling"]
-# build-backend = "hatchling.build"
-# 
-# [tool.hatch.build.targets.wheel]
-# packages = ["docling_metrics_text"]
+# requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+# build-backend = "scikit_build_core.build"
+#
+# [tool.scikit-build]
+# wheel.packages = ["docling_metric_text"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["docling_metrics_layout"]
 
 [tool.uv]
 package = true

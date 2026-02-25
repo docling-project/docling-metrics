@@ -1,20 +1,18 @@
-# Docling metric for the Tree-Edit-Distance Score
+# Docling metrics for document tables
 
-This is an optimized implementation of the Tree Edit Distance Score.
+Docling metrics for document tables.
 
 
 ## Overview
 
-Main features:
+The following metrics are used:
 
-- Python bindings.
-- Docling API.
-
-This repo builds on top of the [tree-similarity](https://github.com/DatabaseGroup/tree-similarity)
+- Tree Edit Distance.
+- GriTS (coming).
 
 
-## Directory structure
-
+<details>
+    <summary>**Directory structure:**</summary>
 Before building the C++ code, we have only the source code directories:
 
 ```
@@ -41,6 +39,8 @@ After building the C++ code we have the following directories:
 └── tests
 
 ```
+</details>
+
 
 ## Installation
 
@@ -71,6 +71,9 @@ devtools/test_cpp.sh
 
 ## Usage
 
+<!-- Check the [demo code](demo/demo_docling_metrics_table.py) -->
+
+
 ```python
 from docling_metrics_table import (
     TableMetric,
@@ -78,7 +81,6 @@ from docling_metrics_table import (
     TableMetricHTMLInputSample,
     TableMetricSampleEvaluation,
 )
-
 
 # Input sample in bracket notation
 bracket_sample = TableMetricBracketInputSample(
@@ -95,7 +97,7 @@ print(f"TEDS with bracket input: {bracket_sample_evaluation}")
 
 
 # Input sample in HTML notation
-html_a= r"""
+html_a = r"""
 <table>
     <tr>
         <td colspan="2">This cell spans two columns with some dummy text</td>

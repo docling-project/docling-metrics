@@ -1,31 +1,3 @@
-# Docling metrics for text
-
-Docling metrics for text.
-
-
-## Overview
-
-The following metrics are used:
-
-- BLEU
-- edit-distance
-- METEOR
-- Precision
-- Recall
-- F1
-
-
-## Installation
-
-```bash
-uv sync --all-packages
-```
-
-## Usage
-
-<!-- Check the [demo code](demo/demo_docling_metrics_layout.py) -->
-
-```python
 from docling_metrics_text import (
     TextMetrics,
     TextPairEvaluation,
@@ -53,9 +25,3 @@ sample_2 = TextPairSample(
 
 evaluation_2: TextPairEvaluation = text_metrics.evaluate_sample(sample_2)
 print(f"Sample 2 - Different texts:\n{evaluation_2}\n")
-```
-
-
-## License
-
-MIT

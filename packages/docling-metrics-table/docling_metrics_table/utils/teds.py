@@ -58,7 +58,7 @@ class TableTree(Tree):
         return "{{{}}}".format(result)
 
     @staticmethod
-    def from_bracket(bracket_str):  # noqa
+    def from_bracket(bracket_str):
         """Parse tree from bracket notation string
 
         Args:
@@ -71,7 +71,7 @@ class TableTree(Tree):
         import ast
         import re
 
-        def parse_node(s, pos):  # noqa
+        def parse_node(s, pos):
             """Recursively parse a node from bracket notation
 
             Args:

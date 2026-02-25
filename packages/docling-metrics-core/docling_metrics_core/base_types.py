@@ -48,7 +48,7 @@ class BaseMetric(ABC):
 
     @abstractmethod
     def evaluate_dataset(
-        self, sample_pairs: Iterable[BaseInputSample]
+        self, samples: Iterable[BaseInputSample]
     ) -> BaseAggregateResult:
         """Evaluate an entire dataset."""
         ...
