@@ -1,6 +1,6 @@
 [project]
 name = "docling-metrics-layout"
-version = "0.2.0" # DO NOT EDIT, updated automatically
+version = "0.9.0" # DO NOT EDIT, updated automatically
 description = "Text metrics"
 license = "MIT"
 keywords = ["docling", "metrics", "evaluation", "example", "text", "BLEU, edit-distance, METEOR, precision, recall, f1", "cpp"]
