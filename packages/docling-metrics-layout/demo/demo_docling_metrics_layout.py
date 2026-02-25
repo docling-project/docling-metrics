@@ -45,13 +45,13 @@ def demo():
 
     # mAP metrics
     map_eval = evaluation.dataset_map_layout_evaluation
-    print(f"\nmAP:           {map_eval.map:.4f}")
+    print(f"\nmAP:         {map_eval.map:.4f}")
     print(f"mAP per class: {map_eval.map_per_class}")
 
-    # Pixel metrics — detailed MultiLabelMatrixMetrics
-    detailed = evaluation.dataset_tore_evaluation.matrix_evaluation.detailed
-    print(f"\nPrecision matrix:\n{detailed.precision_matrix}")
-    print(f"\nRecall matrix:\n{detailed.recall_matrix}")
+    # TORE metrics
+    tore_matrix = evaluation.dataset_tore_evaluation.matrix_evaluation.detailed
+    print(f"\nPrecision matrix:\n{tore_matrix.precision_matrix}")
+    print(f"\nRecall matrix:\n{tore_matrix.recall_matrix}")
 
     # Report files
     print("\nReport files:")
