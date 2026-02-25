@@ -11,6 +11,7 @@ on:
           - docling-metrics-core
           - docling-metrics-hello-world
           - docling-metrics-hello-world-cpp
+          - docling-metrics-layout
           - docling-metrics-table
           - docling-metrics-text
 
