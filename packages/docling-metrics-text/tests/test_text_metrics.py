@@ -58,5 +58,29 @@ def test_text_metrics():
             )
 
 
+def test_extreme_cases():
+    r"""Test TextMetrics behavior when scores cannot be computed."""
+    # Test Case 1: Empty text_b with default error_score
+    metrics_calculator = TextMetrics()
+    sample = TextPairSample(id="0", text_a="some text", text_b="")
+    result = metrics_calculator.evaluate_sample(sample)
+
+    # print(f"Default error: {result}")
+    assert result.f1_score == -1.0
+    assert result.precision_score == -1.0
+    assert result.bleu_score == -1.0
+
+    # Test Case 2: Custom error_score
+    metrics_calculator_custom = TextMetrics(error_score=-2.0)
+    sample = TextPairSample(id="1", text_a="some text", text_b="")
+    result = metrics_calculator_custom.evaluate_sample(sample)
+    # print(f"Custom error: {result}")
+
+    assert result.f1_score == -2.0
+    assert result.precision_score == -2.0
+    assert result.bleu_score == -2.0
+
+
 if __name__ == "__main__":
     test_text_metrics()
+    test_extreme_cases()
