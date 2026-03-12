@@ -44,9 +44,13 @@ class TextMetrics(BaseMetric):
     Various text metrics
     """
 
-    def __init__(self, mode: TextMetricsMode = TextMetricsMode.CPP) -> None:
+    def __init__(
+        self, mode: TextMetricsMode = TextMetricsMode.CPP, error_score: float = -1
+    ) -> None:
         r""" """
-        self._error_score = -1.0  # Returned value in case the score cannot be computed
+        self._error_score = (
+            error_score  # Returned value in case the score cannot be computed
+        )
         self._mode = mode
 
         # Download the NLTK data
@@ -133,8 +137,11 @@ class TextMetrics(BaseMetric):
         Returns:
             F1 score, or self._error_score if computation fails
         """
-        score = f_measure(tokens_a_set, tokens_b_set)
-        return self._error_score if score is None else score
+        try:
+            score = f_measure(tokens_a_set, tokens_b_set)
+            return self._error_score if score is None else score
+        except Exception:
+            return self._error_score
 
     def _compute_precision(
         self, tokens_a_set: set[str], tokens_b_set: set[str]
@@ -149,8 +156,11 @@ class TextMetrics(BaseMetric):
         Returns:
             Precision score, or self._error_score if computation fails
         """
-        score = precision(tokens_a_set, tokens_b_set)
-        return self._error_score if score is None else score
+        try:
+            score = precision(tokens_a_set, tokens_b_set)
+            return self._error_score if score is None else score
+        except Exception:
+            return self._error_score
 
     def _compute_recall(self, tokens_a_set: set[str], tokens_b_set: set[str]) -> float:
         r"""
@@ -163,8 +173,11 @@ class TextMetrics(BaseMetric):
         Returns:
             Recall score, or self._error_score if computation fails
         """
-        score = recall(tokens_a_set, tokens_b_set)
-        return self._error_score if score is None else score
+        try:
+            score = recall(tokens_a_set, tokens_b_set)
+            return self._error_score if score is None else score
+        except Exception:
+            return self._error_score
 
     def _compute_edit_distance(self, tokens_a: list[str], tokens_b: list[str]) -> float:
         r"""
@@ -177,14 +190,16 @@ class TextMetrics(BaseMetric):
         Returns:
             Normalized edit distance score (0.0 = identical, 1.0 = completely different)
         """
+        try:
+            if self._mode == TextMetricsMode.CPP:
+                return self._text_manager.edit_distance(tokens_a, tokens_b)
 
-        if self._mode == TextMetricsMode.CPP:
-            return self._text_manager.edit_distance(tokens_a, tokens_b)
-
-        levenshtein = edit_distance(tokens_a, tokens_b)
-        max_length = max(len(tokens_a), len(tokens_b))
-        distance = levenshtein / max_length if max_length > 0 else 0.0
-        return distance
+            levenshtein = edit_distance(tokens_a, tokens_b)
+            max_length = max(len(tokens_a), len(tokens_b))
+            distance = levenshtein / max_length if max_length > 0 else 0.0
+            return distance
+        except Exception:
+            return self._error_score
 
     def _compute_meteor(self, tokens_a: list[str], tokens_b: list[str]) -> float:
         r"""
@@ -197,7 +212,10 @@ class TextMetrics(BaseMetric):
         Returns:
             METEOR score
         """
-        return meteor_score.meteor_score([tokens_a], tokens_b)
+        try:
+            return meteor_score.meteor_score([tokens_a], tokens_b)
+        except Exception:
+            return self._error_score
 
     def _compute_bleu(self, text_a: str, text_b: str) -> float:
         r"""
@@ -210,5 +228,10 @@ class TextMetrics(BaseMetric):
         Returns:
             BLEU score, or self._error_score if computation fails
         """
-        result = self._bleu_eval.compute(predictions=[text_a], references=[[text_b]])
-        return self._error_score if result is None else result["bleu"]
+        try:
+            result = self._bleu_eval.compute(
+                predictions=[text_a], references=[[text_b]]
+            )
+            return self._error_score if result is None else result["bleu"]
+        except Exception:
+            return self._error_score
