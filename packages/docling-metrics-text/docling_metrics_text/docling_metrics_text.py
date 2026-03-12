@@ -46,6 +46,7 @@ class TextMetrics(BaseMetric):
 
     def __init__(self, mode: TextMetricsMode = TextMetricsMode.CPP) -> None:
         r""" """
+        self._error_score = -1.0  # Returned value in case the score cannot be computed
         self._mode = mode
 
         # Download the NLTK data
@@ -130,9 +131,10 @@ class TextMetrics(BaseMetric):
             tokens_b_set: Second set of tokens
 
         Returns:
-            F1 score, or -1.0 if computation fails
+            F1 score, or self._error_score if computation fails
         """
-        return f_measure(tokens_a_set, tokens_b_set) or -1.0
+        score = f_measure(tokens_a_set, tokens_b_set)
+        return self._error_score if score is None else score
 
     def _compute_precision(
         self, tokens_a_set: set[str], tokens_b_set: set[str]
@@ -145,9 +147,10 @@ class TextMetrics(BaseMetric):
             tokens_b_set: Second set of tokens (prediction)
 
         Returns:
-            Precision score, or -1.0 if computation fails
+            Precision score, or self._error_score if computation fails
         """
-        return precision(tokens_a_set, tokens_b_set) or -1.0
+        score = precision(tokens_a_set, tokens_b_set)
+        return self._error_score if score is None else score
 
     def _compute_recall(self, tokens_a_set: set[str], tokens_b_set: set[str]) -> float:
         r"""
@@ -158,9 +161,10 @@ class TextMetrics(BaseMetric):
             tokens_b_set: Second set of tokens (prediction)
 
         Returns:
-            Recall score, or -1.0 if computation fails
+            Recall score, or self._error_score if computation fails
         """
-        return recall(tokens_a_set, tokens_b_set) or -1.0
+        score = recall(tokens_a_set, tokens_b_set)
+        return self._error_score if score is None else score
 
     def _compute_edit_distance(self, tokens_a: list[str], tokens_b: list[str]) -> float:
         r"""
@@ -204,7 +208,7 @@ class TextMetrics(BaseMetric):
             text_b: Second text (reference)
 
         Returns:
-            BLEU score, or -1.0 if computation fails
+            BLEU score, or self._error_score if computation fails
         """
         result = self._bleu_eval.compute(predictions=[text_a], references=[[text_b]])
-        return -1.0 if result is None else result["bleu"]
+        return self._error_score if result is None else result["bleu"]
