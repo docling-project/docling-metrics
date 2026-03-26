@@ -120,14 +120,12 @@ class LayoutMetrics(BaseMetric):
 
     def _evaluate_tore_sample(self, sample: LayoutMetricSample) -> PageToreEvaluation:
         r"""Evaluate TORE metrics for a single sample"""
-        _log.info("Evaluate TORE metrics for a single sample")
         return self._tore_evaluator.evaluate_sample(sample)
 
     def _evaluate_map_sample(
         self, sample: LayoutMetricSample
     ) -> MAPPageLayoutEvaluation:
         r"""Evaluate mAP metrics for a single sample"""
-        _log.info("Evaluate mAP layout metrics for a single sample")
         return self._map_evaluator.evaluate_sample(sample)
 
     def _evaluate_tore_dataset(
