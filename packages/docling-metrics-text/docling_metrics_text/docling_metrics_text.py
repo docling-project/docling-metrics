@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Iterable
+from uuid import uuid4
 
 import evaluate
 import nltk
@@ -57,7 +58,7 @@ class TextMetrics(BaseMetric):
         nltk.download("popular", quiet=True)
         nltk.download("punkt_tab", quiet=True)
 
-        self._bleu_eval = evaluate.load("bleu")
+        self._bleu_eval = evaluate.load("bleu", experiment_id=str(uuid4()))
 
         if self._mode == TextMetricsMode.CPP:
             self._text_manager = docling_metrics_text_cpp.TextManager()
