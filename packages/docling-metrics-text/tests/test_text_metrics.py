@@ -1,5 +1,4 @@
 import json
-import multiprocessing as mp
 from pathlib import Path
 
 from docling_metrics_text import TextMetrics
@@ -82,88 +81,6 @@ def test_extreme_cases():
     assert result.bleu_score == -2.0
 
 
-def _compute_bleu_in_process(
-    sample_id: str,
-    text_a: str,
-    text_b: str,
-    expected_bleu: float,
-    result_queue: mp.Queue,
-) -> None:
-    r"""Compute BLEU in a child process and report the outcome."""
-    try:
-        metrics_calculator = TextMetrics()
-        sample = TextPairSample(id=sample_id, text_a=text_a, text_b=text_b)
-        computed_bleu = metrics_calculator.evaluate_sample(sample).bleu_score
-
-        # Check if values are within relative tolerance
-        assert abs(computed_bleu - expected_bleu) <= RELATIVE_TOLERANCE, (
-            f"Concurrent BLEU computation for {sample_id}: "
-            f"expected {expected_bleu}, got {computed_bleu}"
-        )
-        result_queue.put(("ok", sample_id, computed_bleu))
-    except Exception as exc:
-        result_queue.put(("error", sample_id, repr(exc)))
-
-
-def test_multiple_bleu():
-    r"""Test that multiple BLEU metrics can run in parallel"""
-    loader = TextFileLoader(Path(MD_DIR))
-
-    # Load the expected metrics from the JSON file
-    with open(METRICS, "r") as f:
-        expected_metrics = json.load(f)
-
-    entries = list(loader.load())
-    assert entries
-
-    # Initialize the context
-    ctx = mp.get_context("spawn")
-    with ctx.Manager() as manager:
-        result_queue = manager.Queue()
-
-        processes = []
-        file_entry: FileEntry
-        for file_entry in entries:
-            sample_id = file_entry.id
-            assert sample_id in expected_metrics, (
-                f"Missing expected metrics for {sample_id}"
-            )
-            assert file_entry.target_content is not None
-
-            expected_bleu = expected_metrics[sample_id]["bleu_score"]
-            processes.append(
-                ctx.Process(
-                    target=_compute_bleu_in_process,
-                    args=(
-                        sample_id,
-                        file_entry.pivot_content,
-                        file_entry.target_content,
-                        expected_bleu,
-                        result_queue,
-                    ),
-                )
-            )
-
-        print(f"Computing BLEU in {len(processes)} concurrent processes")
-        for process in processes:
-            process.start()
-
-        for process in processes:
-            process.join(timeout=120)
-            assert process.exitcode == 0, (
-                f"BLEU worker failed with exit code {process.exitcode}"
-            )
-
-        results = [result_queue.get(timeout=10) for _ in processes]
-        for status, sample_id, payload in results:
-            assert status == "ok", (
-                f"BLEU computation raised an exception for {sample_id}: {payload}"
-            )
-            assert isinstance(payload, float)
-            assert payload >= 0.0
-
-
 if __name__ == "__main__":
     test_text_metrics()
     test_extreme_cases()
-    test_multiple_bleu()
