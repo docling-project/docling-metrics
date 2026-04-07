@@ -145,7 +145,7 @@ def test_cpp_bindings():
     print("\n All tests passed!")
 
 
-def test_table_metric_api():
+def test_teds_api():
     r"""
     Test the high-level TableMetric API with valid and broken bracket notations and HTML inputs.
     """
@@ -279,6 +279,11 @@ def test_table_metric_api():
     print("\n All tests passed!")
 
 
+def test_grits_api():
+    pass
+
+
 if __name__ == "__main__":
-    test_cpp_bindings()
-    test_table_metric_api()
+    # test_cpp_bindings()
+    # test_teds_api()
+    test_grits_api()
