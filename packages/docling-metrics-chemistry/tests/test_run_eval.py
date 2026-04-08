@@ -5,7 +5,7 @@ from docling_metrics_chemistry import SmilesInputSample, SmilesMetric
 
 
 def load_json(name):
-    p = Path("packages/docling-metrics-chemistry/tests/data") / name
+    p = Path(__file__).parent / "data" / name
     with p.open("r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -45,6 +45,9 @@ def run_eval(predicted_name, gt_name, label):
     print(f"String Equality:    {getattr(aggregate, 'string_equality_rate', 0.0):.4f}")
 
 
-run_eval(
-    "test_predicted_smiles_list.json", "test_gt_smiles_list.json", "Standard Dataset"
-)
+def test_run_eval():
+    run_eval(
+        "test_predicted_smiles_list.json",
+        "test_gt_smiles_list.json",
+        "Standard Dataset",
+    )
