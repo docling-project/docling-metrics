@@ -204,7 +204,7 @@ def iou(bbox1: list[int], bbox2: list[int]) -> float:
     return intersection_area / union_area
 
 
-def cells_to_grid(cells: list[dict[str, Any]], key: str = "bbox") -> list[list[Any]]:
+def cells_to_grid(cells: list[dict[str, Any]], key: str) -> list[list[Any]]:
     if len(cells) == 0:
         return [[]]
 

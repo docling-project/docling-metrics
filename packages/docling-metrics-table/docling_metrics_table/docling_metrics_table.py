@@ -36,18 +36,6 @@ class TableMetricHTMLInputSample(BaseInputSample):
     ] = False
 
 
-# Cell = Dict[str, Any]
-#      Each cell dictionary is expected to contain
-#      - 'bbox' as `[x0, y0, x1, y1]
-#      - 'cell_text' as the extracted text string,
-#      - 'row_nums' as the list of occupied row indices, and
-#      - 'column_nums' as the list of occupied column indices
-# class TableMetricInputSample(BaseInputSample):
-#     true_cells: List[Cell],
-#     pred_cells: List[Cell],
-#
-
-
 class TEDSSampleEvaluation(BaseModel):
     tree_a_size: int
     tree_b_size: int
