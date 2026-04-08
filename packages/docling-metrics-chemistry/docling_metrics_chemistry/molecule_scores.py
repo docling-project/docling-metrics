@@ -17,20 +17,30 @@ from typing import Any, Optional
 import numpy as np
 from rdkit import Chem, DataStructs, RDLogger
 from rdkit.Chem import rdFMCS, rdmolfiles
-from rdkit.Chem.Draw import rdMolDraw2D
-from rdkit.Chem.inchi import MolToInchi
 
 from docling_metrics_chemistry.cxsmiles_parser import (
     parse_m_section,
     parse_sections,
 )
-from docling_metrics_chemistry.smiles_utils import (
-    get_molecule_from_smiles,
-    replace_wildcards,
-)
+from docling_metrics_chemistry.smiles_utils import replace_wildcards
 
 RDLogger.DisableLog("rdApp.*")
 logger = logging.getLogger(__name__)
+
+
+def _replace_stars_with_carbons(smiles: str) -> str:
+    """Replace wildcard atoms (atomicNum=0) with carbon in a SMILES string."""
+    mol = Chem.MolFromSmiles(smiles, sanitize=False)
+    if mol is None:
+        return smiles
+    for atom in mol.GetAtoms():
+        if atom.GetAtomicNum() == 0:
+            atom.SetAtomicNum(6)
+            atom.SetIsotope(0)
+    try:
+        return Chem.MolToSmiles(mol, canonical=False)
+    except Exception:
+        return smiles
 
 
 def get_molecule_information(cxsmiles: str) -> dict[str, bool]:
@@ -108,20 +118,19 @@ def compute_molecule_prediction_quality(
     ):
         return scores
 
-    if Chem.MolFromSmiles(predicted_smiles) is None:
+    predicted_smiles = _replace_stars_with_carbons(predicted_smiles)
+    gt_smiles = _replace_stars_with_carbons(gt_smiles)
+
+    if Chem.MolFromSmiles(predicted_smiles, sanitize=False) is None:
         return scores
 
     scores["string_equality"] = predicted_smiles == gt_smiles
 
     # Tanimoto score
     if not predicted_molecule:
-        predicted_molecule = get_molecule_from_smiles(
-            predicted_smiles, remove_stereochemistry=remove_stereo, kekulize=True
-        )
+        predicted_molecule = Chem.MolFromSmiles(predicted_smiles, sanitize=False)
     if not gt_molecule:
-        gt_molecule = get_molecule_from_smiles(
-            gt_smiles, remove_stereochemistry=remove_stereo, kekulize=True
-        )
+        gt_molecule = Chem.MolFromSmiles(gt_smiles, sanitize=False)
 
     if gt_molecule is None:
         logger.warning(
@@ -132,36 +141,19 @@ def compute_molecule_prediction_quality(
         )
         return scores
 
-    # Remove hydrogens (only useful for stereochemistry)
-    if remove_stereo:
-        predicted_molecule = Chem.RemoveHs(predicted_molecule)
-        gt_molecule = Chem.RemoveHs(gt_molecule)
-
-    if remove_double_bond_stereo:
-        for bond in gt_molecule.GetBonds():
-            bond.SetStereo(Chem.rdchem.BondStereo.STEREONONE)
-        for bond in predicted_molecule.GetBonds():
-            bond.SetStereo(Chem.rdchem.BondStereo.STEREONONE)
-
-    # Remove aromatic bonds (Kekulize) for drawing/comparison
-    gt_molecule = rdMolDraw2D.PrepareMolForDrawing(gt_molecule, addChiralHs=False)
-    predicted_molecule = rdMolDraw2D.PrepareMolForDrawing(
-        predicted_molecule, addChiralHs=False
-    )
-
     scores["tanimoto"] = DataStructs.FingerprintSimilarity(
         Chem.RDKFingerprint(gt_molecule),
         Chem.RDKFingerprint(predicted_molecule),
     )
     scores["tanimoto1"] = scores["tanimoto"] == 1.0
 
-    # InChI equality
+    # InChI equality (using InChIKey)
     if remove_stereo or remove_double_bond_stereo:
-        gt_inchi = MolToInchi(gt_molecule, options="/SNon")
-        predicted_inchi = MolToInchi(predicted_molecule, options="/SNon")
+        gt_inchi = Chem.MolToInchiKey(gt_molecule, options="/SNon")
+        predicted_inchi = Chem.MolToInchiKey(predicted_molecule, options="/SNon")
     else:
-        gt_inchi = MolToInchi(gt_molecule)
-        predicted_inchi = MolToInchi(predicted_molecule)
+        gt_inchi = Chem.MolToInchiKey(gt_molecule)
+        predicted_inchi = Chem.MolToInchiKey(predicted_molecule)
 
     if gt_inchi and gt_inchi != "" and gt_inchi == predicted_inchi:
         scores["inchi_equality"] = True
@@ -177,6 +169,7 @@ def _sanitize_mol_for_markush(mol: Chem.rdchem.Mol) -> None:
         sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
         ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
         ^ Chem.SanitizeFlags.SANITIZE_FINDRADICALS,
+        catchErrors=True,
     )
 
 
@@ -464,6 +457,18 @@ def compute_markush_prediction_quality(
         ]
     )
 
+    # Override with overall molecule inchi_equality
+    try:
+        overall_score = compute_molecule_prediction_quality(
+            predicted_smiles=predicted_smiles,
+            gt_smiles=gt_smiles,
+            remove_stereo=remove_stereo,
+            remove_double_bond_stereo=remove_double_bond_stereo,
+        )
+        scores["inchi_equality"] = overall_score["inchi_equality"]
+    except Exception:
+        pass  # Keep fragment-level inchi_equality as fallback
+
     # Build global atom index mapping (gt -> pred) via MCS
     gt_to_pred_indices_mapping: dict[int, list[int]] = defaultdict(list)
     for i_gt, gt_fragment in enumerate(gt_fragments):
@@ -471,7 +476,7 @@ def compute_markush_prediction_quality(
             fragments_mapping[i_gt], fragments_indices_mapping[i_gt]
         ):
             mcs = rdFMCS.FindMCS([predicted_fragment, gt_fragment], timeout=5)
-            mcs_molecule = Chem.MolFromSmarts(mcs.smartsString)
+            mcs_molecule = mcs.queryMol
             if mcs_molecule is None:
                 continue
 
@@ -568,7 +573,7 @@ def compute_markush_prediction_quality(
                     if i in m_section_pred["ring_atoms"]:
                         found = True
                 ring_atoms_found.append(found)
-            correct_rings = all(ring_atoms_found) if ring_atoms_found else False
+            correct_rings = all(ring_atoms_found)
             if correct_rings and correct_connector:
                 correct = True
                 gt_to_pred_mapping_m = {
@@ -616,10 +621,9 @@ def compute_markush_prediction_quality(
                     and pred_label == gt_label
                 ):
                     correct = True
-                    gt_to_pred_mapping_sg = {
-                        k: [idx for idx in v if idx not in pred_sgroup.GetAtoms()]
-                        for k, v in gt_to_pred_mapping_sg.items()
-                    }
+                    # Do not consume atoms: sgroups can share atoms
+                    # (e.g. nested/overlapping sgroups), so consuming
+                    # would prevent later sgroups from being matched.
                     break
         scores["sg_sections"].append(correct)
 

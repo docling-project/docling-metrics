@@ -87,7 +87,7 @@ def canonicalize_markush(cxsmiles: str) -> Optional[str]:
 
     Chem.MolToSmiles(molecule)  # Sets "_smilesAtomOutputOrder"
 
-    order_prop = molecule.GetProp("_smilesAtomOutputOrder")[1:-2]
+    order_prop = molecule.GetProp("_smilesAtomOutputOrder")[1:-1]
     if not order_prop:
         return canonical_cxsmiles
     smi_to_smicanon_i_mapping = dict(
