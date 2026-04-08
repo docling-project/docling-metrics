@@ -6,6 +6,8 @@ from docling_metrics_table import docling_metric_table_cpp
 from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
+    TableMetricCell,
+    TableMetricGeometricInputSample,
     TableMetricHTMLInputSample,
     TableMetricSampleEvaluation,
 )
@@ -319,9 +321,32 @@ def test_grits_api():
             structure_only=False,
         )
         sample_evaluation = table_metric.evaluate_sample(sample_html)
-        assert sample_evaluation.grits is None, (
-            f"Expected grits to be None for HTML input on stem {stem} because the full non-optional GriTS model cannot be populated"
+        assert sample_evaluation.grits is not None, (
+            f"Expected grits to be computed for HTML input on stem {stem}"
         )
+        assert sample_evaluation.grits.grits_location is None, (
+            f"Expected grits_location to be None for HTML input on stem {stem}"
+        )
+        assert sample_evaluation.grits.grits_precision_location is None, (
+            f"Expected grits_precision_location to be None for HTML input on stem {stem}"
+        )
+        assert sample_evaluation.grits.grits_recall_location is None, (
+            f"Expected grits_recall_location to be None for HTML input on stem {stem}"
+        )
+        assert sample_evaluation.grits.grits_location_upper_bound is None, (
+            f"Expected grits_location_upper_bound to be None for HTML input on stem {stem}"
+        )
+
+        for field_name, expected_value in TEST_DATA[stem].items():
+            if field_name.startswith("grits_") and "location" not in field_name:
+                actual_value = getattr(sample_evaluation.grits, field_name)
+                assert math.isclose(
+                    actual_value,
+                    expected_value,
+                    rel_tol=TEDS_RELATIVE_TOLERANCE,
+                ), (
+                    f"Wrong {field_name} for HTML input on stem {stem}. Expected {expected_value}, got {actual_value}"
+                )
 
         sample_bracket = TableMetricBracketInputSample(
             id=f"grits_bracket_{stem}",
@@ -333,6 +358,56 @@ def test_grits_api():
         assert bracket_evaluation.grits is None, (
             f"Expected grits to be None for bracket input on stem {stem}"
         )
+
+
+def test_grits_geometric_api():
+    table_metric = TableMetric()
+    true_cells = [
+        TableMetricCell(
+            bbox=[0.0, 0.0, 10.0, 10.0],
+            cell_text="A",
+            row_nums=[0],
+            column_nums=[0],
+        ),
+        TableMetricCell(
+            bbox=[10.0, 0.0, 20.0, 10.0],
+            cell_text="B",
+            row_nums=[0],
+            column_nums=[1],
+        ),
+    ]
+    pred_cells = [
+        TableMetricCell(
+            bbox=[0.0, 0.0, 10.0, 10.0],
+            cell_text="A",
+            row_nums=[0],
+            column_nums=[0],
+        ),
+        TableMetricCell(
+            bbox=[11.0, 0.0, 21.0, 10.0],
+            cell_text="B",
+            row_nums=[0],
+            column_nums=[1],
+        ),
+    ]
+
+    sample = TableMetricGeometricInputSample(
+        id="geom_1",
+        true_cells=true_cells,
+        pred_cells=pred_cells,
+    )
+    sample_evaluation = table_metric.evaluate_sample(sample)
+
+    assert sample_evaluation.teds is None
+    assert sample_evaluation.grits is not None
+    assert math.isclose(sample_evaluation.grits.grits_topology, 1.0, rel_tol=1e-6)
+    assert math.isclose(
+        sample_evaluation.grits.grits_content, 1.0, rel_tol=TEDS_RELATIVE_TOLERANCE
+    )
+    assert sample_evaluation.grits.grits_location is not None
+    assert sample_evaluation.grits.grits_location < 1.0
+    assert sample_evaluation.grits.grits_precision_location < 1.0
+    assert sample_evaluation.grits.grits_recall_location < 1.0
 
 
 if __name__ == "__main__":

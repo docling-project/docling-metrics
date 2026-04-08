@@ -182,11 +182,11 @@ def lcs_similarity(string1: str, string2: str) -> float:
     return 2 * len(lcs) / (len(string1) + len(string2))
 
 
-def _rect_area(rect: list[int]) -> int:
+def _rect_area(rect: list[float]) -> float:
     return max(0, rect[2] - rect[0]) * max(0, rect[3] - rect[1])
 
 
-def iou(bbox1: list[int], bbox2: list[int]) -> float:
+def iou(bbox1: list[float], bbox2: list[float]) -> float:
     left = max(bbox1[0], bbox2[0])
     top = max(bbox1[1], bbox2[1])
     right = min(bbox1[2], bbox2[2])
@@ -257,6 +257,12 @@ def grits_con(
     return factored_2dmss(true_text_grid, pred_text_grid, lcs_similarity)
 
 
+def grits_loc(
+    true_bbox_grid: np.ndarray, pred_bbox_grid: np.ndarray
+) -> tuple[float, float, float, float]:
+    return factored_2dmss(true_bbox_grid, pred_bbox_grid, iou)
+
+
 def html_to_cells(table_html: str) -> list[dict[str, Any]]:
     tree = ET.fromstring(table_html)
     table_cells = []
@@ -323,6 +329,42 @@ def grits_from_html(true_html: str, pred_html: str) -> dict[str, float | int]:
         metrics["grits_recall_top"],
         metrics["grits_top_upper_bound"],
     ) = grits_top(true_topology_grid, pred_topology_grid)
+
+    (
+        metrics["grits_con"],
+        metrics["grits_precision_con"],
+        metrics["grits_recall_con"],
+        metrics["grits_con_upper_bound"],
+    ) = grits_con(true_text_grid, pred_text_grid)
+
+    return metrics
+
+
+def grits_from_cells(
+    true_cells: list[dict[str, Any]], pred_cells: list[dict[str, Any]]
+) -> dict[str, float | int]:
+    metrics: dict[str, float | int] = {}
+
+    true_topology_grid = np.array(cells_to_relspan_grid(true_cells))
+    pred_topology_grid = np.array(cells_to_relspan_grid(pred_cells))
+    true_bbox_grid = np.array(cells_to_grid(true_cells, key="bbox"), dtype=object)
+    pred_bbox_grid = np.array(cells_to_grid(pred_cells, key="bbox"), dtype=object)
+    true_text_grid = np.array(cells_to_grid(true_cells, key="cell_text"), dtype=object)
+    pred_text_grid = np.array(cells_to_grid(pred_cells, key="cell_text"), dtype=object)
+
+    (
+        metrics["grits_top"],
+        metrics["grits_precision_top"],
+        metrics["grits_recall_top"],
+        metrics["grits_top_upper_bound"],
+    ) = grits_top(true_topology_grid, pred_topology_grid)
+
+    (
+        metrics["grits_loc"],
+        metrics["grits_precision_loc"],
+        metrics["grits_recall_loc"],
+        metrics["grits_loc_upper_bound"],
+    ) = grits_loc(true_bbox_grid, pred_bbox_grid)
 
     (
         metrics["grits_con"],
