@@ -51,3 +51,7 @@ def test_run_eval():
         "test_gt_smiles_list.json",
         "Standard Dataset",
     )
+
+if __name__ == "__main__":
+    test_run_eval()
+
