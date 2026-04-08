@@ -14,13 +14,26 @@ from docling_metrics_table.docling_metrics_table import (
 TEDS_RELATIVE_TOLERANCE = 1e-6
 
 # Test data configuration: stems and expected values
-TEST_DATA: dict[str, dict[str, int | float]] = {
+TEST_DATA: dict[str, dict[str, int | float | None]] = {
     "CHD.2018.page_21.pdf_147707_0": {
         "html_teds": 0.285714285714286,
         "html_structure_only_teds": 0.571428571428571,
         "bracket_teds": 0.285714285714286,
         "tree_a_size": 14,
         "tree_b_size": 12,
+        "grits_top": 0.6153846153846154,
+        "grits_precision_top": 0.8,
+        "grits_recall_top": 0.5,
+        "grits_top_upper_bound": 0.6153846153846154,
+        "grits_loc": None,
+        "grits_precision_loc": None,
+        "grits_recall_loc": None,
+        "grits_loc_upper_bound": None,
+        "grits_con": 0.006174622286520988,
+        "grits_precision_con": 0.008027008972477283,
+        "grits_recall_con": 0.005016880607798302,
+        "grits_con_upper_bound": 0.006174622286520988,
+        "acc_con": 0,
     },
     "WU.2016.page_106.pdf_68194_0": {
         "html_teds": 0.323529411764706,
@@ -28,6 +41,19 @@ TEST_DATA: dict[str, dict[str, int | float]] = {
         "bracket_teds": 0.323529411764706,
         "tree_a_size": 101,
         "tree_b_size": 102,
+        "grits_top": 0.9866666666666668,
+        "grits_precision_top": 0.9866666666666667,
+        "grits_recall_top": 0.9866666666666667,
+        "grits_top_upper_bound": 0.9866666666666668,
+        "grits_loc": None,
+        "grits_precision_loc": None,
+        "grits_recall_loc": None,
+        "grits_loc_upper_bound": None,
+        "grits_con": 0.2592853765619723,
+        "grits_precision_con": 0.2592853765619723,
+        "grits_recall_con": 0.2592853765619723,
+        "grits_con_upper_bound": 0.29333333333333333,
+        "acc_con": 0,
     },
 }
 
@@ -280,7 +306,66 @@ def test_teds_api():
 
 
 def test_grits_api():
-    pass
+    all_test_data: dict[str, dict[str, str]] = load_test_data()
+    table_metric = TableMetric()
+    grits_fields = [
+        "grits_top",
+        "grits_precision_top",
+        "grits_recall_top",
+        "grits_top_upper_bound",
+        "grits_loc",
+        "grits_precision_loc",
+        "grits_recall_loc",
+        "grits_loc_upper_bound",
+        "grits_con",
+        "grits_precision_con",
+        "grits_recall_con",
+        "grits_con_upper_bound",
+        "acc_con",
+    ]
+
+    for stem, test_data in all_test_data.items():
+        config = TEST_DATA[stem]
+        sample_html = TableMetricHTMLInputSample(
+            id=f"grits_{stem}",
+            html_a=test_data["gt_html"],
+            html_b=test_data["pred_html"],
+            structure_only=False,
+        )
+        sample_evaluation = table_metric.evaluate_sample(sample_html)
+
+        for field_name in grits_fields:
+            expected_value = config[field_name]
+            actual_value = getattr(sample_evaluation, field_name)
+
+            if expected_value is None:
+                assert actual_value is None, (
+                    f"Expected {field_name} to be None for stem {stem}, got {actual_value}"
+                )
+            elif isinstance(expected_value, float):
+                assert math.isclose(
+                    actual_value,
+                    expected_value,
+                    rel_tol=TEDS_RELATIVE_TOLERANCE,
+                ), (
+                    f"Wrong {field_name} for stem {stem}. Expected {expected_value}, got {actual_value}"
+                )
+            else:
+                assert actual_value == expected_value, (
+                    f"Wrong {field_name} for stem {stem}. Expected {expected_value}, got {actual_value}"
+                )
+
+        sample_bracket = TableMetricBracketInputSample(
+            id=f"grits_bracket_{stem}",
+            bracket_a=test_data["gt_bracket"],
+            bracket_b=test_data["pred_bracket"],
+        )
+        bracket_evaluation = table_metric.evaluate_sample(sample_bracket)
+
+        for field_name in grits_fields:
+            assert getattr(bracket_evaluation, field_name) is None, (
+                f"Expected {field_name} to be None for bracket input on stem {stem}"
+            )
 
 
 if __name__ == "__main__":

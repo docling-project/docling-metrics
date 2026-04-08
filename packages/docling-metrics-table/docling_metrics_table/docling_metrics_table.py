@@ -9,6 +9,7 @@ from docling_metrics_core.base_types import (
 from lxml import html
 from pydantic import Field
 
+from docling_metrics_table.utils.grits import grits_from_html
 from docling_metrics_table.utils.teds import TableTree, TEDScorer
 
 from . import docling_metric_table_cpp
@@ -39,6 +40,19 @@ class TableMetricSampleEvaluation(BaseSampleResult):
     tree_a_size: int
     tree_b_size: int
     teds: float
+    grits_top: float | None = None
+    grits_precision_top: float | None = None
+    grits_recall_top: float | None = None
+    grits_top_upper_bound: float | None = None
+    grits_loc: float | None = None
+    grits_precision_loc: float | None = None
+    grits_recall_loc: float | None = None
+    grits_loc_upper_bound: float | None = None
+    grits_con: float | None = None
+    grits_precision_con: float | None = None
+    grits_recall_con: float | None = None
+    grits_con_upper_bound: float | None = None
+    acc_con: int | None = None
 
 
 class TableMetricDatasetEvaluation(BaseAggregateResult): ...
@@ -60,9 +74,9 @@ class TableMetric(BaseMetric):
         r"""
         Evaluate a single sample.
         """
+        grits_metrics: dict[str, float | int] = {}
         # Decide if html should be first converted to bracket format
         if isinstance(sample, TableMetricHTMLInputSample):
-            # TODO: Switch to the C++ HTML-to-bracket conversion when it will be ready
             structure_only = sample.structure_only
             bracket_a = self._teds_scorer.html_to_bracket(
                 sample.html_a, structure_only=structure_only
@@ -70,6 +84,7 @@ class TableMetric(BaseMetric):
             bracket_b = self._teds_scorer.html_to_bracket(
                 sample.html_b, structure_only=structure_only
             )
+            grits_metrics = grits_from_html(sample.html_a, sample.html_b)
         elif isinstance(sample, TableMetricBracketInputSample):
             bracket_a = sample.bracket_a
             bracket_b = sample.bracket_b
@@ -90,6 +105,19 @@ class TableMetric(BaseMetric):
             tree_a_size=sample_evaluaton.tree_a_size,
             tree_b_size=sample_evaluaton.tree_b_size,
             teds=sample_evaluaton.teds,
+            grits_top=grits_metrics.get("grits_top"),
+            grits_precision_top=grits_metrics.get("grits_precision_top"),
+            grits_recall_top=grits_metrics.get("grits_recall_top"),
+            grits_top_upper_bound=grits_metrics.get("grits_top_upper_bound"),
+            grits_loc=grits_metrics.get("grits_loc"),
+            grits_precision_loc=grits_metrics.get("grits_precision_loc"),
+            grits_recall_loc=grits_metrics.get("grits_recall_loc"),
+            grits_loc_upper_bound=grits_metrics.get("grits_loc_upper_bound"),
+            grits_con=grits_metrics.get("grits_con"),
+            grits_precision_con=grits_metrics.get("grits_precision_con"),
+            grits_recall_con=grits_metrics.get("grits_recall_con"),
+            grits_con_upper_bound=grits_metrics.get("grits_con_upper_bound"),
+            acc_con=grits_metrics.get("acc_con"),
         )
         return result
 
@@ -110,7 +138,6 @@ class TableMetric(BaseMetric):
         r"""
         Evaluate a dataset.
         """
-        # TODO: Add implementation
         result = TableMetricDatasetEvaluation(sample_count=0)
         return result
 
