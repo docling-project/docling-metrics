@@ -29,7 +29,7 @@ class SmilesInputSample(BaseInputSample):
     """Input sample for SMILES evaluation."""
 
     predicted_smiles: Annotated[
-        str, Field(description="Predicted SMILES or CXSMILES string")
+        Optional[str], Field(description="Predicted SMILES or CXSMILES string")
     ]
     gt_smiles: Annotated[
         str, Field(description="Ground truth SMILES or CXSMILES string")
@@ -200,6 +200,8 @@ class SmilesMetric(BaseMetric):
         """
         gt_smiles = sample.gt_smiles
         predicted_smiles = sample.predicted_smiles
+        if predicted_smiles is None:
+            predicted_smiles = ""
 
         # Validate ground truth
         parser_params = Chem.SmilesParserParams()
