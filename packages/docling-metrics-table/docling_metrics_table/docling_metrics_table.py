@@ -36,26 +36,16 @@ class TableMetricHTMLInputSample(BaseInputSample):
     ] = False
 
 
-# BBox = Sequence[float]
 # Cell = Dict[str, Any]
+#      Each cell dictionary is expected to contain
+#      - 'bbox' as `[x0, y0, x1, y1]
+#      - 'cell_text' as the extracted text string,
+#      - 'row_nums' as the list of occupied row indices, and
+#      - 'column_nums' as the list of occupied column indices
 # class TableMetricInputSample(BaseInputSample):
-#     true_bboxes: Sequence[BBox],
-#     true_labels: Sequence[int],
-#     true_scores: Sequence[float],
 #     true_cells: List[Cell],
-#     pred_bboxes: Sequence[BBox],
-#     pred_labels: Sequence[int],
-#     pred_scores: Sequence[float],
 #     pred_cells: List[Cell],
-
-#         true_cells:
-#             Ground-truth table cells after structure post-processing. Each cell
-#             dictionary is expected to contain at least ``'bbox'`` as
-#             ``[x0, y0, x1, y1]``, ``'cell_text'`` as the extracted text string,
-#             ``'row_nums'`` as the list of occupied row indices, and
-#             ``'column_nums'`` as the list of occupied column indices. These
-#             cells drive the core topology, location, content, and DAR
-#             comparisons.
+#
 
 
 class TEDSSampleEvaluation(BaseModel):
@@ -65,20 +55,23 @@ class TEDSSampleEvaluation(BaseModel):
 
 
 class GriTSSampleEvaluation(BaseModel):
+    # Detection of spans
     grits_topology: float
     grits_precision_topology: float
     grits_recall_topology: float
     grits_topology_upper_bound: float
 
-    grits_location: float
-    grits_precision_location: float
-    grits_recall_location: float
-    grits_location_upper_bound: float
-
+    # Cell content
     grits_content: float
     grits_precision_content: float
     grits_recall_content: float
     grits_content_upper_bound: float
+
+    # Bounding boxes of the cells. This will be populated only when the InputSample contains bboxes
+    grits_location: float | None
+    grits_precision_location: float | None
+    grits_recall_location: float | None
+    grits_location_upper_bound: float | None
 
 
 class TableMetricSampleEvaluation(BaseSampleResult):

@@ -331,5 +331,4 @@ def grits_from_html(true_html: str, pred_html: str) -> dict[str, float | int]:
         metrics["grits_con_upper_bound"],
     ) = grits_con(true_text_grid, pred_text_grid)
 
-    metrics["acc_con"] = int(metrics["grits_con"] == 1)
     return metrics
