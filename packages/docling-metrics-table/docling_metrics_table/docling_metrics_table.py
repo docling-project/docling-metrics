@@ -7,7 +7,7 @@ from docling_metrics_core.base_types import (
     BaseSampleResult,
 )
 from lxml import html
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from docling_metrics_table.utils.grits import grits_from_html
 from docling_metrics_table.utils.teds import TableTree, TEDScorer
@@ -48,26 +48,42 @@ class TableMetricHTMLInputSample(BaseInputSample):
 #     pred_scores: Sequence[float],
 #     pred_cells: List[Cell],
 
+#         true_cells:
+#             Ground-truth table cells after structure post-processing. Each cell
+#             dictionary is expected to contain at least ``'bbox'`` as
+#             ``[x0, y0, x1, y1]``, ``'cell_text'`` as the extracted text string,
+#             ``'row_nums'`` as the list of occupied row indices, and
+#             ``'column_nums'`` as the list of occupied column indices. These
+#             cells drive the core topology, location, content, and DAR
+#             comparisons.
 
-class TableMetricSampleEvaluation(BaseSampleResult):
+
+class TEDSSampleEvaluation(BaseModel):
     tree_a_size: int
     tree_b_size: int
     teds: float
 
-    grits_topology: float | None = None
-    grits_precision_topology: float | None = None
-    grits_recall_topology: float | None = None
-    grits_topology_upper_bound: float | None = None
 
-    grits_location: float | None = None
-    grits_precision_location: float | None = None
-    grits_recall_location: float | None = None
-    grits_location_upper_bound: float | None = None
+class GriTSSampleEvaluation(BaseModel):
+    grits_topology: float
+    grits_precision_topology: float
+    grits_recall_topology: float
+    grits_topology_upper_bound: float
 
-    grits_content: float | None = None
-    grits_precision_content: float | None = None
-    grits_recall_content: float | None = None
-    grits_content_upper_bound: float | None = None
+    grits_location: float
+    grits_precision_location: float
+    grits_recall_location: float
+    grits_location_upper_bound: float
+
+    grits_content: float
+    grits_precision_content: float
+    grits_recall_content: float
+    grits_content_upper_bound: float
+
+
+class TableMetricSampleEvaluation(BaseSampleResult):
+    teds: TEDSSampleEvaluation | None = None
+    grits: GriTSSampleEvaluation | None = None
 
 
 class TableMetricDatasetEvaluation(BaseAggregateResult): ...
@@ -115,23 +131,46 @@ class TableMetric(BaseMetric):
         if sample_evaluaton.error_id != 0:
             raise ValueError(sample_evaluaton.error_msg)
 
+        grits_evaluation = None
+        if isinstance(sample, TableMetricHTMLInputSample):
+            required_grits_keys = (
+                "grits_top",
+                "grits_precision_top",
+                "grits_recall_top",
+                "grits_top_upper_bound",
+                "grits_loc",
+                "grits_precision_loc",
+                "grits_recall_loc",
+                "grits_loc_upper_bound",
+                "grits_con",
+                "grits_precision_con",
+                "grits_recall_con",
+                "grits_con_upper_bound",
+            )
+            if all(key in grits_metrics for key in required_grits_keys):
+                grits_evaluation = GriTSSampleEvaluation(
+                    grits_topology=grits_metrics["grits_top"],
+                    grits_precision_topology=grits_metrics["grits_precision_top"],
+                    grits_recall_topology=grits_metrics["grits_recall_top"],
+                    grits_topology_upper_bound=grits_metrics["grits_top_upper_bound"],
+                    grits_location=grits_metrics["grits_loc"],
+                    grits_precision_location=grits_metrics["grits_precision_loc"],
+                    grits_recall_location=grits_metrics["grits_recall_loc"],
+                    grits_location_upper_bound=grits_metrics["grits_loc_upper_bound"],
+                    grits_content=grits_metrics["grits_con"],
+                    grits_precision_content=grits_metrics["grits_precision_con"],
+                    grits_recall_content=grits_metrics["grits_recall_con"],
+                    grits_content_upper_bound=grits_metrics["grits_con_upper_bound"],
+                )
+
         result = TableMetricSampleEvaluation(
             id=sample.id,
-            tree_a_size=sample_evaluaton.tree_a_size,
-            tree_b_size=sample_evaluaton.tree_b_size,
-            teds=sample_evaluaton.teds,
-            grits_topology=grits_metrics.get("grits_top"),
-            grits_precision_topology=grits_metrics.get("grits_precision_top"),
-            grits_recall_topology=grits_metrics.get("grits_recall_top"),
-            grits_topology_upper_bound=grits_metrics.get("grits_top_upper_bound"),
-            grits_location=grits_metrics.get("grits_loc"),
-            grits_precision_location=grits_metrics.get("grits_precision_loc"),
-            grits_recall_location=grits_metrics.get("grits_recall_loc"),
-            grits_location_upper_bound=grits_metrics.get("grits_loc_upper_bound"),
-            grits_content=grits_metrics.get("grits_con"),
-            grits_precision_content=grits_metrics.get("grits_precision_con"),
-            grits_recall_content=grits_metrics.get("grits_recall_con"),
-            grits_content_upper_bound=grits_metrics.get("grits_con_upper_bound"),
+            teds=TEDSSampleEvaluation(
+                tree_a_size=sample_evaluaton.tree_a_size,
+                tree_b_size=sample_evaluaton.tree_b_size,
+                teds=sample_evaluaton.teds,
+            ),
+            grits=grits_evaluation,
         )
         return result
 

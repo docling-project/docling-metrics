@@ -154,12 +154,14 @@ class Benchmarker:
                 sample_evaluaton: TableMetricSampleEvaluation = (
                     self._teds_metric.evaluate_sample(metric_input)
                 )
-                cpp_teds = sample_evaluaton.teds
+                if sample_evaluaton.teds is None:
+                    raise ValueError("Expected TEDS evaluation for bracket input")
+                cpp_teds = sample_evaluaton.teds.teds
                 cpp_ms = (time.monotonic() - t0) * 1000
                 all_cpp_ms.append(cpp_ms)
 
                 # Create BenchmarkSample
-                n_nodes: int = sample_evaluaton.tree_a_size
+                n_nodes: int = sample_evaluaton.teds.tree_a_size
                 match = abs(cpp_teds - python_teds) < 1e-6
                 characterization = "Match!" if match else "Differ"
 
