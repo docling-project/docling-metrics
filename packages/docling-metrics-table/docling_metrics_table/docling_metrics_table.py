@@ -36,23 +36,38 @@ class TableMetricHTMLInputSample(BaseInputSample):
     ] = False
 
 
+# BBox = Sequence[float]
+# Cell = Dict[str, Any]
+# class TableMetricInputSample(BaseInputSample):
+#     true_bboxes: Sequence[BBox],
+#     true_labels: Sequence[int],
+#     true_scores: Sequence[float],
+#     true_cells: List[Cell],
+#     pred_bboxes: Sequence[BBox],
+#     pred_labels: Sequence[int],
+#     pred_scores: Sequence[float],
+#     pred_cells: List[Cell],
+
+
 class TableMetricSampleEvaluation(BaseSampleResult):
     tree_a_size: int
     tree_b_size: int
     teds: float
-    grits_top: float | None = None
-    grits_precision_top: float | None = None
-    grits_recall_top: float | None = None
-    grits_top_upper_bound: float | None = None
-    grits_loc: float | None = None
-    grits_precision_loc: float | None = None
-    grits_recall_loc: float | None = None
-    grits_loc_upper_bound: float | None = None
-    grits_con: float | None = None
-    grits_precision_con: float | None = None
-    grits_recall_con: float | None = None
-    grits_con_upper_bound: float | None = None
-    acc_con: int | None = None
+
+    grits_topology: float | None = None
+    grits_precision_topology: float | None = None
+    grits_recall_topology: float | None = None
+    grits_topology_upper_bound: float | None = None
+
+    grits_location: float | None = None
+    grits_precision_location: float | None = None
+    grits_recall_location: float | None = None
+    grits_location_upper_bound: float | None = None
+
+    grits_content: float | None = None
+    grits_precision_content: float | None = None
+    grits_recall_content: float | None = None
+    grits_content_upper_bound: float | None = None
 
 
 class TableMetricDatasetEvaluation(BaseAggregateResult): ...
@@ -105,19 +120,18 @@ class TableMetric(BaseMetric):
             tree_a_size=sample_evaluaton.tree_a_size,
             tree_b_size=sample_evaluaton.tree_b_size,
             teds=sample_evaluaton.teds,
-            grits_top=grits_metrics.get("grits_top"),
-            grits_precision_top=grits_metrics.get("grits_precision_top"),
-            grits_recall_top=grits_metrics.get("grits_recall_top"),
-            grits_top_upper_bound=grits_metrics.get("grits_top_upper_bound"),
-            grits_loc=grits_metrics.get("grits_loc"),
-            grits_precision_loc=grits_metrics.get("grits_precision_loc"),
-            grits_recall_loc=grits_metrics.get("grits_recall_loc"),
-            grits_loc_upper_bound=grits_metrics.get("grits_loc_upper_bound"),
-            grits_con=grits_metrics.get("grits_con"),
-            grits_precision_con=grits_metrics.get("grits_precision_con"),
-            grits_recall_con=grits_metrics.get("grits_recall_con"),
-            grits_con_upper_bound=grits_metrics.get("grits_con_upper_bound"),
-            acc_con=grits_metrics.get("acc_con"),
+            grits_topology=grits_metrics.get("grits_top"),
+            grits_precision_topology=grits_metrics.get("grits_precision_top"),
+            grits_recall_topology=grits_metrics.get("grits_recall_top"),
+            grits_topology_upper_bound=grits_metrics.get("grits_top_upper_bound"),
+            grits_location=grits_metrics.get("grits_loc"),
+            grits_precision_location=grits_metrics.get("grits_precision_loc"),
+            grits_recall_location=grits_metrics.get("grits_recall_loc"),
+            grits_location_upper_bound=grits_metrics.get("grits_loc_upper_bound"),
+            grits_content=grits_metrics.get("grits_con"),
+            grits_precision_content=grits_metrics.get("grits_precision_con"),
+            grits_recall_content=grits_metrics.get("grits_recall_con"),
+            grits_content_upper_bound=grits_metrics.get("grits_con_upper_bound"),
         )
         return result
 
