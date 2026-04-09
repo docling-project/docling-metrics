@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import Enum
 from typing import Annotated, Iterable, Optional
 
 from docling_metrics_core.base_types import (
@@ -6,6 +6,7 @@ from docling_metrics_core.base_types import (
     BaseInputSample,
     BaseMetric,
     BaseSampleResult,
+    MetricException,
 )
 from lxml import html
 from pydantic import BaseModel, Field
@@ -16,12 +17,22 @@ from docling_metrics_table.utils.teds import TableTree, TEDScorer
 from . import docling_metric_table_cpp
 
 
-class TableMetric(StrEnum):
+class TableMetricKind(str, Enum):
+    ALL = "ALL"
     TEDS = "TEDS"
     GRITS = "GriTS"
 
 
+class TableMetricTaskKind(str, Enum):
+    ALL = "ALL"
+    STRUCTURE = "structure"
+    CONTENT = "content"
+    LOCATION = "location"
+
+
 class TableMetricBracketInputSample(BaseInputSample):
+    r"""The BracketInputSample supports only the STRUCTURE task"""
+
     bracket_a: Annotated[
         str, Field(description="The input-a string to be evaluated in bracket format")
     ]
@@ -31,12 +42,15 @@ class TableMetricBracketInputSample(BaseInputSample):
 
 
 class TableMetricHTMLInputSample(BaseInputSample):
+    r"""The TableMetricHTMLInputSample supports the tasks STRUCTURE and CONTENT"""
+
     html_a: Annotated[
         str, Field(description="The input-a string to be evaluated in HTML format")
     ]
     html_b: Annotated[
         str, Field(description="The input-b string to be evaluated in HTML format")
     ]
+
     structure_only: Annotated[
         bool, Field(description="If True the content is not evaluated")
     ] = False
@@ -61,6 +75,8 @@ class TableMetricCell(BaseModel):
 
 
 class TableMetricGeometricInputSample(BaseInputSample):
+    r"""The TableMetricHTMLInputSample supports the tasks STRUCTURE, CONTENT, LOCATION"""
+
     true_cells: Annotated[
         list[TableMetricCell],
         Field(description="Ground-truth table cells with geometry"),
@@ -69,6 +85,7 @@ class TableMetricGeometricInputSample(BaseInputSample):
         list[TableMetricCell],
         Field(description="Predicted table cells with geometry"),
     ]
+    tasks: list[TableMetricTaskKind] = [TableMetricTaskKind.ALL]
 
 
 class TEDSSampleEvaluation(BaseModel):
@@ -78,17 +95,17 @@ class TEDSSampleEvaluation(BaseModel):
 
 
 class GriTSSampleEvaluation(BaseModel):
-    # Detection of spans
-    grits_topology: float
-    grits_precision_topology: float
-    grits_recall_topology: float
-    grits_topology_upper_bound: float
+    # Structure (topology)
+    grits_topology: float | None
+    grits_precision_topology: float | None
+    grits_recall_topology: float | None
+    grits_topology_upper_bound: float | None
 
     # Cell content
-    grits_content: float
-    grits_precision_content: float
-    grits_recall_content: float
-    grits_content_upper_bound: float
+    grits_content: float | None
+    grits_precision_content: float | None
+    grits_recall_content: float | None
+    grits_content_upper_bound: float | None
 
     # Bounding boxes of the cells. This is populated only when the InputSample contains bboxes
     grits_location: float | None
@@ -105,10 +122,6 @@ class TableMetricSampleEvaluation(BaseSampleResult):
 class TableMetricDatasetEvaluation(BaseAggregateResult): ...
 
 
-# TODO: Refactor the implementation of TableMetric to respect the self._metrics.
-# All evaluation methods should perfom the corresponding metric only if it has been enabled
-
-
 class TableMetric(BaseMetric):
     r"""
     Table Structure Recognition metrics:
@@ -116,13 +129,26 @@ class TableMetric(BaseMetric):
     - GriTS
     """
 
-    def __init__(
-        self, metrics: list[TableMetric] = [TableMetric.TEDS, TableMetric.GRITS]
-    ) -> None:
+    def __init__(self, metrics: list[TableMetricKind] = [TableMetricKind.ALL]) -> None:
         r""" """
-        self._metrics = metrics
-        self._teds_manager = docling_metric_table_cpp.TEDSManager()
-        self._teds_scorer = TEDScorer()
+        # Select the metrics
+        metric_set = set(metrics)
+        if TableMetricKind.ALL in metric_set:
+            metric_set.remove(TableMetricKind.ALL)
+            metric_set.update(
+                metric_kind
+                for metric_kind in TableMetricKind
+                if metric_kind is not TableMetricKind.ALL
+            )
+        self._metrics = metric_set
+
+        if len(self._metrics) == 0:
+            raise MetricException("Cannot initialize TableMetrics without tasks")
+
+        # Initialize the TEDS metrics
+        if TableMetricKind.TEDS in self._metrics:
+            self._teds_manager = docling_metric_table_cpp.TEDSManager()
+            self._teds_scorer = TEDScorer()
 
     def evaluate_sample(  # type: ignore[override]
         self,
@@ -134,79 +160,72 @@ class TableMetric(BaseMetric):
         Evaluate a single sample.
         """
         grits_evaluation: GriTSSampleEvaluation | None = None
-        teds_evaluation = None
+        teds_evaluation: TEDSSampleEvaluation | None = None
+
+        # Decide which metrics to compute
+        compute_teds = TableMetricKind.TEDS in self._metrics
+        compute_grits = TableMetricKind.GRITS in self._metrics
 
         if isinstance(sample, TableMetricHTMLInputSample):
             structure_only = sample.structure_only
-            bracket_a = self._teds_scorer.html_to_bracket(
-                sample.html_a, structure_only=structure_only
-            )
-            bracket_b = self._teds_scorer.html_to_bracket(
-                sample.html_b, structure_only=structure_only
-            )
-            grits_metrics = grits_from_html(sample.html_a, sample.html_b)
-            sample_evaluaton = self._teds_manager.evaluate_sample(
-                sample.id,
-                bracket_a,
-                bracket_b,
-            )
-            if sample_evaluaton.error_id != 0:
-                raise ValueError(sample_evaluaton.error_msg)
-            teds_evaluation = TEDSSampleEvaluation(
-                tree_a_size=sample_evaluaton.tree_a_size,
-                tree_b_size=sample_evaluaton.tree_b_size,
-                teds=sample_evaluaton.teds,
-            )
-            grits_evaluation = GriTSSampleEvaluation(
-                grits_topology=grits_metrics["grits_top"],
-                grits_precision_topology=grits_metrics["grits_precision_top"],
-                grits_recall_topology=grits_metrics["grits_recall_top"],
-                grits_topology_upper_bound=grits_metrics["grits_top_upper_bound"],
-                grits_content=grits_metrics["grits_con"],
-                grits_precision_content=grits_metrics["grits_precision_con"],
-                grits_recall_content=grits_metrics["grits_recall_con"],
-                grits_content_upper_bound=grits_metrics["grits_con_upper_bound"],
-                grits_location=None,
-                grits_precision_location=None,
-                grits_recall_location=None,
-                grits_location_upper_bound=None,
-            )
-        elif isinstance(sample, TableMetricBracketInputSample):
-            bracket_a = sample.bracket_a
-            bracket_b = sample.bracket_b
-            sample_evaluaton = self._teds_manager.evaluate_sample(
-                sample.id,
-                bracket_a,
-                bracket_b,
-            )
-            if sample_evaluaton.error_id != 0:
-                raise ValueError(sample_evaluaton.error_msg)
-            teds_evaluation = TEDSSampleEvaluation(
-                tree_a_size=sample_evaluaton.tree_a_size,
-                tree_b_size=sample_evaluaton.tree_b_size,
-                teds=sample_evaluaton.teds,
-            )
+            if compute_teds:
+                bracket_a = self._teds_scorer.html_to_bracket(
+                    sample.html_a, structure_only=structure_only
+                )
+                bracket_b = self._teds_scorer.html_to_bracket(
+                    sample.html_b, structure_only=structure_only
+                )
+                sample_evaluaton = self._teds_manager.evaluate_sample(
+                    sample.id,
+                    bracket_a,
+                    bracket_b,
+                )
+                if sample_evaluaton.error_id != 0:
+                    raise ValueError(sample_evaluaton.error_msg)
+                teds_evaluation = TEDSSampleEvaluation(
+                    tree_a_size=sample_evaluaton.tree_a_size,
+                    tree_b_size=sample_evaluaton.tree_b_size,
+                    teds=sample_evaluaton.teds,
+                )
+            if compute_grits:
+                grits_metrics = grits_from_html(
+                    sample.html_a,
+                    sample.html_b,
+                    enable_topology=True,
+                    enable_content=not structure_only,
+                )
+                grits_evaluation = self._build_grits_evaluation(grits_metrics)
         elif isinstance(sample, TableMetricGeometricInputSample):
-            grits_metrics = grits_from_cells(
-                [cell.model_dump() for cell in sample.true_cells],
-                [cell.model_dump() for cell in sample.pred_cells],
-            )
-            grits_evaluation = GriTSSampleEvaluation(
-                grits_topology=grits_metrics["grits_top"],
-                grits_precision_topology=grits_metrics["grits_precision_top"],
-                grits_recall_topology=grits_metrics["grits_recall_top"],
-                grits_topology_upper_bound=grits_metrics["grits_top_upper_bound"],
-                grits_content=grits_metrics["grits_con"],
-                grits_precision_content=grits_metrics["grits_precision_con"],
-                grits_recall_content=grits_metrics["grits_recall_con"],
-                grits_content_upper_bound=grits_metrics["grits_con_upper_bound"],
-                grits_location=grits_metrics["grits_loc"],
-                grits_precision_location=grits_metrics["grits_precision_loc"],
-                grits_recall_location=grits_metrics["grits_recall_loc"],
-                grits_location_upper_bound=grits_metrics["grits_loc_upper_bound"],
-            )
+            if compute_grits:
+                true_cells_dict = [cell.model_dump() for cell in sample.true_cells]
+                pred_cells_dict = [cell.model_dump() for cell in sample.pred_cells]
+
+                grits_metrics = grits_from_cells(
+                    true_cells_dict,
+                    pred_cells_dict,
+                    enable_topology=TableMetricTaskKind.STRUCTURE in sample.tasks,
+                    enable_content=TableMetricTaskKind.CONTENT in sample.tasks,
+                    enable_location=TableMetricTaskKind.LOCATION in sample.tasks,
+                )
+                grits_evaluation = self._build_grits_evaluation(grits_metrics)
+        elif isinstance(sample, TableMetricBracketInputSample):
+            if compute_teds:
+                bracket_a = sample.bracket_a
+                bracket_b = sample.bracket_b
+                sample_evaluaton = self._teds_manager.evaluate_sample(
+                    sample.id,
+                    bracket_a,
+                    bracket_b,
+                )
+                if sample_evaluaton.error_id != 0:
+                    raise ValueError(sample_evaluaton.error_msg)
+                teds_evaluation = TEDSSampleEvaluation(
+                    tree_a_size=sample_evaluaton.tree_a_size,
+                    tree_b_size=sample_evaluaton.tree_b_size,
+                    teds=sample_evaluaton.teds,
+                )
         else:
-            raise ValueError("Invalid sample type")  # type: ignore[unreachable]
+            raise MetricException("Invalid sample type")  # type: ignore[unreachable]
 
         result = TableMetricSampleEvaluation(
             id=sample.id,
@@ -245,3 +264,21 @@ class TableMetric(BaseMetric):
         table_tree: TableTree = self._teds_scorer.html_to_table_tree(html_obj)
         bracket: str = table_tree.bracket()
         return bracket
+
+    def _build_grits_evaluation(
+        self, grits_metrics: dict[str, float | int]
+    ) -> GriTSSampleEvaluation:
+        return GriTSSampleEvaluation(
+            grits_topology=grits_metrics.get("grits_top"),
+            grits_precision_topology=grits_metrics.get("grits_precision_top"),
+            grits_recall_topology=grits_metrics.get("grits_recall_top"),
+            grits_topology_upper_bound=grits_metrics.get("grits_top_upper_bound"),
+            grits_content=grits_metrics.get("grits_con"),
+            grits_precision_content=grits_metrics.get("grits_precision_con"),
+            grits_recall_content=grits_metrics.get("grits_recall_con"),
+            grits_content_upper_bound=grits_metrics.get("grits_con_upper_bound"),
+            grits_location=grits_metrics.get("grits_loc"),
+            grits_precision_location=grits_metrics.get("grits_precision_loc"),
+            grits_recall_location=grits_metrics.get("grits_recall_loc"),
+            grits_location_upper_bound=grits_metrics.get("grits_loc_upper_bound"),
+        )

@@ -312,65 +312,83 @@ def html_to_cells(table_html: str) -> list[dict[str, Any]]:
     return table_cells
 
 
-def grits_from_html(true_html: str, pred_html: str) -> dict[str, float | int]:
+def grits_from_html(
+    true_html: str, pred_html: str, enable_topology: bool, enable_content: bool
+) -> dict[str, float | int]:
+    r""" """
     metrics: dict[str, float | int] = {}
 
     true_cells = html_to_cells(true_html)
     pred_cells = html_to_cells(pred_html)
 
-    true_topology_grid = np.array(cells_to_relspan_grid(true_cells))
-    pred_topology_grid = np.array(cells_to_relspan_grid(pred_cells))
-    true_text_grid = np.array(cells_to_grid(true_cells, key="cell_text"), dtype=object)
-    pred_text_grid = np.array(cells_to_grid(pred_cells, key="cell_text"), dtype=object)
+    if enable_topology:
+        true_topology_grid = np.array(cells_to_relspan_grid(true_cells))
+        pred_topology_grid = np.array(cells_to_relspan_grid(pred_cells))
+        (
+            metrics["grits_top"],
+            metrics["grits_precision_top"],
+            metrics["grits_recall_top"],
+            metrics["grits_top_upper_bound"],
+        ) = grits_top(true_topology_grid, pred_topology_grid)
 
-    (
-        metrics["grits_top"],
-        metrics["grits_precision_top"],
-        metrics["grits_recall_top"],
-        metrics["grits_top_upper_bound"],
-    ) = grits_top(true_topology_grid, pred_topology_grid)
-
-    (
-        metrics["grits_con"],
-        metrics["grits_precision_con"],
-        metrics["grits_recall_con"],
-        metrics["grits_con_upper_bound"],
-    ) = grits_con(true_text_grid, pred_text_grid)
+    if enable_content:
+        true_text_grid = np.array(
+            cells_to_grid(true_cells, key="cell_text"), dtype=object
+        )
+        pred_text_grid = np.array(
+            cells_to_grid(pred_cells, key="cell_text"), dtype=object
+        )
+        (
+            metrics["grits_con"],
+            metrics["grits_precision_con"],
+            metrics["grits_recall_con"],
+            metrics["grits_con_upper_bound"],
+        ) = grits_con(true_text_grid, pred_text_grid)
 
     return metrics
 
 
 def grits_from_cells(
-    true_cells: list[dict[str, Any]], pred_cells: list[dict[str, Any]]
+    true_cells: list[dict[str, Any]],
+    pred_cells: list[dict[str, Any]],
+    enable_topology: bool,
+    enable_content: bool,
+    enable_location: bool,
 ) -> dict[str, float | int]:
     metrics: dict[str, float | int] = {}
 
-    true_topology_grid = np.array(cells_to_relspan_grid(true_cells))
-    pred_topology_grid = np.array(cells_to_relspan_grid(pred_cells))
-    true_bbox_grid = np.array(cells_to_grid(true_cells, key="bbox"), dtype=object)
-    pred_bbox_grid = np.array(cells_to_grid(pred_cells, key="bbox"), dtype=object)
-    true_text_grid = np.array(cells_to_grid(true_cells, key="cell_text"), dtype=object)
-    pred_text_grid = np.array(cells_to_grid(pred_cells, key="cell_text"), dtype=object)
+    if enable_topology:
+        true_topology_grid = np.array(cells_to_relspan_grid(true_cells))
+        pred_topology_grid = np.array(cells_to_relspan_grid(pred_cells))
+        (
+            metrics["grits_top"],
+            metrics["grits_precision_top"],
+            metrics["grits_recall_top"],
+            metrics["grits_top_upper_bound"],
+        ) = grits_top(true_topology_grid, pred_topology_grid)
 
-    (
-        metrics["grits_top"],
-        metrics["grits_precision_top"],
-        metrics["grits_recall_top"],
-        metrics["grits_top_upper_bound"],
-    ) = grits_top(true_topology_grid, pred_topology_grid)
+    if enable_content:
+        true_text_grid = np.array(
+            cells_to_grid(true_cells, key="cell_text"), dtype=object
+        )
+        pred_text_grid = np.array(
+            cells_to_grid(pred_cells, key="cell_text"), dtype=object
+        )
+        (
+            metrics["grits_con"],
+            metrics["grits_precision_con"],
+            metrics["grits_recall_con"],
+            metrics["grits_con_upper_bound"],
+        ) = grits_con(true_text_grid, pred_text_grid)
 
-    (
-        metrics["grits_loc"],
-        metrics["grits_precision_loc"],
-        metrics["grits_recall_loc"],
-        metrics["grits_loc_upper_bound"],
-    ) = grits_loc(true_bbox_grid, pred_bbox_grid)
-
-    (
-        metrics["grits_con"],
-        metrics["grits_precision_con"],
-        metrics["grits_recall_con"],
-        metrics["grits_con_upper_bound"],
-    ) = grits_con(true_text_grid, pred_text_grid)
+    if enable_location:
+        true_bbox_grid = np.array(cells_to_grid(true_cells, key="bbox"), dtype=object)
+        pred_bbox_grid = np.array(cells_to_grid(pred_cells, key="bbox"), dtype=object)
+        (
+            metrics["grits_loc"],
+            metrics["grits_precision_loc"],
+            metrics["grits_recall_loc"],
+            metrics["grits_loc_upper_bound"],
+        ) = grits_loc(true_bbox_grid, pred_bbox_grid)
 
     return metrics
