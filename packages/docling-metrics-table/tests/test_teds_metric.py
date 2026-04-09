@@ -7,6 +7,7 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
     TableMetricHTMLInputSample,
+    TableMetricKind,
     TableMetricSampleEvaluation,
 )
 from docling_metrics_table.utils.teds import TEDScorer
@@ -153,8 +154,8 @@ def test_teds_api():
     # Load test data
     all_test_data: dict[str, dict[str, str]] = load_test_data()
 
-    # Initialize TableMetric
-    table_metric = TableMetric()
+    # Initialize TableMetric for TEDS
+    table_metric = TableMetric(metrics=[TableMetricKind.TEDS])
 
     # Loop over all stems
     for stem, test_data in all_test_data.items():
