@@ -52,3 +52,7 @@ class BaseMetric(ABC):
     ) -> BaseAggregateResult:
         """Evaluate an entire dataset."""
         ...
+
+
+class MetricException(Exception):
+    pass
