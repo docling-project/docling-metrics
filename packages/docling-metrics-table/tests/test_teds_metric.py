@@ -39,9 +39,10 @@ def load_test_data() -> dict[str, dict[str, str]]:
     Load test bracket and HTML files.
 
     Returns:
-        Nested dictionary where:
-        - First level key: stem (e.g., "ZBRA.2018.page_89.pdf_172_0")
-        - Second level keys: ["gt_bracket", "gt_html", "pred_bracket", "pred_html", "broken_bracket"]
+    -------
+    Nested dictionary where:
+    - First level key: stem (e.g., "ZBRA.2018.page_89.pdf_172_0")
+    - Second level keys: ["gt_bracket", "gt_html", "pred_bracket", "pred_html", "broken_bracket"]
     """
     test_dir = Path(__file__).parent
     prefixes = ["GT_", "pred_"]
@@ -204,10 +205,12 @@ def test_teds_api():
 
         # Test 2: Evaluate sample using HTML input
         print("\n=== Test 2: HTML Input ===")
+        html_a = test_data["gt_html"]
+        html_b = test_data["pred_html"]
         sample_html = TableMetricHTMLInputSample(
             id=f"s2_{stem}",
-            html_a=test_data["gt_html"],
-            html_b=test_data["pred_html"],
+            html_a=html_a,
+            html_b=html_b,
             structure_only=False,
         )
         sample_evaluation_html: TableMetricSampleEvaluation = (
@@ -238,8 +241,8 @@ def test_teds_api():
         print("\n=== Test 2b: HTML Input (structure_only=True) ===")
         sample_html_structure = TableMetricHTMLInputSample(
             id=f"s2b_{stem}",
-            html_a=test_data["gt_html"],
-            html_b=test_data["pred_html"],
+            html_a=html_a,
+            html_b=html_b,
             structure_only=True,
         )
         sample_evaluation_html_structure: TableMetricSampleEvaluation = (
@@ -281,6 +284,12 @@ def test_teds_api():
             table_metric.evaluate_sample(broken_sample)
 
         print(f"Expected error caught: {exc_info.value}")
+
+        # Test 4: Test with Cells format
+        # TODO:
+        # - Convert the html_a, html_b to TableMetricCellsInputSample objects
+        # - Run the TEDS metrics on the TableMetricCellsInputSample
+        # - Compare with the expected numbers
 
     print("\n All tests passed!")
 
