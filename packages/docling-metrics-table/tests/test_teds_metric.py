@@ -6,10 +6,13 @@ from docling_metrics_table import docling_metric_table_cpp
 from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
+    TableMetricCell,
+    TableMetricCellsInputSample,
     TableMetricHTMLInputSample,
     TableMetricKind,
     TableMetricSampleEvaluation,
 )
+from docling_metrics_table.utils.grits import html_to_cells
 from docling_metrics_table.utils.teds import TEDScorer
 
 # Test configuration
@@ -286,10 +289,51 @@ def test_teds_api():
         print(f"Expected error caught: {exc_info.value}")
 
         # Test 4: Test with Cells format
-        # TODO:
-        # - Convert the html_a, html_b to TableMetricCellsInputSample objects
-        # - Run the TEDS metrics on the TableMetricCellsInputSample
-        # - Compare with the expected numbers
+        print("\n=== Test 4: Cells Input ===")
+        cells_a = [
+            TableMetricCell.model_validate(
+                {
+                    "bbox": [0.0, 0.0, 0.0, 0.0],
+                    **cell,
+                }
+            )
+            for cell in html_to_cells(html_a)
+        ]
+        cells_b = [
+            TableMetricCell.model_validate(
+                {
+                    "bbox": [0.0, 0.0, 0.0, 0.0],
+                    **cell,
+                }
+            )
+            for cell in html_to_cells(html_b)
+        ]
+        sample_cells = TableMetricCellsInputSample(
+            id=f"s4_{stem}",
+            cells_a=cells_a,
+            cells_b=cells_b,
+        )
+        sample_evaluation_cells: TableMetricSampleEvaluation = (
+            table_metric.evaluate_sample(sample_cells)
+        )
+
+        print(f"Tree A Size: {sample_evaluation_cells.teds.tree_a_size}")
+        print(f"Tree B Size: {sample_evaluation_cells.teds.tree_b_size}")
+        print(f"TEDS Score: {sample_evaluation_cells.teds.teds}")
+
+        assert math.isclose(
+            sample_evaluation_cells.teds.teds,
+            expected_bracket_teds,
+            rel_tol=TEDS_RELATIVE_TOLERANCE,
+        ), (
+            f"Wrong TEDS score for cells input (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation_cells.teds.teds}"
+        )
+        assert sample_evaluation_cells.teds.tree_a_size == expected_tree_a_size, (
+            f"Wrong tree A size for cells input (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_cells.teds.tree_a_size}"
+        )
+        assert sample_evaluation_cells.teds.tree_b_size == expected_tree_b_size, (
+            f"Wrong tree B size for cells input (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_cells.teds.tree_b_size}"
+        )
 
     print("\n All tests passed!")
 
