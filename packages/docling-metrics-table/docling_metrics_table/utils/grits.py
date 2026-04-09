@@ -392,3 +392,64 @@ def grits_from_cells(
         ) = grits_loc(true_bbox_grid, pred_bbox_grid)
 
     return metrics
+
+
+def cells_to_html(cells: list[dict[str, Any]]) -> str:
+    """
+    Serialize table cells into a canonical HTML table.
+
+    The input is expected to use the evaluation/postprocess/GriTS cell schema:
+    ``row_nums`` and ``column_nums`` define the occupied grid locations,
+    ``cell_text`` holds the text content, and ``header`` marks header cells.
+
+    For compatibility with ``html_to_cells()``, this serializer also accepts the
+    smaller parser schema where the header flag is stored in
+    ``is_column_header``. The emitted HTML is canonicalized for the parser in
+    this module: reparsing it with ``html_to_cells()`` yields the same cell
+    topology, header flags, and text content.
+    """
+    if len(cells) == 0:
+        return str(ET.tostring(ET.Element("table"), encoding="unicode"))
+
+    normalized_cells = []
+    for cell in cells:
+        normalized_cells.append(
+            {
+                "row_nums": sorted(cell["row_nums"]),
+                "column_nums": sorted(cell["column_nums"]),
+                "is_column_header": bool(
+                    cell.get("header", cell.get("is_column_header", False))
+                ),
+                "cell_text": cell.get("cell_text", ""),
+            }
+        )
+
+    normalized_cells.sort(
+        key=lambda cell: (min(cell["row_nums"]), min(cell["column_nums"]))
+    )
+
+    cells_starting_by_row = defaultdict(list)
+    for cell in normalized_cells:
+        cells_starting_by_row[min(cell["row_nums"])].append(cell)
+
+    table = ET.Element("table")
+    num_rows = max(max(cell["row_nums"]) for cell in normalized_cells) + 1
+    for row_num in range(num_rows):
+        row = ET.SubElement(table, "tr")
+        row_cells = sorted(
+            cells_starting_by_row.get(row_num, []),
+            key=lambda cell: min(cell["column_nums"]),
+        )
+        for cell in row_cells:
+            attrib = {}
+            colspan = len(cell["column_nums"])
+            if colspan > 1:
+                attrib["colspan"] = str(colspan)
+            rowspan = len(cell["row_nums"])
+            if rowspan > 1:
+                attrib["rowspan"] = str(rowspan)
+            tag = "th" if cell["is_column_header"] else "td"
+            element = ET.SubElement(row, tag, attrib=attrib)
+            element.text = cell["cell_text"]
+
+    return str(ET.tostring(table, encoding="unicode", short_empty_elements=False))
