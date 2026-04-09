@@ -48,7 +48,7 @@ class BenchmarkReport(BaseModel):
     html_to_bracket_ms_stats: BenchmarkStats
 
 
-class Benchmarker:
+class TEDSBenchmarker:
     r"""
     Receive a dataset of bracket strings and evaluate the TEDS metric.
     Compare the APTED (python) vs the docling-metrics-table (C++/Python bindings) implementations.
@@ -309,7 +309,7 @@ def main():
 
     # Benchmark
     _log.info("Benchmark Python vs C++ TEDs implementations")
-    benchmarker = Benchmarker(save_root)
+    benchmarker = TEDSBenchmarker(save_root)
     benchmarker.benchmark(input_root)
 
 
