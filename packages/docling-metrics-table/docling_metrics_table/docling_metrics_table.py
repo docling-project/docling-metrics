@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import Annotated, Iterable, Optional
 
 from docling_metrics_core.base_types import (
@@ -13,6 +14,11 @@ from docling_metrics_table.utils.grits import grits_from_cells, grits_from_html
 from docling_metrics_table.utils.teds import TableTree, TEDScorer
 
 from . import docling_metric_table_cpp
+
+
+class TableMetric(StrEnum):
+    TEDS = "TEDS"
+    GRITS = "GriTS"
 
 
 class TableMetricBracketInputSample(BaseInputSample):
@@ -99,13 +105,22 @@ class TableMetricSampleEvaluation(BaseSampleResult):
 class TableMetricDatasetEvaluation(BaseAggregateResult): ...
 
 
+# TODO: Refactor the implementation of TableMetric to respect the self._metrics.
+# All evaluation methods should perfom the corresponding metric only if it has been enabled
+
+
 class TableMetric(BaseMetric):
     r"""
-    Expose the C++ TEDS metric as a Python module.
+    Table Structure Recognition metrics:
+    - TEDS. Expose the C++ TEDS metric as a Python module.
+    - GriTS
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self, metrics: list[TableMetric] = [TableMetric.TEDS, TableMetric.GRITS]
+    ) -> None:
         r""" """
+        self._metrics = metrics
         self._teds_manager = docling_metric_table_cpp.TEDSManager()
         self._teds_scorer = TEDScorer()
 
