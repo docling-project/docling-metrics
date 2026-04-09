@@ -4,6 +4,7 @@ from pathlib import Path
 
 from docling_metrics_table.docling_metrics_table import (
     TableMetric,
+    TableMetricBracketInputSample,
     TableMetricCell,
     TableMetricCellsInputSample,
     TableMetricHTMLInputSample,
@@ -11,6 +12,7 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetricTaskKind,
 )
 from docling_metrics_table.utils.grits import cells_to_html
+from docling_metrics_table.utils.teds import TEDScorer
 
 # Test configuration
 TEDS_RELATIVE_TOLERANCE = 1e-6
@@ -42,6 +44,7 @@ def test_grits_api():
 
     # Initialize TableMetric for GriTs
     table_metric = TableMetric(metrics=[TableMetricKind.GRITS])
+    teds_scorer = TEDScorer()
 
     for sample_idx, test_data in enumerate(all_test_data):
         true_cells = [
@@ -127,10 +130,12 @@ def test_grits_api():
         )
 
         # Test with HTML input
+        html_a = cells_to_html([cell.model_dump() for cell in true_cells])
+        html_b = cells_to_html([cell.model_dump() for cell in pred_cells])
         html_sample = TableMetricHTMLInputSample(
             id=f"html_{sample_idx}",
-            html_a=cells_to_html([cell.model_dump() for cell in true_cells]),
-            html_b=cells_to_html([cell.model_dump() for cell in pred_cells]),
+            html_a=html_a,
+            html_b=html_b,
             structure_only=False,
         )
         html_evaluation = table_metric.evaluate_sample(html_sample)
@@ -180,6 +185,44 @@ def test_grits_api():
         assert html_evaluation.grits.grits_precision_location is None
         assert html_evaluation.grits.grits_recall_location is None
         assert html_evaluation.grits.grits_location_upper_bound is None
+
+        # Test with bracket input. Only structure is supported for GriTS.
+        bracket_sample = TableMetricBracketInputSample(
+            id=f"bracket_{sample_idx}",
+            bracket_a=teds_scorer.html_to_bracket(html_a, structure_only=True),
+            bracket_b=teds_scorer.html_to_bracket(html_b, structure_only=True),
+        )
+        bracket_evaluation = table_metric.evaluate_sample(bracket_sample)
+
+        assert bracket_evaluation.grits is not None
+        assert_close(
+            bracket_evaluation.grits.grits_topology,
+            test_data["grits_top"],
+            "bracket grits_topology",
+        )
+        assert_close(
+            bracket_evaluation.grits.grits_precision_topology,
+            test_data["grits_precision_top"],
+            "bracket grits_precision_topology",
+        )
+        assert_close(
+            bracket_evaluation.grits.grits_recall_topology,
+            test_data["grits_recall_top"],
+            "bracket grits_recall_topology",
+        )
+        assert_close(
+            bracket_evaluation.grits.grits_topology_upper_bound,
+            test_data["grits_top_upper_bound"],
+            "bracket grits_topology_upper_bound",
+        )
+        assert bracket_evaluation.grits.grits_content is None
+        assert bracket_evaluation.grits.grits_precision_content is None
+        assert bracket_evaluation.grits.grits_recall_content is None
+        assert bracket_evaluation.grits.grits_content_upper_bound is None
+        assert bracket_evaluation.grits.grits_location is None
+        assert bracket_evaluation.grits.grits_precision_location is None
+        assert bracket_evaluation.grits.grits_recall_location is None
+        assert bracket_evaluation.grits.grits_location_upper_bound is None
 
 
 if __name__ == "__main__":
