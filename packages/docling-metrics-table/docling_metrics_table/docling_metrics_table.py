@@ -10,7 +10,11 @@ from docling_metrics_core.base_types import (
 from lxml import html
 from pydantic import BaseModel, Field
 
-from docling_metrics_table.utils.grits import grits_from_cells, grits_from_html
+from docling_metrics_table.utils.grits import (
+    cells_to_html,
+    grits_from_cells,
+    grits_from_html,
+)
 from docling_metrics_table.utils.teds import TableTree, TEDScorer
 
 from . import docling_metric_table_cpp
@@ -200,14 +204,30 @@ class TableMetric(BaseMetric):
                 )
                 grits_evaluation = self._build_grits_evaluation(grits_metrics)
         elif isinstance(sample, TableMetricGeometricInputSample):
-            # TODO: Add TEDS metric. Needs convertion from Cells to HTML
+            true_cells_dict = [cell.model_dump() for cell in sample.true_cells]
+            pred_cells_dict = [cell.model_dump() for cell in sample.pred_cells]
+
             if compute_teds:
-                pass
+                bracket_a = self._teds_scorer.html_to_bracket(
+                    cells_to_html(true_cells_dict)
+                )
+                bracket_b = self._teds_scorer.html_to_bracket(
+                    cells_to_html(pred_cells_dict)
+                )
+                sample_evaluaton = self._teds_manager.evaluate_sample(
+                    sample.id,
+                    bracket_a,
+                    bracket_b,
+                )
+                if sample_evaluaton.error_id != 0:
+                    raise ValueError(sample_evaluaton.error_msg)
+                teds_evaluation = TEDSSampleEvaluation(
+                    tree_a_size=sample_evaluaton.tree_a_size,
+                    tree_b_size=sample_evaluaton.tree_b_size,
+                    teds=sample_evaluaton.teds,
+                )
 
             if compute_grits:
-                true_cells_dict = [cell.model_dump() for cell in sample.true_cells]
-                pred_cells_dict = [cell.model_dump() for cell in sample.pred_cells]
-
                 grits_metrics = grits_from_cells(
                     true_cells_dict,
                     pred_cells_dict,
