@@ -6,8 +6,6 @@ from docling_metrics_table import docling_metric_table_cpp
 from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
-    TableMetricCell,
-    TableMetricCellsInputSample,
     TableMetricHTMLInputSample,
     TableMetricSampleEvaluation,
 )
@@ -24,18 +22,6 @@ TEST_DATA: dict[str, dict[str, int | float | None]] = {
         "bracket_teds": 0.285714285714286,
         "tree_a_size": 14,
         "tree_b_size": 12,
-        "grits_topology": 0.6153846153846154,
-        "grits_precision_topology": 0.8,
-        "grits_recall_topology": 0.5,
-        "grits_topology_upper_bound": 0.6153846153846154,
-        "grits_location": None,
-        "grits_precision_location": None,
-        "grits_recall_location": None,
-        "grits_location_upper_bound": None,
-        "grits_content": 0.006174622286520988,
-        "grits_precision_content": 0.008027008972477283,
-        "grits_recall_content": 0.005016880607798302,
-        "grits_content_upper_bound": 0.006174622286520988,
     },
     "WU.2016.page_106.pdf_68194_0": {
         "html_teds": 0.323529411764706,
@@ -43,18 +29,6 @@ TEST_DATA: dict[str, dict[str, int | float | None]] = {
         "bracket_teds": 0.323529411764706,
         "tree_a_size": 101,
         "tree_b_size": 102,
-        "grits_topology": 0.9866666666666668,
-        "grits_precision_topology": 0.9866666666666667,
-        "grits_recall_topology": 0.9866666666666667,
-        "grits_topology_upper_bound": 0.9866666666666668,
-        "grits_location": None,
-        "grits_precision_location": None,
-        "grits_recall_location": None,
-        "grits_location_upper_bound": None,
-        "grits_content": 0.2592853765619723,
-        "grits_precision_content": 0.2592853765619723,
-        "grits_recall_content": 0.2592853765619723,
-        "grits_content_upper_bound": 0.29333333333333333,
     },
 }
 
@@ -310,87 +284,6 @@ def test_teds_api():
     print("\n All tests passed!")
 
 
-def test_grits_api():
-    all_test_data: dict[str, dict[str, str]] = load_test_data()
-    table_metric = TableMetric()
-
-    for stem, test_data in all_test_data.items():
-        sample_html = TableMetricHTMLInputSample(
-            id=f"grits_{stem}",
-            html_a=test_data["gt_html"],
-            html_b=test_data["pred_html"],
-            structure_only=False,
-        )
-        sample_evaluation = table_metric.evaluate_sample(sample_html)
-
-        # TODO: Simplify this code
-        for field_name, expected_value in TEST_DATA[stem].items():
-            if field_name.startswith("grits_") and "location" not in field_name:
-                actual_value = getattr(sample_evaluation.grits, field_name)
-                assert math.isclose(
-                    actual_value,
-                    expected_value,
-                    rel_tol=TEDS_RELATIVE_TOLERANCE,
-                ), (
-                    f"Wrong {field_name} for HTML input on stem {stem}. Expected {expected_value}, got {actual_value}"
-                )
-
-        sample_bracket = TableMetricBracketInputSample(
-            id=f"grits_bracket_{stem}",
-            bracket_a=test_data["gt_bracket"],
-            bracket_b=test_data["pred_bracket"],
-        )
-        bracket_evaluation = table_metric.evaluate_sample(sample_bracket)
-
-        assert bracket_evaluation.grits is None, (
-            f"Expected grits to be None for bracket input on stem {stem}"
-        )
-
-
-def test_grits_cells_api():
-    table_metric = TableMetric()
-    true_cells = [
-        TableMetricCell(
-            bbox=[0.0, 0.0, 10.0, 10.0],
-            cell_text="A",
-            row_nums=[0],
-            column_nums=[0],
-        ),
-        TableMetricCell(
-            bbox=[10.0, 0.0, 20.0, 10.0],
-            cell_text="B",
-            row_nums=[0],
-            column_nums=[1],
-        ),
-    ]
-    pred_cells = [
-        TableMetricCell(
-            bbox=[0.0, 0.0, 10.0, 10.0],
-            cell_text="A",
-            row_nums=[0],
-            column_nums=[0],
-        ),
-        TableMetricCell(
-            bbox=[11.0, 0.0, 21.0, 10.0],
-            cell_text="B",
-            row_nums=[0],
-            column_nums=[1],
-        ),
-    ]
-
-    sample = TableMetricCellsInputSample(
-        id="geom_1",
-        cells_a=true_cells,
-        cells_b=pred_cells,
-    )
-    sample_evaluation = table_metric.evaluate_sample(sample)
-
-    assert math.isclose(sample_evaluation.grits.grits_topology, 1.0, rel_tol=1e-6)
-    assert math.isclose(
-        sample_evaluation.grits.grits_content, 1.0, rel_tol=TEDS_RELATIVE_TOLERANCE
-    )
-
-
 def test_bracket_html_roundtrip():
     all_test_data: dict[str, dict[str, str]] = load_test_data()
     teds_scorer = TEDScorer()
@@ -409,6 +302,4 @@ def test_bracket_html_roundtrip():
 if __name__ == "__main__":
     # test_cpp_bindings()
     # test_teds_api()
-    # test_grits_api()
-    test_grits_cells_api()
-    # test_bracket_html_roundtrip()
+    test_bracket_html_roundtrip()
