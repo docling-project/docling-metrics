@@ -176,23 +176,11 @@ class TableMetric(BaseMetric):
         if isinstance(sample, TableMetricHTMLInputSample):
             structure_only = sample.structure_only
             if compute_teds:
-                bracket_a = self._teds_scorer.html_to_bracket(
-                    sample.html_a, structure_only=structure_only
-                )
-                bracket_b = self._teds_scorer.html_to_bracket(
-                    sample.html_b, structure_only=structure_only
-                )
-                sample_evaluaton = self._teds_manager.evaluate_sample(
+                teds_evaluation = self._evaluate_teds_from_html(
                     sample.id,
-                    bracket_a,
-                    bracket_b,
-                )
-                if sample_evaluaton.error_id != 0:
-                    raise ValueError(sample_evaluaton.error_msg)
-                teds_evaluation = TEDSSampleEvaluation(
-                    tree_a_size=sample_evaluaton.tree_a_size,
-                    tree_b_size=sample_evaluaton.tree_b_size,
-                    teds=sample_evaluaton.teds,
+                    sample.html_a,
+                    sample.html_b,
+                    structure_only=structure_only,
                 )
             if compute_grits:
                 # The location task cannot be computed by the HTML inputs
@@ -208,23 +196,10 @@ class TableMetric(BaseMetric):
             pred_cells_dict = [cell.model_dump() for cell in sample.pred_cells]
 
             if compute_teds:
-                bracket_a = self._teds_scorer.html_to_bracket(
-                    cells_to_html(true_cells_dict)
-                )
-                bracket_b = self._teds_scorer.html_to_bracket(
-                    cells_to_html(pred_cells_dict)
-                )
-                sample_evaluaton = self._teds_manager.evaluate_sample(
+                teds_evaluation = self._evaluate_teds_from_html(
                     sample.id,
-                    bracket_a,
-                    bracket_b,
-                )
-                if sample_evaluaton.error_id != 0:
-                    raise ValueError(sample_evaluaton.error_msg)
-                teds_evaluation = TEDSSampleEvaluation(
-                    tree_a_size=sample_evaluaton.tree_a_size,
-                    tree_b_size=sample_evaluaton.tree_b_size,
-                    teds=sample_evaluaton.teds,
+                    cells_to_html(true_cells_dict),
+                    cells_to_html(pred_cells_dict),
                 )
 
             if compute_grits:
@@ -296,6 +271,28 @@ class TableMetric(BaseMetric):
         table_tree: TableTree = self._teds_scorer.html_to_table_tree(html_obj)
         bracket: str = table_tree.bracket()
         return bracket
+
+    def _evaluate_teds_from_html(
+        self, sample_id: str, html_a: str, html_b: str, structure_only: bool = False
+    ) -> TEDSSampleEvaluation:
+        bracket_a = self._teds_scorer.html_to_bracket(
+            html_a, structure_only=structure_only
+        )
+        bracket_b = self._teds_scorer.html_to_bracket(
+            html_b, structure_only=structure_only
+        )
+        sample_evaluaton = self._teds_manager.evaluate_sample(
+            sample_id,
+            bracket_a,
+            bracket_b,
+        )
+        if sample_evaluaton.error_id != 0:
+            raise ValueError(sample_evaluaton.error_msg)
+        return TEDSSampleEvaluation(
+            tree_a_size=sample_evaluaton.tree_a_size,
+            tree_b_size=sample_evaluaton.tree_b_size,
+            teds=sample_evaluaton.teds,
+        )
 
     def _build_grits_evaluation(
         self, grits_metrics: dict[str, float | int]
