@@ -77,16 +77,16 @@ class TableMetricCell(BaseModel):
     ]
 
 
-class TableMetricGeometricInputSample(BaseInputSample):
+class TableMetricCellsInputSample(BaseInputSample):
     r"""Supports the tasks STRUCTURE, CONTENT, LOCATION"""
 
-    true_cells: Annotated[
+    cells_a: Annotated[
         list[TableMetricCell],
-        Field(description="Ground-truth table cells with geometry"),
+        Field(description="Cells-A with geometry"),
     ]
-    pred_cells: Annotated[
+    cells_b: Annotated[
         list[TableMetricCell],
-        Field(description="Predicted table cells with geometry"),
+        Field(description="Cells-B with geometry"),
     ]
 
     # Limit the computed tasks to the given ones
@@ -162,7 +162,7 @@ class TableMetric(BaseMetric):
         self,
         sample: TableMetricBracketInputSample
         | TableMetricHTMLInputSample
-        | TableMetricGeometricInputSample,
+        | TableMetricCellsInputSample,
     ) -> TableMetricSampleEvaluation:
         r"""
         Evaluate a single sample.
@@ -192,9 +192,9 @@ class TableMetric(BaseMetric):
                     enable_content=not structure_only,
                 )
                 grits_evaluation = self._build_grits_evaluation(grits_metrics)
-        elif isinstance(sample, TableMetricGeometricInputSample):
-            true_cells_dict = [cell.model_dump() for cell in sample.true_cells]
-            pred_cells_dict = [cell.model_dump() for cell in sample.pred_cells]
+        elif isinstance(sample, TableMetricCellsInputSample):
+            true_cells_dict = [cell.model_dump() for cell in sample.cells_a]
+            pred_cells_dict = [cell.model_dump() for cell in sample.cells_b]
 
             if compute_teds:
                 teds_evaluation = self._evaluate_teds_from_html(
@@ -262,7 +262,7 @@ class TableMetric(BaseMetric):
         sample_pairs: Iterable[
             TableMetricBracketInputSample
             | TableMetricHTMLInputSample
-            | TableMetricGeometricInputSample
+            | TableMetricCellsInputSample
         ],
     ) -> TableMetricDatasetEvaluation:
         r"""
