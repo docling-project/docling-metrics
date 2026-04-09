@@ -152,10 +152,11 @@ class TableMetric(BaseMetric):
         if len(self._metrics) == 0:
             raise ValueError("Cannot initialize TableMetrics without tasks")
 
-        # Initialize the TEDS metrics
+        self._teds_scorer = TEDScorer()
+
+        # Initialize the TEDS metric
         if TableMetricKind.TEDS in self._metrics:
             self._teds_manager = docling_metric_table_cpp.TEDSManager()
-            self._teds_scorer = TEDScorer()
 
     def evaluate_sample(  # type: ignore[override]
         self,
@@ -228,9 +229,16 @@ class TableMetric(BaseMetric):
                     teds=sample_evaluaton.teds,
                 )
 
-            # TODO: Add GriTS metric. Needs conversion from Bracket to HTML (or to CELLS)
             if compute_grits:
-                pass
+                html_a = self._teds_scorer.bracket_to_html(sample.bracket_a)
+                html_b = self._teds_scorer.bracket_to_html(sample.bracket_b)
+                grits_metrics = grits_from_html(
+                    html_a,
+                    html_b,
+                    enable_topology=True,
+                    enable_content=False,
+                )
+                grits_evaluation = self._build_grits_evaluation(grits_metrics)
         else:
             raise ValueError("Invalid sample type")  # type: ignore[unreachable]
 
