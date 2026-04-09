@@ -11,6 +11,7 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetricHTMLInputSample,
     TableMetricSampleEvaluation,
 )
+from docling_metrics_table.utils.teds import TEDScorer
 
 # Test configuration
 TEDS_RELATIVE_TOLERANCE = 1e-6
@@ -410,7 +411,23 @@ def test_grits_geometric_api():
     assert sample_evaluation.grits.grits_recall_location < 1.0
 
 
+def test_bracket_html_roundtrip():
+    all_test_data: dict[str, dict[str, str]] = load_test_data()
+    teds_scorer = TEDScorer()
+
+    for stem, test_data in all_test_data.items():
+        bracket = teds_scorer.html_to_bracket(test_data["gt_html"], structure_only=True)
+        roundtrip_html = teds_scorer.bracket_to_html(bracket)
+        roundtrip_bracket = teds_scorer.html_to_bracket(
+            roundtrip_html, structure_only=True
+        )
+        assert roundtrip_bracket == bracket, (
+            f"Bracket roundtrip changed the structure-only representation for stem {stem}"
+        )
+
+
 if __name__ == "__main__":
     # test_cpp_bindings()
     # test_teds_api()
-    test_grits_api()
+    # test_grits_api()
+    test_bracket_html_roundtrip()
