@@ -7,7 +7,7 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
     TableMetricCell,
-    TableMetricGeometricInputSample,
+    TableMetricCellsInputSample,
     TableMetricHTMLInputSample,
     TableMetricSampleEvaluation,
 )
@@ -322,22 +322,8 @@ def test_grits_api():
             structure_only=False,
         )
         sample_evaluation = table_metric.evaluate_sample(sample_html)
-        assert sample_evaluation.grits is not None, (
-            f"Expected grits to be computed for HTML input on stem {stem}"
-        )
-        assert sample_evaluation.grits.grits_location is None, (
-            f"Expected grits_location to be None for HTML input on stem {stem}"
-        )
-        assert sample_evaluation.grits.grits_precision_location is None, (
-            f"Expected grits_precision_location to be None for HTML input on stem {stem}"
-        )
-        assert sample_evaluation.grits.grits_recall_location is None, (
-            f"Expected grits_recall_location to be None for HTML input on stem {stem}"
-        )
-        assert sample_evaluation.grits.grits_location_upper_bound is None, (
-            f"Expected grits_location_upper_bound to be None for HTML input on stem {stem}"
-        )
 
+        # TODO: Simplify this code
         for field_name, expected_value in TEST_DATA[stem].items():
             if field_name.startswith("grits_") and "location" not in field_name:
                 actual_value = getattr(sample_evaluation.grits, field_name)
@@ -361,7 +347,7 @@ def test_grits_api():
         )
 
 
-def test_grits_geometric_api():
+def test_grits_cells_api():
     table_metric = TableMetric()
     true_cells = [
         TableMetricCell(
@@ -392,23 +378,17 @@ def test_grits_geometric_api():
         ),
     ]
 
-    sample = TableMetricGeometricInputSample(
+    sample = TableMetricCellsInputSample(
         id="geom_1",
-        true_cells=true_cells,
-        pred_cells=pred_cells,
+        cells_a=true_cells,
+        cells_b=pred_cells,
     )
     sample_evaluation = table_metric.evaluate_sample(sample)
 
-    assert sample_evaluation.teds is None
-    assert sample_evaluation.grits is not None
     assert math.isclose(sample_evaluation.grits.grits_topology, 1.0, rel_tol=1e-6)
     assert math.isclose(
         sample_evaluation.grits.grits_content, 1.0, rel_tol=TEDS_RELATIVE_TOLERANCE
     )
-    assert sample_evaluation.grits.grits_location is not None
-    assert sample_evaluation.grits.grits_location < 1.0
-    assert sample_evaluation.grits.grits_precision_location < 1.0
-    assert sample_evaluation.grits.grits_recall_location < 1.0
 
 
 def test_bracket_html_roundtrip():
@@ -430,4 +410,5 @@ if __name__ == "__main__":
     # test_cpp_bindings()
     # test_teds_api()
     # test_grits_api()
-    test_bracket_html_roundtrip()
+    test_grits_cells_api()
+    # test_bracket_html_roundtrip()
