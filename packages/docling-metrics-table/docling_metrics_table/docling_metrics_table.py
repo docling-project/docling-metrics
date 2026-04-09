@@ -6,7 +6,6 @@ from docling_metrics_core.base_types import (
     BaseInputSample,
     BaseMetric,
     BaseSampleResult,
-    MetricException,
 )
 from lxml import html
 from pydantic import BaseModel, Field
@@ -31,7 +30,7 @@ class TableMetricTaskKind(str, Enum):
 
 
 class TableMetricBracketInputSample(BaseInputSample):
-    r"""The BracketInputSample supports only the STRUCTURE task"""
+    r"""Supports only the STRUCTURE task"""
 
     bracket_a: Annotated[
         str, Field(description="The input-a string to be evaluated in bracket format")
@@ -42,7 +41,7 @@ class TableMetricBracketInputSample(BaseInputSample):
 
 
 class TableMetricHTMLInputSample(BaseInputSample):
-    r"""The TableMetricHTMLInputSample supports the tasks STRUCTURE and CONTENT"""
+    r"""Supports the tasks STRUCTURE and CONTENT"""
 
     html_a: Annotated[
         str, Field(description="The input-a string to be evaluated in HTML format")
@@ -75,7 +74,7 @@ class TableMetricCell(BaseModel):
 
 
 class TableMetricGeometricInputSample(BaseInputSample):
-    r"""The TableMetricHTMLInputSample supports the tasks STRUCTURE, CONTENT, LOCATION"""
+    r"""Supports the tasks STRUCTURE, CONTENT, LOCATION"""
 
     true_cells: Annotated[
         list[TableMetricCell],
@@ -85,6 +84,8 @@ class TableMetricGeometricInputSample(BaseInputSample):
         list[TableMetricCell],
         Field(description="Predicted table cells with geometry"),
     ]
+
+    # Limit the computed tasks to the given ones
     tasks: list[TableMetricTaskKind] = [TableMetricTaskKind.ALL]
 
 
@@ -107,7 +108,7 @@ class GriTSSampleEvaluation(BaseModel):
     grits_recall_content: float | None
     grits_content_upper_bound: float | None
 
-    # Bounding boxes of the cells. This is populated only when the InputSample contains bboxes
+    # Location of the table cells
     grits_location: float | None
     grits_precision_location: float | None
     grits_recall_location: float | None
@@ -130,7 +131,9 @@ class TableMetric(BaseMetric):
     """
 
     def __init__(self, metrics: list[TableMetricKind] = [TableMetricKind.ALL]) -> None:
-        r""" """
+        r"""
+        Initialize the TableMetric for the given list of metrics
+        """
         # Select the metrics
         metric_set = set(metrics)
         if TableMetricKind.ALL in metric_set:
@@ -143,7 +146,7 @@ class TableMetric(BaseMetric):
         self._metrics = metric_set
 
         if len(self._metrics) == 0:
-            raise MetricException("Cannot initialize TableMetrics without tasks")
+            raise ValueError("Cannot initialize TableMetrics without tasks")
 
         # Initialize the TEDS metrics
         if TableMetricKind.TEDS in self._metrics:
@@ -188,6 +191,7 @@ class TableMetric(BaseMetric):
                     teds=sample_evaluaton.teds,
                 )
             if compute_grits:
+                # The location task cannot be computed by the HTML inputs
                 grits_metrics = grits_from_html(
                     sample.html_a,
                     sample.html_b,
@@ -196,6 +200,10 @@ class TableMetric(BaseMetric):
                 )
                 grits_evaluation = self._build_grits_evaluation(grits_metrics)
         elif isinstance(sample, TableMetricGeometricInputSample):
+            # TODO: Add TEDS metric. Needs convertion from Cells to HTML
+            if compute_teds:
+                pass
+
             if compute_grits:
                 true_cells_dict = [cell.model_dump() for cell in sample.true_cells]
                 pred_cells_dict = [cell.model_dump() for cell in sample.pred_cells]
@@ -224,8 +232,12 @@ class TableMetric(BaseMetric):
                     tree_b_size=sample_evaluaton.tree_b_size,
                     teds=sample_evaluaton.teds,
                 )
+
+            # TODO: Add GriTS metric. Needs conversion from Bracket to HTML (or to CELLS)
+            if compute_grits:
+                pass
         else:
-            raise MetricException("Invalid sample type")  # type: ignore[unreachable]
+            raise ValueError("Invalid sample type")  # type: ignore[unreachable]
 
         result = TableMetricSampleEvaluation(
             id=sample.id,
