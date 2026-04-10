@@ -24,15 +24,21 @@ TEST_DATA: dict[str, dict[str, int | float | None]] = {
         "html_teds": 0.285714285714286,
         "html_structure_only_teds": 0.571428571428571,
         "bracket_teds": 0.285714285714286,
+        "cells_teds": 0.23076923076923073,
         "tree_a_size": 14,
         "tree_b_size": 12,
+        "cells_tree_a_size": 13,
+        "cells_tree_b_size": 11,
     },
     "WU.2016.page_106.pdf_68194_0": {
         "html_teds": 0.323529411764706,
         "html_structure_only_teds": 0.980392156862745,
         "bracket_teds": 0.323529411764706,
+        "cells_teds": 0.3168316831683168,
         "tree_a_size": 101,
         "tree_b_size": 102,
+        "cells_tree_a_size": 100,
+        "cells_tree_b_size": 101,
     },
 }
 
@@ -288,53 +294,6 @@ def test_teds_api():
 
         print(f"Expected error caught: {exc_info.value}")
 
-        # Test 4: Test with Cells format
-        print("\n=== Test 4: Cells Input ===")
-        cells_a = [
-            TableMetricCell.model_validate(
-                {
-                    "bbox": [0.0, 0.0, 0.0, 0.0],
-                    **cell,
-                }
-            )
-            for cell in html_to_cells(html_a)
-        ]
-        cells_b = [
-            TableMetricCell.model_validate(
-                {
-                    "bbox": [0.0, 0.0, 0.0, 0.0],
-                    **cell,
-                }
-            )
-            for cell in html_to_cells(html_b)
-        ]
-        sample_cells = TableMetricCellsInputSample(
-            id=f"s4_{stem}",
-            cells_a=cells_a,
-            cells_b=cells_b,
-        )
-        sample_evaluation_cells: TableMetricSampleEvaluation = (
-            table_metric.evaluate_sample(sample_cells)
-        )
-
-        print(f"Tree A Size: {sample_evaluation_cells.teds.tree_a_size}")
-        print(f"Tree B Size: {sample_evaluation_cells.teds.tree_b_size}")
-        print(f"TEDS Score: {sample_evaluation_cells.teds.teds}")
-
-        assert math.isclose(
-            sample_evaluation_cells.teds.teds,
-            expected_bracket_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
-        ), (
-            f"Wrong TEDS score for cells input (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation_cells.teds.teds}"
-        )
-        assert sample_evaluation_cells.teds.tree_a_size == expected_tree_a_size, (
-            f"Wrong tree A size for cells input (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_cells.teds.tree_a_size}"
-        )
-        assert sample_evaluation_cells.teds.tree_b_size == expected_tree_b_size, (
-            f"Wrong tree B size for cells input (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_cells.teds.tree_b_size}"
-        )
-
     print("\n All tests passed!")
 
 
@@ -353,7 +312,70 @@ def test_bracket_html_roundtrip():
         )
 
 
+def test_html_to_cells():
+    r"""Convert HTML to cells and do the evaluation"""
+    all_test_data: dict[str, dict[str, str]] = load_test_data()
+    table_metric = TableMetric(metrics=[TableMetricKind.TEDS])
+
+    for stem, test_data in all_test_data.items():
+        config = TEST_DATA[stem]
+        expected_cells_teds = config["cells_teds"]
+        expected_cells_tree_a_size = config["cells_tree_a_size"]
+        expected_cells_tree_b_size = config["cells_tree_b_size"]
+        assert expected_cells_teds is not None
+        assert expected_cells_tree_a_size is not None
+        assert expected_cells_tree_b_size is not None
+
+        print("\n=== Cells Input ===")
+        cells_a = [
+            TableMetricCell.model_validate(
+                {
+                    "bbox": [0.0, 0.0, 0.0, 0.0],
+                    **cell,
+                }
+            )
+            for cell in html_to_cells(test_data["gt_html"])
+        ]
+        cells_b = [
+            TableMetricCell.model_validate(
+                {
+                    "bbox": [0.0, 0.0, 0.0, 0.0],
+                    **cell,
+                }
+            )
+            for cell in html_to_cells(test_data["pred_html"])
+        ]
+        sample_cells = TableMetricCellsInputSample(
+            id=f"s4_{stem}",
+            cells_a=cells_a,
+            cells_b=cells_b,
+        )
+        sample_evaluation_cells: TableMetricSampleEvaluation = (
+            table_metric.evaluate_sample(sample_cells)
+        )
+        assert sample_evaluation_cells.teds is not None
+
+        print(f"Tree A Size: {sample_evaluation_cells.teds.tree_a_size}")
+        print(f"Tree B Size: {sample_evaluation_cells.teds.tree_b_size}")
+        print(f"TEDS Score: {sample_evaluation_cells.teds.teds}")
+
+        assert math.isclose(
+            sample_evaluation_cells.teds.teds,
+            expected_cells_teds,
+            rel_tol=TEDS_RELATIVE_TOLERANCE,
+        ), (
+            f"Wrong TEDS score for cells input (stem: {stem}). Expected {expected_cells_teds}, got {sample_evaluation_cells.teds.teds}"
+        )
+        assert sample_evaluation_cells.teds.tree_a_size == expected_cells_tree_a_size, (
+            f"Wrong tree A size for cells input (stem: {stem}). Expected {expected_cells_tree_a_size}, got {sample_evaluation_cells.teds.tree_a_size}"
+        )
+        assert sample_evaluation_cells.teds.tree_b_size == expected_cells_tree_b_size, (
+            f"Wrong tree B size for cells input (stem: {stem}). Expected {expected_cells_tree_b_size}, got {sample_evaluation_cells.teds.tree_b_size}"
+        )
+
+
 if __name__ == "__main__":
     # test_cpp_bindings()
     # test_teds_api()
-    test_bracket_html_roundtrip()
+    # test_bracket_html_roundtrip()
+    test_html_to_cells()
