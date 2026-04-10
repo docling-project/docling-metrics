@@ -9,7 +9,6 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetricCellsInputSample,
     TableMetricHTMLInputSample,
     TableMetricKind,
-    TableMetricTaskKind,
 )
 from docling_metrics_table.utils.grits import cells_to_html
 from docling_metrics_table.utils.teds import TEDScorer
@@ -59,11 +58,6 @@ def test_grits_api():
             id=f"cells_{sample_idx}",
             cells_a=true_cells,
             cells_b=pred_cells,
-            tasks=[
-                TableMetricTaskKind.STRUCTURE,
-                TableMetricTaskKind.CONTENT,
-                TableMetricTaskKind.LOCATION,
-            ],
         )
         cells_evaluation = table_metric.evaluate_sample(cells_sample)
 

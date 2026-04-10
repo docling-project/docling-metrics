@@ -22,13 +22,11 @@ from . import docling_metric_table_cpp
 
 
 class TableMetricKind(str, Enum):
-    ALL = "ALL"
     TEDS = "TEDS"
     GRITS = "GriTS"
 
 
 class TableMetricTaskKind(str, Enum):
-    ALL = "ALL"
     STRUCTURE = "structure"
     CONTENT = "content"
     LOCATION = "location"
@@ -91,7 +89,11 @@ class TableMetricCellsInputSample(BaseInputSample):
     ]
 
     # Limit the computed tasks to the given ones
-    tasks: list[TableMetricTaskKind] = [TableMetricTaskKind.ALL]
+    tasks: list[TableMetricTaskKind] = [
+        TableMetricTaskKind.STRUCTURE,
+        TableMetricTaskKind.CONTENT,
+        TableMetricTaskKind.LOCATION,
+    ]
 
 
 class TEDSSampleEvaluation(BaseModel):
@@ -135,20 +137,14 @@ class TableMetric(BaseMetric):
     - GriTS
     """
 
-    def __init__(self, metrics: list[TableMetricKind] = [TableMetricKind.ALL]) -> None:
+    def __init__(
+        self,
+        metrics: list[TableMetricKind] = [TableMetricKind.TEDS, TableMetricKind.GRITS],
+    ) -> None:
         r"""
         Initialize the TableMetric for the given list of metrics
         """
-        # Select the metrics
-        metric_set = set(metrics)
-        if TableMetricKind.ALL in metric_set:
-            metric_set.remove(TableMetricKind.ALL)
-            metric_set.update(
-                metric_kind
-                for metric_kind in TableMetricKind
-                if metric_kind is not TableMetricKind.ALL
-            )
-        self._metrics = metric_set
+        self._metrics = metrics
 
         if len(self._metrics) == 0:
             raise ValueError("Cannot initialize TableMetrics without tasks")
