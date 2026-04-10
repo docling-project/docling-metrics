@@ -135,6 +135,7 @@ class TableMetric(BaseMetric):
     def __init__(
         self,
         metrics: list[TableMetricKind] = [TableMetricKind.TEDS, TableMetricKind.GRITS],
+        grits_cache_size: int = 10000000,
     ) -> None:
         r"""
         Initialize the TableMetric for the given list of metrics
@@ -145,11 +146,12 @@ class TableMetric(BaseMetric):
             raise ValueError("Cannot initialize TableMetrics without tasks")
 
         self._teds_scorer = TEDScorer()
-        self._grits_metric = GriTSMetric()
 
         # Initialize the TEDS metric
         if TableMetricKind.TEDS in self._metrics:
             self._teds_manager = docling_metric_table_cpp.TEDSManager()
+        if TableMetricKind.GRITS in self._metrics:
+            self._grits_metric = GriTSMetric(max_cache_size=grits_cache_size)
 
     def evaluate_sample(  # type: ignore[override]
         self,

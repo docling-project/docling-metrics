@@ -49,13 +49,17 @@ class LCSCache:
             self._lcs_cache.popitem(last=False)
 
     def counters(self) -> dict[str, int]:
-        return {"hits": self._hits, "misses": self._misses}
+        return {
+            "hits": self._hits,
+            "misses": self._misses,
+            "cache_size": len(self._lcs_cache),
+        }
 
 
 class GriTSMetric:
     r"""Namespace for GriTS utilities."""
 
-    def __init__(self, max_cache_size: int = 1_000_000):
+    def __init__(self, max_cache_size):
         r""" """
         self._lcs_cache = LCSCache(max_cache_size=max_cache_size)
 

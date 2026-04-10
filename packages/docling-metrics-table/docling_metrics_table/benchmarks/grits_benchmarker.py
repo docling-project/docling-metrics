@@ -42,12 +42,16 @@ class GriTSBenchmarker:
     def __init__(
         self,
         save_root: Path,
+        grits_cache_size: int,
     ):
         r""" """
         save_root.mkdir(parents=True, exist_ok=True)
         self._save_root = save_root
 
-        self._grits_metric = TableMetric(metrics=[TableMetricKind.GRITS])
+        self._grits_metric = TableMetric(
+            metrics=[TableMetricKind.GRITS],
+            grits_cache_size=grits_cache_size,
+        )
 
     def _benchmark_task(
         self,
@@ -264,6 +268,12 @@ def main():
         required=True,
         help="Path to the directory to save generated data",
     )
+    parser.add_argument(
+        "--grits-cache-size",
+        type=int,
+        default=10_000_000,
+        help="Maximum number of entries in the GriTS LCS cache",
+    )
     args = parser.parse_args()
 
     log_format = "%(asctime)s - %(levelname)s - %(message)s"
@@ -272,7 +282,11 @@ def main():
     _log.info("Benchmark GriTS implementation")
     _log.info("Input file: %s", args.input)
     _log.info("Save dir: %s", args.save_root)
-    benchmarker = GriTSBenchmarker(args.save_root)
+    _log.info("GriTS cache size: %d", args.grits_cache_size)
+    benchmarker = GriTSBenchmarker(
+        save_root=args.save_root,
+        grits_cache_size=args.grits_cache_size,
+    )
     benchmarker.benchmark(args.input)
 
 
