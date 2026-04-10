@@ -10,8 +10,13 @@ import numpy as np
 
 class LCSCache:
     def __init__(self, max_cache_size):
+        r""" """
         self._max_cache_size = max_cache_size
         self._lcs_cache: OrderedDict[bytes, float] = OrderedDict()
+
+        # Performance counters
+        self._hits = 0
+        self._misses = 0
 
     def _make_key(self, str1: str, str2: str) -> bytes:
         r"""The key must be symmeteric over string1, string2"""
@@ -24,12 +29,15 @@ class LCSCache:
         return hashlib.blake2b(cache_key, digest_size=16).digest()
 
     def get(self, str1: str, str2: str) -> float | None:
+        r"""Get an LCS value or None if not in cache"""
         cache_key = self._make_key(str1, str2)
         cached_value = self._lcs_cache.pop(cache_key, None)
         if cached_value is None:
+            self._misses += 1
             return None
 
         self._lcs_cache[cache_key] = cached_value
+        self._hits += 1
         return cached_value
 
     def set(self, str1: str, str2: str, value: float):
@@ -40,6 +48,9 @@ class LCSCache:
         while len(self._lcs_cache) > self._max_cache_size:
             self._lcs_cache.popitem(last=False)
 
+    def counters(self) -> dict[str, int]:
+        return {"hits": self._hits, "misses": self._misses}
+
 
 class GriTSMetric:
     r"""Namespace for GriTS utilities."""
@@ -47,6 +58,9 @@ class GriTSMetric:
     def __init__(self, max_cache_size: int = 1_000_000):
         r""" """
         self._lcs_cache = LCSCache(max_cache_size=max_cache_size)
+
+    def cache_counters(self) -> dict[str, int]:
+        return self._lcs_cache.counters()
 
     def _compute_fscore(
         self, num_true_positives: float, num_true: int, num_positives: int
