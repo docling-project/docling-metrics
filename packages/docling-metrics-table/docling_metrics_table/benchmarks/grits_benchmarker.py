@@ -184,6 +184,8 @@ def main():
     logging.basicConfig(level=logging.INFO, format=log_format)
 
     _log.info("Benchmark GriTS implementation")
+    _log.info("Input file: %s", args.input)
+    _log.info("Save dir: %s", args.save_root)
     benchmarker = GriTSBenchmarker(args.save_root)
     benchmarker.benchmark(args.input)
 
