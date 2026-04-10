@@ -67,6 +67,7 @@ class TEDSBenchmarker:
         all_python_ms: list[float] = []
         all_cpp_ms: list[float] = []
         all_html_to_bracket_ms: list[float] = []
+        n_matches = 0
 
         for i, (gt_file, pred_file) in enumerate(matches.items()):
             # Extract filename without GT prefix
@@ -116,6 +117,8 @@ class TEDSBenchmarker:
                 # Create BenchmarkSample
                 n_nodes: int = sample_evaluaton.teds.tree_a_size
                 match = abs(cpp_teds - python_teds) < 1e-6
+                if match:
+                    n_matches += 1
                 characterization = "Match!" if match else "Differ"
 
                 sample = BenchmarkSample(
@@ -177,6 +180,7 @@ class TEDSBenchmarker:
         # Create and return BenchmarkReport
         report = BenchmarkReport(
             samples=benchmark_samples,
+            matches=n_matches,
             python_teds_ms_stats=python_ms_stats,
             cpp_ms_stats=cpp_ms_stats,
             html_to_bracket_ms_stats=html_to_bracket_ms_stats,

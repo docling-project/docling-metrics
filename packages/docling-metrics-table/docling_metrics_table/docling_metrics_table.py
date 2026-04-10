@@ -264,6 +264,9 @@ class TableMetric(BaseMetric):
         result = TableMetricDatasetEvaluation(sample_count=0)
         return result
 
+    def grits_cache_counters(self) -> dict[str, int]:
+        return self._grits_metric.cache_counters()
+
     def _html_to_bracket(self, html_str: str) -> str:
         r"""
         Convert html to bracket format

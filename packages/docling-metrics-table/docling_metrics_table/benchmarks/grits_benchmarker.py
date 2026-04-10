@@ -24,6 +24,9 @@ from docling_metrics_table.docling_metrics_table import (
 
 _log: Logger = logging.getLogger(__name__)
 
+# Test configuration
+RELATIVE_TOLERANCE = 1e-6
+
 TASKS: tuple[TableMetricTaskKind, ...] = (
     TableMetricTaskKind.STRUCTURE,
     TableMetricTaskKind.CONTENT,
@@ -102,6 +105,7 @@ class GriTSBenchmarker:
             task: [] for task in TASKS
         }
         all_python_ms: list[float] = []
+        n_matches = 0
 
         for i, item in enumerate(data):
             sample_id = str(item["id"])
@@ -135,9 +139,12 @@ class GriTSBenchmarker:
                     TableMetricTaskKind.LOCATION: float(item["grits_loc"]),
                 }
                 match = all(
-                    abs(grits_by_task[task] - expected_grits_by_task[task]) < 1e-6
+                    abs(grits_by_task[task] - expected_grits_by_task[task])
+                    < RELATIVE_TOLERANCE
                     for task in TASKS
                 )
+                if match:
+                    n_matches += 1
 
                 benchmark_samples[sample_id] = BenchmarkSample(
                     id=sample_id,
@@ -198,6 +205,7 @@ class GriTSBenchmarker:
         )
         report = BenchmarkReport(
             samples=benchmark_samples,
+            matches=n_matches,
             python_grits_topology_ms_stats=python_ms_stats_by_task[
                 TableMetricTaskKind.STRUCTURE
             ],
@@ -208,6 +216,7 @@ class GriTSBenchmarker:
                 TableMetricTaskKind.LOCATION
             ],
             python_grits_ms_stats=python_ms_stats,
+            grits_cache=self._grits_metric.grits_cache_counters(),
         )
 
         for task in TASKS:

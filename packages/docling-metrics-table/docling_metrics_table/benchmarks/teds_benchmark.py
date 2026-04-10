@@ -22,6 +22,9 @@ from docling_metrics_table.utils.teds import CustomConfig, TableTree, TEDScorer
 
 _log: Logger = logging.getLogger(__name__)
 
+# Test configuration
+RELATIVE_TOLERANCE = 1e-6
+
 
 class TEDSBenchmarker:
     r"""
@@ -115,7 +118,7 @@ class TEDSBenchmarker:
 
                 # Create BenchmarkSample
                 n_nodes: int = sample_evaluaton.teds.tree_a_size
-                match = abs(cpp_teds - python_teds) < 1e-6
+                match = abs(cpp_teds - python_teds) < RELATIVE_TOLERANCE
                 characterization = "Match!" if match else "Differ"
 
                 sample = BenchmarkSample(

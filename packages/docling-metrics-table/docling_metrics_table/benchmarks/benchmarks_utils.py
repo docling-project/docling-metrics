@@ -32,11 +32,14 @@ class BenchmarkSample(BaseModel):
 
 class BenchmarkReport(BaseModel):
     samples: dict[str, BenchmarkSample]  # id -> BenchmarkSample
+    matches: int  # Sum of all sample matches. Applies both to TEDS and GriTS
 
     python_teds_ms_stats: BenchmarkStats | None = None
+    cpp_ms_stats: BenchmarkStats | None = None
+    html_to_bracket_ms_stats: BenchmarkStats | None = None
+
     python_grits_topology_ms_stats: BenchmarkStats | None = None
     python_grits_content_ms_stats: BenchmarkStats | None = None
     python_grits_location_ms_stats: BenchmarkStats | None = None
     python_grits_ms_stats: BenchmarkStats | None = None
-    cpp_ms_stats: BenchmarkStats | None = None
-    html_to_bracket_ms_stats: BenchmarkStats | None = None
+    grits_cache: dict[str, int] | None = None
