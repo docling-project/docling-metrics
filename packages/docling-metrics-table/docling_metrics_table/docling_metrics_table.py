@@ -14,6 +14,7 @@ from docling_metrics_table.utils.grits import (
     cells_to_html,
     grits_from_cells,
     grits_from_html,
+    html_to_cells,
 )
 from docling_metrics_table.utils.teds import TableTree, TEDScorer
 
@@ -191,7 +192,7 @@ class TableMetric(BaseMetric):
                     enable_topology=True,
                     enable_content=not structure_only,
                 )
-                grits_evaluation = self._build_grits_evaluation(grits_metrics)
+                grits_evaluation = TableMetric._build_grits_evaluation(grits_metrics)
         elif isinstance(sample, TableMetricCellsInputSample):
             true_cells_dict = [cell.model_dump() for cell in sample.cells_a]
             pred_cells_dict = [cell.model_dump() for cell in sample.cells_b]
@@ -211,7 +212,7 @@ class TableMetric(BaseMetric):
                     enable_content=TableMetricTaskKind.CONTENT in sample.tasks,
                     enable_location=TableMetricTaskKind.LOCATION in sample.tasks,
                 )
-                grits_evaluation = self._build_grits_evaluation(grits_metrics)
+                grits_evaluation = TableMetric._build_grits_evaluation(grits_metrics)
         elif isinstance(sample, TableMetricBracketInputSample):
             if compute_teds:
                 bracket_a = sample.bracket_a
@@ -302,8 +303,9 @@ class TableMetric(BaseMetric):
             teds=sample_evaluaton.teds,
         )
 
+    @staticmethod
     def _build_grits_evaluation(
-        self, grits_metrics: dict[str, float | int]
+        grits_metrics: dict[str, float | int],
     ) -> GriTSSampleEvaluation:
         return GriTSSampleEvaluation(
             grits_topology=grits_metrics.get("grits_top"),
@@ -319,3 +321,23 @@ class TableMetric(BaseMetric):
             grits_recall_location=grits_metrics.get("grits_recall_loc"),
             grits_location_upper_bound=grits_metrics.get("grits_loc_upper_bound"),
         )
+
+    @staticmethod
+    def html_to_cells_input(
+        html_str: str, default_bbox: list[float] = [0.0, 0.0, 0.0, 0.0]
+    ) -> list[TableMetricCell]:
+        r"""
+        Convert the HTML from the test data (OTSL->HTML) to TableMetricCells
+        Because the HTML lacks the information about the cell bboxes, a default bbox value is used
+        """
+        # Create the cells
+        cells = [
+            TableMetricCell.model_validate(
+                {
+                    "bbox": default_bbox,
+                    **cell,
+                }
+            )
+            for cell in html_to_cells(html_str)
+        ]
+        return cells
