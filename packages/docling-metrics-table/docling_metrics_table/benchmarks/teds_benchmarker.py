@@ -55,28 +55,6 @@ class TEDSBenchmarker:
         5. Print the output of the python and the C++ implementations.
         """
 
-        def create_stats(timing_list: list[float]) -> BenchmarkStats:
-            """Create BenchmarkStats from a list of timing measurements."""
-            return BenchmarkStats(
-                mean=mean(timing_list),
-                median=median(timing_list),
-                std=stdev(timing_list) if len(timing_list) > 1 else 0.0,
-                max=max(timing_list),
-                min=min(timing_list),
-            )
-
-        def log_stats(name: str, stats: BenchmarkStats) -> None:
-            """Log benchmark statistics in a formatted way."""
-            _log.info(
-                "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
-                name,
-                stats.mean,
-                stats.median,
-                stats.std,
-                stats.min,
-                stats.max,
-            )
-
         # Step 1: Match ground truth and prediction files
         matches = self._find_matches(data_root)
 
@@ -142,12 +120,12 @@ class TEDSBenchmarker:
 
                 sample = BenchmarkSample(
                     id=file_id,
+                    sample_len=n_nodes,
                     python_teds=python_teds,
                     python_teds_ms=python_ms,
                     cpp_teds=cpp_teds,
                     cpp_teds_ms=cpp_ms,
                     match=match,
-                    sample_len=n_nodes,
                     html_to_bracket_ms=html_to_bracket_ms,
                 )
                 benchmark_samples[file_id] = sample
@@ -172,9 +150,29 @@ class TEDSBenchmarker:
             _log.error("No valid benchmark data collected")
             return None
 
-        python_ms_stats = create_stats(all_python_ms)
-        cpp_ms_stats = create_stats(all_cpp_ms)
-        html_to_bracket_ms_stats = create_stats(all_html_to_bracket_ms)
+        python_ms_stats = BenchmarkStats(
+            mean=mean(all_python_ms),
+            median=median(all_python_ms),
+            std=stdev(all_python_ms) if len(all_python_ms) > 1 else 0.0,
+            max=max(all_python_ms),
+            min=min(all_python_ms),
+        )
+        cpp_ms_stats = BenchmarkStats(
+            mean=mean(all_cpp_ms),
+            median=median(all_cpp_ms),
+            std=stdev(all_cpp_ms) if len(all_cpp_ms) > 1 else 0.0,
+            max=max(all_cpp_ms),
+            min=min(all_cpp_ms),
+        )
+        html_to_bracket_ms_stats = BenchmarkStats(
+            mean=mean(all_html_to_bracket_ms),
+            median=median(all_html_to_bracket_ms),
+            std=stdev(all_html_to_bracket_ms)
+            if len(all_html_to_bracket_ms) > 1
+            else 0.0,
+            max=max(all_html_to_bracket_ms),
+            min=min(all_html_to_bracket_ms),
+        )
 
         # Create and return BenchmarkReport
         report = BenchmarkReport(
@@ -185,9 +183,33 @@ class TEDSBenchmarker:
         )
 
         # Log benchmark statistics
-        log_stats("Python stats", python_ms_stats)
-        log_stats("C++ stats   ", cpp_ms_stats)
-        log_stats("HTML to bracket stats", html_to_bracket_ms_stats)
+        _log.info(
+            "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
+            "Python stats",
+            python_ms_stats.mean,
+            python_ms_stats.median,
+            python_ms_stats.std,
+            python_ms_stats.min,
+            python_ms_stats.max,
+        )
+        _log.info(
+            "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
+            "C++ stats   ",
+            cpp_ms_stats.mean,
+            cpp_ms_stats.median,
+            cpp_ms_stats.std,
+            cpp_ms_stats.min,
+            cpp_ms_stats.max,
+        )
+        _log.info(
+            "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
+            "HTML to bracket stats",
+            html_to_bracket_ms_stats.mean,
+            html_to_bracket_ms_stats.median,
+            html_to_bracket_ms_stats.std,
+            html_to_bracket_ms_stats.min,
+            html_to_bracket_ms_stats.max,
+        )
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_path = self._save_root / f"benchmark_report_{timestamp}.json"
