@@ -140,7 +140,7 @@ class GriTSBenchmarker:
         )
         report = BenchmarkReport(
             samples=benchmark_samples,
-            python_grits_ms_stats=python_ms_stats,
+            python_teds_ms_stats=python_ms_stats,
         )
 
         _log.info(
@@ -184,8 +184,6 @@ def main():
     logging.basicConfig(level=logging.INFO, format=log_format)
 
     _log.info("Benchmark GriTS implementation")
-    _log.info("Input file: %s", args.input)
-    _log.info("Save dir: %s", args.save_root)
     benchmarker = GriTSBenchmarker(args.save_root)
     benchmarker.benchmark(args.input)
 
