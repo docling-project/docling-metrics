@@ -1,17 +1,52 @@
+import hashlib
 import itertools
 import xml.etree.ElementTree as ET
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from difflib import SequenceMatcher
 from typing import Any
 
 import numpy as np
 
 
+class LCSCache:
+    def __init__(self, max_cache_size):
+        self._max_cache_size = max_cache_size
+        self._lcs_cache: OrderedDict[bytes, float] = OrderedDict()
+
+    def _make_key(self, str1: str, str2: str) -> bytes:
+        r"""The key must be symmeteric over string1, string2"""
+        if str1 <= str2:
+            ordered_strings = (str1, str2)
+        else:
+            ordered_strings = (str2, str1)
+
+        cache_key = "\0".join(ordered_strings).encode("utf-8")
+        return hashlib.blake2b(cache_key, digest_size=16).digest()
+
+    def get(self, str1: str, str2: str) -> float | None:
+        cache_key = self._make_key(str1, str2)
+        cached_value = self._lcs_cache.pop(cache_key, None)
+        if cached_value is None:
+            return None
+
+        self._lcs_cache[cache_key] = cached_value
+        return cached_value
+
+    def set(self, str1: str, str2: str, value: float):
+        cache_key = self._make_key(str1, str2)
+        self._lcs_cache.pop(cache_key, None)
+        self._lcs_cache[cache_key] = value
+
+        while len(self._lcs_cache) > self._max_cache_size:
+            self._lcs_cache.popitem(last=False)
+
+
 class GriTSMetric:
     r"""Namespace for GriTS utilities."""
 
-    def __init__(self):
-        pass
+    def __init__(self, max_cache_size: int = 1_000_000):
+        r""" """
+        self._lcs_cache = LCSCache(max_cache_size=max_cache_size)
 
     def _compute_fscore(
         self, num_true_positives: float, num_true: int, num_positives: int
@@ -183,14 +218,23 @@ class GriTSMetric:
         return fscore, precision, recall, upper_bound_score
 
     def _lcs_similarity(self, string1: str, string2: str) -> float:
+        r""" """
         if len(string1) == 0 and len(string2) == 0:
             return 1.0
+
+        cached_value = self._lcs_cache.get(string1, string2)
+        if cached_value is not None:
+            return cached_value
+
         matcher = SequenceMatcher(None, string1, string2)
         lcs = "".join(
             string1[block.a : (block.a + block.size)]
             for block in matcher.get_matching_blocks()
         )
-        return 2 * len(lcs) / (len(string1) + len(string2))
+        normalized_lcs = 2 * len(lcs) / (len(string1) + len(string2))
+
+        self._lcs_cache.set(string1, string2, normalized_lcs)
+        return normalized_lcs
 
     def _rect_area(self, rect: list[float]) -> float:
         return max(0, rect[2] - rect[0]) * max(0, rect[3] - rect[1])
