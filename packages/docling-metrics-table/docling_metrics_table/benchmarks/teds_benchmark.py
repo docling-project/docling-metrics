@@ -8,8 +8,11 @@ from statistics import mean, median, stdev
 from typing import Optional
 
 from apted import APTED
-from pydantic import BaseModel
-
+from docling_metrics_table.benchmarks.benchmarks_utils import (
+    BenchmarkReport,
+    BenchmarkSample,
+    BenchmarkStats,
+)
 from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
@@ -18,34 +21,6 @@ from docling_metrics_table.docling_metrics_table import (
 from docling_metrics_table.utils.teds import CustomConfig, TableTree, TEDScorer
 
 _log: Logger = logging.getLogger(__name__)
-
-
-class BenchmarkStats(BaseModel):
-    mean: float
-    median: float
-    std: float
-    max: float
-    min: float
-
-
-class BenchmarkSample(BaseModel):
-    id: str
-    sample_len: int
-    python_teds: float
-    python_ms: float
-    cpp_teds: float
-    cpp_ms: float
-    html_to_bracket_ms: (
-        float  # This includes converting both inputs from HTML to bracket
-    )
-    match: bool
-
-
-class BenchmarkReport(BaseModel):
-    samples: dict[str, BenchmarkSample]  # id -> BenchmarkSample
-    python_ms_stats: BenchmarkStats
-    cpp_ms_stats: BenchmarkStats
-    html_to_bracket_ms_stats: BenchmarkStats
 
 
 class TEDSBenchmarker:
@@ -168,9 +143,9 @@ class TEDSBenchmarker:
                 sample = BenchmarkSample(
                     id=file_id,
                     python_teds=python_teds,
-                    python_ms=python_ms,
+                    python_teds_ms=python_ms,
                     cpp_teds=cpp_teds,
-                    cpp_ms=cpp_ms,
+                    cpp_teds_ms=cpp_ms,
                     match=match,
                     sample_len=n_nodes,
                     html_to_bracket_ms=html_to_bracket_ms,
