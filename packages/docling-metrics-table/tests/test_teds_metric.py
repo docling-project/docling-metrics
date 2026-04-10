@@ -14,7 +14,7 @@ from docling_metrics_table.docling_metrics_table import (
 from docling_metrics_table.utils.teds import TEDScorer
 
 # Test configuration
-TEDS_RELATIVE_TOLERANCE = 1e-6
+RELATIVE_TOLERANCE = 1e-6
 
 # Test data configuration: stems and expected values
 TEST_DATA: dict[str, dict[str, int | float | None]] = {
@@ -113,7 +113,7 @@ def test_cpp_bindings():
         assert math.isclose(
             sample_evaluation.teds,
             expected_bracket_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for valid bracket (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation.teds}"
         )
@@ -193,7 +193,7 @@ def test_teds_api():
         assert math.isclose(
             sample_evaluation_bracket.teds.teds,
             expected_bracket_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for valid bracket (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation_bracket.teds.teds}"
         )
@@ -227,7 +227,7 @@ def test_teds_api():
         assert math.isclose(
             sample_evaluation_html.teds.teds,
             expected_html_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for HTML input (stem: {stem}). Expected {expected_html_teds}, got {sample_evaluation_html.teds.teds}"
         )
@@ -259,7 +259,7 @@ def test_teds_api():
         assert math.isclose(
             sample_evaluation_html_structure.teds.teds,
             expected_html_structure_only_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for HTML input with structure_only=True (stem: {stem}). Expected {expected_html_structure_only_teds}, got {sample_evaluation_html_structure.teds.teds}"
         )
@@ -345,7 +345,7 @@ def test_cells_input():
         assert math.isclose(
             sample_evaluation_cells.teds.teds,
             expected_cells_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for cells input (stem: {stem}). Expected {expected_cells_teds}, got {sample_evaluation_cells.teds.teds}"
         )

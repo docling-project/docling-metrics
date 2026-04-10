@@ -14,7 +14,7 @@ from docling_metrics_table.utils.grits import GriTSMetric
 from docling_metrics_table.utils.teds import TEDScorer
 
 # Test configuration
-TEDS_RELATIVE_TOLERANCE = 1e-6
+RELATIVE_TOLERANCE = 1e-6
 
 # Test data for GriTS
 TEST_FILE = "tests/data/grits_10.json"
@@ -32,7 +32,7 @@ def load_test_data():
 def assert_close(actual: float | None, expected: float | None, field_name: str) -> None:
     assert actual is not None
     assert expected is not None
-    assert math.isclose(actual, expected, rel_tol=TEDS_RELATIVE_TOLERANCE), (
+    assert math.isclose(actual, expected, rel_tol=RELATIVE_TOLERANCE), (
         f"Wrong {field_name}. Expected {expected}, got {actual}"
     )
 
