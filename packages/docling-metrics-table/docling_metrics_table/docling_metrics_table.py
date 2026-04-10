@@ -10,12 +10,7 @@ from docling_metrics_core.base_types import (
 from lxml import html
 from pydantic import BaseModel, Field
 
-from docling_metrics_table.utils.grits import (
-    cells_to_html,
-    grits_from_cells,
-    grits_from_html,
-    html_to_cells,
-)
+from docling_metrics_table.utils.grits import GriTSMetric
 from docling_metrics_table.utils.teds import TableTree, TEDScorer
 
 from . import docling_metric_table_cpp
@@ -150,6 +145,7 @@ class TableMetric(BaseMetric):
             raise ValueError("Cannot initialize TableMetrics without tasks")
 
         self._teds_scorer = TEDScorer()
+        self._grits_metric = GriTSMetric()
 
         # Initialize the TEDS metric
         if TableMetricKind.TEDS in self._metrics:
@@ -182,7 +178,7 @@ class TableMetric(BaseMetric):
                 )
             if compute_grits:
                 # The location task cannot be computed by the HTML inputs
-                grits_metrics = grits_from_html(
+                grits_metrics = self._grits_metric.grits_from_html(
                     sample.html_a,
                     sample.html_b,
                     enable_topology=True,
@@ -196,12 +192,12 @@ class TableMetric(BaseMetric):
             if compute_teds:
                 teds_evaluation = self._evaluate_teds_from_html(
                     sample.id,
-                    cells_to_html(true_cells_dict),
-                    cells_to_html(pred_cells_dict),
+                    GriTSMetric.cells_to_html(true_cells_dict),
+                    GriTSMetric.cells_to_html(pred_cells_dict),
                 )
 
             if compute_grits:
-                grits_metrics = grits_from_cells(
+                grits_metrics = self._grits_metric.grits_from_cells(
                     true_cells_dict,
                     pred_cells_dict,
                     enable_topology=TableMetricTaskKind.STRUCTURE in sample.tasks,
@@ -229,7 +225,7 @@ class TableMetric(BaseMetric):
             if compute_grits:
                 html_a = self._teds_scorer.bracket_to_html(sample.bracket_a)
                 html_b = self._teds_scorer.bracket_to_html(sample.bracket_b)
-                grits_metrics = grits_from_html(
+                grits_metrics = self._grits_metric.grits_from_html(
                     html_a,
                     html_b,
                     enable_topology=True,
@@ -334,6 +330,6 @@ class TableMetric(BaseMetric):
                     **cell,
                 }
             )
-            for cell in html_to_cells(html_str)
+            for cell in GriTSMetric.html_to_cells(html_str)
         ]
         return cells

@@ -10,7 +10,7 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetricHTMLInputSample,
     TableMetricKind,
 )
-from docling_metrics_table.utils.grits import cells_to_html
+from docling_metrics_table.utils.grits import GriTSMetric
 from docling_metrics_table.utils.teds import TEDScorer
 
 # Test configuration
@@ -124,8 +124,8 @@ def test_grits_api():
         )
 
         # Test with HTML input
-        html_a = cells_to_html([cell.model_dump() for cell in true_cells])
-        html_b = cells_to_html([cell.model_dump() for cell in pred_cells])
+        html_a = GriTSMetric.cells_to_html([cell.model_dump() for cell in true_cells])
+        html_b = GriTSMetric.cells_to_html([cell.model_dump() for cell in pred_cells])
         html_sample = TableMetricHTMLInputSample(
             id=f"html_{sample_idx}",
             html_a=html_a,
