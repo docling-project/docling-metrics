@@ -433,9 +433,10 @@ def cells_to_html(cells: list[dict[str, Any]]) -> str:
         cells_starting_by_row[min(cell["row_nums"])].append(cell)
 
     table = ET.Element("table")
+    tbody = ET.SubElement(table, "tbody")
     num_rows = max(max(cell["row_nums"]) for cell in normalized_cells) + 1
     for row_num in range(num_rows):
-        row = ET.SubElement(table, "tr")
+        row = ET.SubElement(tbody, "tr")
         row_cells = sorted(
             cells_starting_by_row.get(row_num, []),
             key=lambda cell: min(cell["column_nums"]),
