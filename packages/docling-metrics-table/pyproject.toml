@@ -28,6 +28,7 @@ dependencies = [
     "pydantic",
     "RapidFuzz",
     "lxml",
+    "numpy",
 ]
 
 [project.urls]

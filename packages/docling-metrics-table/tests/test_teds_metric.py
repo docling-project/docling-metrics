@@ -6,15 +6,18 @@ from docling_metrics_table import docling_metric_table_cpp
 from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
+    TableMetricCellsInputSample,
     TableMetricHTMLInputSample,
+    TableMetricKind,
     TableMetricSampleEvaluation,
 )
+from docling_metrics_table.utils.teds import TEDScorer
 
 # Test configuration
-TEDS_RELATIVE_TOLERANCE = 1e-6
+RELATIVE_TOLERANCE = 1e-6
 
 # Test data configuration: stems and expected values
-TEST_DATA: dict[str, dict[str, int | float]] = {
+TEST_DATA: dict[str, dict[str, int | float | None]] = {
     "CHD.2018.page_21.pdf_147707_0": {
         "html_teds": 0.285714285714286,
         "html_structure_only_teds": 0.571428571428571,
@@ -37,9 +40,10 @@ def load_test_data() -> dict[str, dict[str, str]]:
     Load test bracket and HTML files.
 
     Returns:
-        Nested dictionary where:
-        - First level key: stem (e.g., "ZBRA.2018.page_89.pdf_172_0")
-        - Second level keys: ["gt_bracket", "gt_html", "pred_bracket", "pred_html", "broken_bracket"]
+    -------
+    Nested dictionary where:
+    - First level key: stem (e.g., "ZBRA.2018.page_89.pdf_172_0")
+    - Second level keys: ["gt_bracket", "gt_html", "pred_bracket", "pred_html", "broken_bracket"]
     """
     test_dir = Path(__file__).parent
     prefixes = ["GT_", "pred_"]
@@ -109,7 +113,7 @@ def test_cpp_bindings():
         assert math.isclose(
             sample_evaluation.teds,
             expected_bracket_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
             f"Wrong TEDS score for valid bracket (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation.teds}"
         )
@@ -145,15 +149,15 @@ def test_cpp_bindings():
     print("\n All tests passed!")
 
 
-def test_table_metric_api():
+def test_teds_api():
     r"""
     Test the high-level TableMetric API with valid and broken bracket notations and HTML inputs.
     """
     # Load test data
     all_test_data: dict[str, dict[str, str]] = load_test_data()
 
-    # Initialize TableMetric
-    table_metric = TableMetric()
+    # Initialize TableMetric for TEDS
+    table_metric = TableMetric(metrics=[TableMetricKind.TEDS])
 
     # Loop over all stems
     for stem, test_data in all_test_data.items():
@@ -181,31 +185,33 @@ def test_table_metric_api():
         )
 
         # Print results
-        print(f"Tree A Size: {sample_evaluation_bracket.tree_a_size}")
-        print(f"Tree B Size: {sample_evaluation_bracket.tree_b_size}")
-        print(f"TEDS Score: {sample_evaluation_bracket.teds}")
+        print(f"Tree A Size: {sample_evaluation_bracket.teds.tree_a_size}")
+        print(f"Tree B Size: {sample_evaluation_bracket.teds.tree_b_size}")
+        print(f"TEDS Score: {sample_evaluation_bracket.teds.teds}")
 
         # Assertions for bracket notation test
         assert math.isclose(
-            sample_evaluation_bracket.teds,
+            sample_evaluation_bracket.teds.teds,
             expected_bracket_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
-            f"Wrong TEDS score for valid bracket (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation_bracket.teds}"
+            f"Wrong TEDS score for valid bracket (stem: {stem}). Expected {expected_bracket_teds}, got {sample_evaluation_bracket.teds.teds}"
         )
-        assert sample_evaluation_bracket.tree_a_size == expected_tree_a_size, (
-            f"Wrong tree A size (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_bracket.tree_a_size}"
+        assert sample_evaluation_bracket.teds.tree_a_size == expected_tree_a_size, (
+            f"Wrong tree A size (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_bracket.teds.tree_a_size}"
         )
-        assert sample_evaluation_bracket.tree_b_size == expected_tree_b_size, (
-            f"Wrong tree B size (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_bracket.tree_b_size}"
+        assert sample_evaluation_bracket.teds.tree_b_size == expected_tree_b_size, (
+            f"Wrong tree B size (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_bracket.teds.tree_b_size}"
         )
 
         # Test 2: Evaluate sample using HTML input
         print("\n=== Test 2: HTML Input ===")
+        html_a = test_data["gt_html"]
+        html_b = test_data["pred_html"]
         sample_html = TableMetricHTMLInputSample(
             id=f"s2_{stem}",
-            html_a=test_data["gt_html"],
-            html_b=test_data["pred_html"],
+            html_a=html_a,
+            html_b=html_b,
             structure_only=False,
         )
         sample_evaluation_html: TableMetricSampleEvaluation = (
@@ -213,31 +219,31 @@ def test_table_metric_api():
         )
 
         # Print results
-        print(f"Tree A Size: {sample_evaluation_html.tree_a_size}")
-        print(f"Tree B Size: {sample_evaluation_html.tree_b_size}")
-        print(f"TEDS Score: {sample_evaluation_html.teds}")
+        print(f"Tree A Size: {sample_evaluation_html.teds.tree_a_size}")
+        print(f"Tree B Size: {sample_evaluation_html.teds.tree_b_size}")
+        print(f"TEDS Score: {sample_evaluation_html.teds.teds}")
 
         # Assertions for HTML input test
         assert math.isclose(
-            sample_evaluation_html.teds,
+            sample_evaluation_html.teds.teds,
             expected_html_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
-            f"Wrong TEDS score for HTML input (stem: {stem}). Expected {expected_html_teds}, got {sample_evaluation_html.teds}"
+            f"Wrong TEDS score for HTML input (stem: {stem}). Expected {expected_html_teds}, got {sample_evaluation_html.teds.teds}"
         )
-        assert sample_evaluation_html.tree_a_size == expected_tree_a_size, (
-            f"Wrong tree A size for HTML (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_html.tree_a_size}"
+        assert sample_evaluation_html.teds.tree_a_size == expected_tree_a_size, (
+            f"Wrong tree A size for HTML (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_html.teds.tree_a_size}"
         )
-        assert sample_evaluation_html.tree_b_size == expected_tree_b_size, (
-            f"Wrong tree B size for HTML (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_html.tree_b_size}"
+        assert sample_evaluation_html.teds.tree_b_size == expected_tree_b_size, (
+            f"Wrong tree B size for HTML (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_html.teds.tree_b_size}"
         )
 
         # Test 2b: Evaluate sample using HTML input with structure_only=True
         print("\n=== Test 2b: HTML Input (structure_only=True) ===")
         sample_html_structure = TableMetricHTMLInputSample(
             id=f"s2b_{stem}",
-            html_a=test_data["gt_html"],
-            html_b=test_data["pred_html"],
+            html_a=html_a,
+            html_b=html_b,
             structure_only=True,
         )
         sample_evaluation_html_structure: TableMetricSampleEvaluation = (
@@ -245,23 +251,27 @@ def test_table_metric_api():
         )
 
         # Print results
-        print(f"Tree A Size: {sample_evaluation_html_structure.tree_a_size}")
-        print(f"Tree B Size: {sample_evaluation_html_structure.tree_b_size}")
-        print(f"TEDS Score: {sample_evaluation_html_structure.teds}")
+        print(f"Tree A Size: {sample_evaluation_html_structure.teds.tree_a_size}")
+        print(f"Tree B Size: {sample_evaluation_html_structure.teds.tree_b_size}")
+        print(f"TEDS Score: {sample_evaluation_html_structure.teds.teds}")
 
         # Assertions for HTML input test with structure_only=True
         assert math.isclose(
-            sample_evaluation_html_structure.teds,
+            sample_evaluation_html_structure.teds.teds,
             expected_html_structure_only_teds,
-            rel_tol=TEDS_RELATIVE_TOLERANCE,
+            rel_tol=RELATIVE_TOLERANCE,
         ), (
-            f"Wrong TEDS score for HTML input with structure_only=True (stem: {stem}). Expected {expected_html_structure_only_teds}, got {sample_evaluation_html_structure.teds}"
+            f"Wrong TEDS score for HTML input with structure_only=True (stem: {stem}). Expected {expected_html_structure_only_teds}, got {sample_evaluation_html_structure.teds.teds}"
         )
-        assert sample_evaluation_html_structure.tree_a_size == expected_tree_a_size, (
-            f"Wrong tree A size for HTML with structure_only=True (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_html_structure.tree_a_size}"
+        assert (
+            sample_evaluation_html_structure.teds.tree_a_size == expected_tree_a_size
+        ), (
+            f"Wrong tree A size for HTML with structure_only=True (stem: {stem}). Expected {expected_tree_a_size}, got {sample_evaluation_html_structure.teds.tree_a_size}"
         )
-        assert sample_evaluation_html_structure.tree_b_size == expected_tree_b_size, (
-            f"Wrong tree B size for HTML with structure_only=True (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_html_structure.tree_b_size}"
+        assert (
+            sample_evaluation_html_structure.teds.tree_b_size == expected_tree_b_size
+        ), (
+            f"Wrong tree B size for HTML with structure_only=True (stem: {stem}). Expected {expected_tree_b_size}, got {sample_evaluation_html_structure.teds.tree_b_size}"
         )
 
         # Test 3: Test with broken bracket - should raise ValueError
@@ -279,6 +289,76 @@ def test_table_metric_api():
     print("\n All tests passed!")
 
 
+def test_bracket_html_roundtrip():
+    all_test_data: dict[str, dict[str, str]] = load_test_data()
+    teds_scorer = TEDScorer()
+
+    for stem, test_data in all_test_data.items():
+        bracket = teds_scorer.html_to_bracket(test_data["gt_html"], structure_only=True)
+        roundtrip_html = teds_scorer.bracket_to_html(bracket)
+        roundtrip_bracket = teds_scorer.html_to_bracket(
+            roundtrip_html, structure_only=True
+        )
+        assert roundtrip_bracket == bracket, (
+            f"Bracket roundtrip changed the structure-only representation for stem {stem}"
+        )
+
+
+def test_cells_input():
+    r"""
+    Convert HTML to cells and do the evaluation.
+    """
+    all_test_data: dict[str, dict[str, str]] = load_test_data()
+    table_metric = TableMetric(metrics=[TableMetricKind.TEDS])
+
+    for stem, test_data in all_test_data.items():
+        config = TEST_DATA[stem]
+
+        expected_cells_teds = config["html_teds"]
+        expected_cells_tree_a_size = config["tree_a_size"]
+        expected_cells_tree_b_size = config["tree_b_size"]
+
+        print("\n=== Cells Input ===")
+        cells_a = TableMetric.html_to_cells_input(test_data["gt_html"])
+        cells_b = TableMetric.html_to_cells_input(test_data["pred_html"])
+
+        sample_cells = TableMetricCellsInputSample(
+            id=f"s4_{stem}",
+            cells_a=cells_a,
+            cells_b=cells_b,
+        )
+        sample_evaluation_cells: TableMetricSampleEvaluation = (
+            table_metric.evaluate_sample(sample_cells)
+        )
+        assert sample_evaluation_cells.teds is not None
+
+        print(
+            f"Tree A Size [GT|pred]: [{sample_evaluation_cells.teds.tree_a_size} | {expected_cells_tree_a_size}]"
+        )
+        print(
+            f"Tree B Size [GT|pred]: [{sample_evaluation_cells.teds.tree_b_size} | {expected_cells_tree_b_size}]"
+        )
+        print(
+            f"TEDS Score [GT|pred]:  [{sample_evaluation_cells.teds.teds} | {expected_cells_teds}]"
+        )
+
+        assert math.isclose(
+            sample_evaluation_cells.teds.teds,
+            expected_cells_teds,
+            rel_tol=RELATIVE_TOLERANCE,
+        ), (
+            f"Wrong TEDS score for cells input (stem: {stem}). Expected {expected_cells_teds}, got {sample_evaluation_cells.teds.teds}"
+        )
+        assert sample_evaluation_cells.teds.tree_a_size == expected_cells_tree_a_size, (
+            f"Wrong tree A size for cells input (stem: {stem}). Expected {expected_cells_tree_a_size}, got {sample_evaluation_cells.teds.tree_a_size}"
+        )
+        assert sample_evaluation_cells.teds.tree_b_size == expected_cells_tree_b_size, (
+            f"Wrong tree B size for cells input (stem: {stem}). Expected {expected_cells_tree_b_size}, got {sample_evaluation_cells.teds.tree_b_size}"
+        )
+
+
 if __name__ == "__main__":
     test_cpp_bindings()
-    test_table_metric_api()
+    test_teds_api()
+    test_bracket_html_roundtrip()
+    test_cells_input()

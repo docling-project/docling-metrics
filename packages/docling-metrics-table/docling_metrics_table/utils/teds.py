@@ -253,3 +253,25 @@ class TEDScorer:
         )
         bracket: str = table_tree.bracket()
         return bracket
+
+    def bracket_to_html(self, bracket_str: str) -> str:
+        r"""
+        Convert bracket format to HTML while preserving only the table structure.
+        """
+
+        def build_html_node(node: TableTree) -> html.HtmlElement:
+            element = html.Element(node.tag)
+            if node.tag in ["td", "th"]:
+                if node.colspan and node.colspan > 1:
+                    element.set("colspan", str(node.colspan))
+                if node.rowspan and node.rowspan > 1:
+                    element.set("rowspan", str(node.rowspan))
+                return element
+
+            for child in node.children:
+                element.append(build_html_node(child))
+            return element
+
+        table_tree = TableTree.from_bracket(bracket_str)
+        html_obj = build_html_node(table_tree)
+        return html.tostring(html_obj, encoding="unicode")

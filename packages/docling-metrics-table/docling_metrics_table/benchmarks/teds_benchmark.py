@@ -8,8 +8,11 @@ from statistics import mean, median, stdev
 from typing import Optional
 
 from apted import APTED
-from pydantic import BaseModel
-
+from docling_metrics_table.benchmarks.benchmarks_utils import (
+    BenchmarkReport,
+    BenchmarkSample,
+    BenchmarkStats,
+)
 from docling_metrics_table.docling_metrics_table import (
     TableMetric,
     TableMetricBracketInputSample,
@@ -19,36 +22,11 @@ from docling_metrics_table.utils.teds import CustomConfig, TableTree, TEDScorer
 
 _log: Logger = logging.getLogger(__name__)
 
-
-class BenchmarkStats(BaseModel):
-    mean: float
-    median: float
-    std: float
-    max: float
-    min: float
+# Test configuration
+RELATIVE_TOLERANCE = 1e-6
 
 
-class BenchmarkSample(BaseModel):
-    id: str
-    sample_len: int
-    python_teds: float
-    python_ms: float
-    cpp_teds: float
-    cpp_ms: float
-    html_to_bracket_ms: (
-        float  # This includes converting both inputs from HTML to bracket
-    )
-    match: bool
-
-
-class BenchmarkReport(BaseModel):
-    samples: dict[str, BenchmarkSample]  # id -> BenchmarkSample
-    python_ms_stats: BenchmarkStats
-    cpp_ms_stats: BenchmarkStats
-    html_to_bracket_ms_stats: BenchmarkStats
-
-
-class Benchmarker:
+class TEDSBenchmarker:
     r"""
     Receive a dataset of bracket strings and evaluate the TEDS metric.
     Compare the APTED (python) vs the docling-metrics-table (C++/Python bindings) implementations.
@@ -79,28 +57,6 @@ class Benchmarker:
         4. Call the C++ implementation using the Python bindings.
         5. Print the output of the python and the C++ implementations.
         """
-
-        def create_stats(timing_list: list[float]) -> BenchmarkStats:
-            """Create BenchmarkStats from a list of timing measurements."""
-            return BenchmarkStats(
-                mean=mean(timing_list),
-                median=median(timing_list),
-                std=stdev(timing_list) if len(timing_list) > 1 else 0.0,
-                max=max(timing_list),
-                min=min(timing_list),
-            )
-
-        def log_stats(name: str, stats: BenchmarkStats) -> None:
-            """Log benchmark statistics in a formatted way."""
-            _log.info(
-                "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
-                name,
-                stats.mean,
-                stats.median,
-                stats.std,
-                stats.min,
-                stats.max,
-            )
 
         # Step 1: Match ground truth and prediction files
         matches = self._find_matches(data_root)
@@ -154,23 +110,25 @@ class Benchmarker:
                 sample_evaluaton: TableMetricSampleEvaluation = (
                     self._teds_metric.evaluate_sample(metric_input)
                 )
-                cpp_teds = sample_evaluaton.teds
+                if sample_evaluaton.teds is None:
+                    raise ValueError("Expected TEDS evaluation for bracket input")
+                cpp_teds = sample_evaluaton.teds.teds
                 cpp_ms = (time.monotonic() - t0) * 1000
                 all_cpp_ms.append(cpp_ms)
 
                 # Create BenchmarkSample
-                n_nodes: int = sample_evaluaton.tree_a_size
-                match = abs(cpp_teds - python_teds) < 1e-6
+                n_nodes: int = sample_evaluaton.teds.tree_a_size
+                match = abs(cpp_teds - python_teds) < RELATIVE_TOLERANCE
                 characterization = "Match!" if match else "Differ"
 
                 sample = BenchmarkSample(
                     id=file_id,
-                    python_teds=python_teds,
-                    python_ms=python_ms,
-                    cpp_teds=cpp_teds,
-                    cpp_ms=cpp_ms,
-                    match=match,
                     sample_len=n_nodes,
+                    python_teds=python_teds,
+                    python_teds_ms=python_ms,
+                    cpp_teds=cpp_teds,
+                    cpp_teds_ms=cpp_ms,
+                    match=match,
                     html_to_bracket_ms=html_to_bracket_ms,
                 )
                 benchmark_samples[file_id] = sample
@@ -195,22 +153,66 @@ class Benchmarker:
             _log.error("No valid benchmark data collected")
             return None
 
-        python_ms_stats = create_stats(all_python_ms)
-        cpp_ms_stats = create_stats(all_cpp_ms)
-        html_to_bracket_ms_stats = create_stats(all_html_to_bracket_ms)
+        python_ms_stats = BenchmarkStats(
+            mean=mean(all_python_ms),
+            median=median(all_python_ms),
+            std=stdev(all_python_ms) if len(all_python_ms) > 1 else 0.0,
+            max=max(all_python_ms),
+            min=min(all_python_ms),
+        )
+        cpp_ms_stats = BenchmarkStats(
+            mean=mean(all_cpp_ms),
+            median=median(all_cpp_ms),
+            std=stdev(all_cpp_ms) if len(all_cpp_ms) > 1 else 0.0,
+            max=max(all_cpp_ms),
+            min=min(all_cpp_ms),
+        )
+        html_to_bracket_ms_stats = BenchmarkStats(
+            mean=mean(all_html_to_bracket_ms),
+            median=median(all_html_to_bracket_ms),
+            std=stdev(all_html_to_bracket_ms)
+            if len(all_html_to_bracket_ms) > 1
+            else 0.0,
+            max=max(all_html_to_bracket_ms),
+            min=min(all_html_to_bracket_ms),
+        )
 
         # Create and return BenchmarkReport
         report = BenchmarkReport(
             samples=benchmark_samples,
-            python_ms_stats=python_ms_stats,
+            python_teds_ms_stats=python_ms_stats,
             cpp_ms_stats=cpp_ms_stats,
             html_to_bracket_ms_stats=html_to_bracket_ms_stats,
         )
 
         # Log benchmark statistics
-        log_stats("Python stats", python_ms_stats)
-        log_stats("C++ stats   ", cpp_ms_stats)
-        log_stats("HTML to bracket stats", html_to_bracket_ms_stats)
+        _log.info(
+            "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
+            "Python stats",
+            python_ms_stats.mean,
+            python_ms_stats.median,
+            python_ms_stats.std,
+            python_ms_stats.min,
+            python_ms_stats.max,
+        )
+        _log.info(
+            "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
+            "C++ stats   ",
+            cpp_ms_stats.mean,
+            cpp_ms_stats.median,
+            cpp_ms_stats.std,
+            cpp_ms_stats.min,
+            cpp_ms_stats.max,
+        )
+        _log.info(
+            "%s | mean: %.2fms | median: %.2fms | std: %.2fms | min: %.2fms | max: %.2fms",
+            "HTML to bracket stats",
+            html_to_bracket_ms_stats.mean,
+            html_to_bracket_ms_stats.median,
+            html_to_bracket_ms_stats.std,
+            html_to_bracket_ms_stats.min,
+            html_to_bracket_ms_stats.max,
+        )
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_path = self._save_root / f"benchmark_report_{timestamp}.json"
@@ -307,7 +309,7 @@ def main():
 
     # Benchmark
     _log.info("Benchmark Python vs C++ TEDs implementations")
-    benchmarker = Benchmarker(save_root)
+    benchmarker = TEDSBenchmarker(save_root)
     benchmarker.benchmark(input_root)
 
 
