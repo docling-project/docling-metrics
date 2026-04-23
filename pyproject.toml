@@ -31,6 +31,7 @@ dev = [
     "docling-metrics-table",
     "docling-metrics-hello-world-cpp",
     "docling-metrics-text",
+    "docling-metrics-chemistry",
 ]
 build = [
     "cibuildwheel>=2.19",
@@ -44,6 +45,7 @@ docling-metrics-layout = { workspace = true }
 docling-metrics-table = { workspace = true }
 docling-metrics-hello-world-cpp = { workspace = true }
 docling-metrics-text = { workspace = true }
+docling-metrics-chemistry = { workspace = true }
 
 [tool.mypy]
 pretty = true
@@ -64,6 +66,10 @@ follow_imports = "skip"
 [[tool.mypy.overrides]]
 module = ["docling_metrics_layout.*"]
 disable_error_code = ["var-annotated"]
+
+[[tool.mypy.overrides]]
+module = ["docling_metrics_chemistry.*"]
+disable_error_code = ["attr-defined", "assignment", "union-attr", "index", "operator"]
 
 [tool.ruff]
 target-version = "py310"

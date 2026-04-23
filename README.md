@@ -7,6 +7,7 @@ Monorepo for Docling metric packages — types, evaluators, and scoring utilitie
 | Package | Description |
 |---------|-------------|
 | [docling-metrics-core](packages/docling-metrics-core/) | Base metric types and abstract interfaces |
+| [docling-metrics-chemistry](packages/docling-metrics-chemistry/) | Chemistry metrics (SMILES validity, similarity, Markush structures) |
 | [docling-metrics-table](packages/docling-metrics-table/) | Table evaluation metrics (TEDS) |
 | [docling-metrics-text](packages/docling-metrics-text/) | Text evaluation metrics (edit-distance, BLEU, METEOR, Precision, Recall, F1) |
 | [docling-metrics-layout](packages/docling-metrics-layout/) | Layout evaluation metrics (TORE, mAP) |
