@@ -1,6 +1,6 @@
 [project]
 name = "docling-metrics-chemistry"
-version = "0.0.1" # DO NOT EDIT, updated automatically
+version = "0.10.0" # DO NOT EDIT, updated automatically
 description = "Chemistry evaluation metrics (SMILES, Markush) for Docling metrics"
 license = "MIT"
 keywords = ["docling", "metrics", "evaluation", "chemistry", "smiles", "markush"]
