@@ -58,7 +58,9 @@ class TextMetrics(BaseMetric):
         nltk.download("popular", quiet=True)
         nltk.download("punkt_tab", quiet=True)
 
-        self._bleu_eval = evaluate.load("bleu", experiment_id=str(uuid4()))
+        self._bleu_eval = evaluate.load(
+            "bleu", experiment_id=str(uuid4()), keep_in_memory=True
+        )
 
         if self._mode == TextMetricsMode.CPP:
             self._text_manager = docling_metrics_text_cpp.TextManager()
