@@ -304,6 +304,37 @@ def test_bracket_html_roundtrip():
         )
 
 
+@pytest.mark.parametrize("literal_brace", ["{", "}"])
+def test_teds_accepts_literal_braces_in_cell_content(literal_brace):
+    reference_html = "<table><tbody><tr><td>83 (16.296)</td></tr></tbody></table>"
+    prediction_html = (
+        f"<table><tbody><tr><td>83 (16.296{literal_brace}</td></tr></tbody></table>"
+    )
+    table_metric = TableMetric(metrics=[TableMetricKind.TEDS])
+
+    content_result = table_metric.evaluate_sample(
+        TableMetricHTMLInputSample(
+            id=f"content-{literal_brace}",
+            html_a=reference_html,
+            html_b=prediction_html,
+            structure_only=False,
+        )
+    )
+    structure_result = table_metric.evaluate_sample(
+        TableMetricHTMLInputSample(
+            id=f"structure-{literal_brace}",
+            html_a=reference_html,
+            html_b=prediction_html,
+            structure_only=True,
+        )
+    )
+
+    assert content_result.teds is not None
+    assert structure_result.teds is not None
+    assert content_result.teds.teds < structure_result.teds.teds
+    assert structure_result.teds.teds == 1.0
+
+
 def test_cells_input():
     r"""
     Convert HTML to cells and do the evaluation.

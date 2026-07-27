@@ -45,11 +45,14 @@ class TableTree(Tree):
     def bracket(self):
         """Show tree using brackets notation"""
         if self.tag in ["td", "th"]:
+            serialized_content = (
+                str(self.content).replace("{", r"\{").replace("}", r"\}")
+            )
             result = '"tag": %s, "colspan": %d, "rowspan": %d, "text": %s' % (
                 self.tag,
                 self.colspan,
                 self.rowspan,
-                self.content,
+                serialized_content,
             )
         else:
             result = '"tag": %s' % self.tag
