@@ -1,10 +1,10 @@
-import colorsys
 import logging
 from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
+from matplotlib import colormaps
 from openpyxl import Workbook
 from openpyxl.styles import Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
@@ -91,9 +91,13 @@ class ConfusionMatrixExporter:
     def __init__(
         self,
     ):
-        self._background_color = "bbbbbb"
-        self._black_color = "444444"
         self._power_normalization_exp = 0.2
+
+        self._background_color = "bbbbbb"
+        self._cmap = colormaps["Blues"]
+        # Light (lowest) and dark (highest) swatches, used to flip the font color
+        self._cmap_min = self._cmap_hex(0.0)  # lightest -> text on dark cells
+        self._cmap_max = self._cmap_hex(1.0)  # darkest -> text on light cells
 
         border_style = "thick"
         border_color = "fc5a8d"
@@ -255,14 +259,14 @@ class ConfusionMatrixExporter:
             for j in range(data.shape[1]):
                 value = data[i, j]
                 col = j + col_start
-                if value == 0:
-                    # Treat zero values specially
-                    color = self._black_color
-                else:
-                    color = self._value_to_color(vmin, vmax, value, "linear")
+                color = self._value_to_color(vmin, vmax, value, "linear")
                 ws.cell(row=row, column=col).fill = PatternFill(
                     start_color=color, end_color=color, fill_type="solid"
                 )
+                # Flip the font color for readability. Dark text on light cells, light text on dark.
+                thresh = (vmax + vmin) / 2.0
+                font_color = self._cmap_max if value < thresh else self._cmap_min
+                ws.cell(row=row, column=col).font = Font(color=font_color)
 
                 # Format the numbers
                 decimals_format = "." + "0" * decimal_digits
@@ -445,16 +449,14 @@ class ConfusionMatrixExporter:
                     )
                 else:
                     value = data[i, j]
-                    if value == 0:
-                        # Treat zero values specially
-                        color = self._black_color
-                    else:
-                        color = self._value_to_color(
-                            vmin, vmax, value, normalization_func
-                        )
+                    color = self._value_to_color(vmin, vmax, value, normalization_func)
                     ws.cell(row=row, column=col).fill = PatternFill(
                         start_color=color, end_color=color, fill_type="solid"
                     )
+                    # Flip the font color for readability
+                    thresh = (vmax + vmin) / 2.0
+                    font_color = self._cmap_max if value < thresh else self._cmap_min
+                    ws.cell(row=row, column=col).font = Font(color=font_color)
 
                 # Highlight the diagonal
                 if i == j:
@@ -484,8 +486,14 @@ class ConfusionMatrixExporter:
 
         return ws.max_row, ws.max_column
 
+    def _cmap_hex(self, t: float) -> str:
+        """Sample the colormap at t in [0, 1] and return an Excel hex color."""
+        r, g, b, _ = self._cmap(float(t))
+        cmap_hex = f"{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}"
+        return cmap_hex
+
     def _value_to_color(self, vmin, vmax, v, normalization_func: str):
-        """Map value to RGB color from blue→red using rainbow spectrum."""
+        """Map value to a hex color"""
         # Normalize to [0,1]
         if normalization_func == "power":
             normalized_value = power_norm(
@@ -496,13 +504,7 @@ class ConfusionMatrixExporter:
         else:
             normalized_value = linear_norm(v, vmin, vmax)
 
-        # Use HSV rainbow mapping: hue 240° (blue) -> 0° (red)
-        hue = (1 - normalized_value) * 240 / 360  # convert degrees to [0,1]
-        r, g, b = colorsys.hsv_to_rgb(hue, 1, 1)
-
-        # Convert to hex color for Excel
-        hex_color = f"{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}"
-        return hex_color
+        return self._cmap_hex(normalized_value)
 
     def _adjust_column_widths(self, ws: Worksheet):
         r"""Adjust column widths for the final excel"""
