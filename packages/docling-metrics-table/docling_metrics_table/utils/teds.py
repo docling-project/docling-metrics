@@ -45,14 +45,12 @@ class TableTree(Tree):
     def bracket(self):
         """Show tree using brackets notation"""
         if self.tag in ["td", "th"]:
-            result = '"tag": %s, "colspan": %d, "rowspan": %d, "text": %s' % (
-                self.tag,
-                self.colspan,
-                self.rowspan,
-                self.content,
+            result = (
+                f'"tag": {self.tag}, "colspan": {self.colspan}, '
+                f'"rowspan": {self.rowspan}, "text": {self.content}'
             )
         else:
-            result = '"tag": %s' % self.tag
+            result = f'"tag": {self.tag}'
         for child in self.children:
             result += child.bracket()
         return "{{{}}}".format(result)
