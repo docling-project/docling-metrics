@@ -11,7 +11,7 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetricKind,
     TableMetricSampleEvaluation,
 )
-from docling_metrics_table.utils.teds import TEDScorer
+from docling_metrics_table.utils.teds import TableTree, TEDScorer
 
 # Test configuration
 RELATIVE_TOLERANCE = 1e-6
@@ -304,6 +304,115 @@ def test_bracket_html_roundtrip():
         )
 
 
+def test_bracket_serialization():
+    r"""
+    html_to_bracket emits one bracket pair per node, with siblings in document order.
+    """
+    teds_scorer = TEDScorer()
+    html_str = (
+        '<table><tbody><tr><td>ab</td><td colspan="2">c</td></tr></tbody></table>'
+    )
+    expected = (
+        '{"tag": table{"tag": tbody{"tag": tr'
+        '{"tag": td, "colspan": 1, "rowspan": 1, "text": [\'a\', \'b\']}'
+        '{"tag": td, "colspan": 2, "rowspan": 1, "text": [\'c\']}}}}'
+    )
+    assert teds_scorer.html_to_bracket(html_str) == expected
+
+    # Rows are siblings too, and must not come out reversed.
+    two_rows = "<table><tbody><tr><td>1</td></tr><tr><td>2</td></tr></tbody></table>"
+    expected_rows = (
+        '{"tag": table{"tag": tbody'
+        '{"tag": tr{"tag": td, "colspan": 1, "rowspan": 1, "text": [\'1\']}}'
+        '{"tag": tr{"tag": td, "colspan": 1, "rowspan": 1, "text": [\'2\']}}}}'
+    )
+    assert teds_scorer.html_to_bracket(two_rows) == expected_rows
+
+    # Without the cell content only the text list changes.
+    expected_structure = (
+        '{"tag": table{"tag": tbody{"tag": tr'
+        '{"tag": td, "colspan": 1, "rowspan": 1, "text": []}'
+        '{"tag": td, "colspan": 2, "rowspan": 1, "text": []}}}}'
+    )
+    assert (
+        teds_scorer.html_to_bracket(html_str, structure_only=True) == expected_structure
+    )
+
+
+def test_bracket_cell_tokenization():
+    r"""
+    Cell markup is tokenized with its closing tags and tails, and braces are escaped.
+    """
+    teds_scorer = TEDScorer()
+
+    # The closing tag of <b> and its tail 'd' are emitted after the nested element.
+    markup = "<table><tbody><tr><td>a<b>c</b>d</td></tr></tbody></table>"
+    expected = (
+        '{"tag": table{"tag": tbody{"tag": tr'
+        "{\"tag\": td, \"colspan\": 1, \"rowspan\": 1, \"text\": ['a', '<b', 'c', '</b>', 'd']}}}}"
+    )
+    assert teds_scorer.html_to_bracket(markup) == expected
+
+    # Braces in the cell text stay inside the label, escaped.
+    braces = "<table><tbody><tr><td>{x}</td></tr></tbody></table>"
+    expected_braces = (
+        '{"tag": table{"tag": tbody{"tag": tr'
+        '{"tag": td, "colspan": 1, "rowspan": 1, "text": [\'\\{\', \'x\', \'\\}\']}}}}'
+    )
+    assert teds_scorer.html_to_bracket(braces) == expected_braces
+
+
+def test_from_bracket_parses_structure():
+    r"""
+    from_bracket rebuilds the tags, spans, cell content and child order.
+    """
+    teds_scorer = TEDScorer()
+    html_str = (
+        '<table><tbody><tr><td>ab</td><td colspan="2">c</td></tr></tbody></table>'
+    )
+    bracket = teds_scorer.html_to_bracket(html_str)
+
+    table = TableTree.from_bracket(bracket)
+    assert table.tag == "table"
+    assert len(table.children) == 1
+
+    tbody = table.children[0]
+    assert tbody.tag == "tbody"
+
+    row = tbody.children[0]
+    assert row.tag == "tr"
+    assert len(row.children) == 2
+
+    first, second = row.children
+    assert (first.tag, first.colspan, first.rowspan) == ("td", 1, 1)
+    assert first.content == ["a", "b"]
+    assert (second.tag, second.colspan, second.rowspan) == ("td", 2, 1)
+    assert second.content == ["c"]
+
+    # Serializing the parsed tree reproduces the input exactly.
+    assert table.bracket() == bracket
+
+    # Escaped braces are decoded back to the original characters.
+    braces = teds_scorer.html_to_bracket(
+        "<table><tbody><tr><td>{x}</td></tr></tbody></table>"
+    )
+    cell = TableTree.from_bracket(braces).children[0].children[0].children[0]
+    assert cell.content == ["{", "x", "}"]
+
+
+def test_bracket_to_html_preserves_spans():
+    r"""
+    bracket_to_html rebuilds the structure, keeping colspan and rowspan.
+    """
+    teds_scorer = TEDScorer()
+    html_str = (
+        '<table><tbody><tr><td>ab</td><td colspan="2">c</td></tr></tbody></table>'
+    )
+    bracket = teds_scorer.html_to_bracket(html_str)
+    expected = '<table><tbody><tr><td></td><td colspan="2"></td></tr></tbody></table>'
+    assert teds_scorer.bracket_to_html(bracket) == expected
+
+
 def test_cells_input():
     r"""
     Convert HTML to cells and do the evaluation.
@@ -361,4 +470,8 @@ if __name__ == "__main__":
     test_cpp_bindings()
     test_teds_api()
     test_bracket_html_roundtrip()
+    test_bracket_serialization()
+    test_bracket_cell_tokenization()
+    test_from_bracket_parses_structure()
+    test_bracket_to_html_preserves_spans()
     test_cells_input()

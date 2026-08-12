@@ -1,7 +1,3 @@
-#
-# Copyright IBM Corp. 2024 - 2024
-# SPDX-License-Identifier: MIT
-#
 from collections import deque
 
 from apted import APTED, Config
@@ -35,9 +31,7 @@ class CustomConfig(Config):
 
 
 # The bracket notation uses {} as structure elements, so a label that contains them must escape
-# them as \{ and \}, and the escape character itself as \\. See the contract documented in
-# cpp_src/parser/bracket_notation_parser.h. str.maketrans applies all three in a single pass, so
-# an escape character introduced for { is never itself re-escaped.
+# them as \{ and \}, and the escape character itself as \\.
 _LABEL_ESCAPE = str.maketrans({"\\": "\\\\", "{": r"\{", "}": r"\}"})
 
 
@@ -64,8 +58,12 @@ class TableTree(Tree):
         self.content = content
         self.children = list(children)
 
-    def bracket(self):
-        """Show tree using brackets notation"""
+    def _label(self):
+        """The escaped label of this node alone, without its children.
+
+        The escaping covers the node's own label only. Escaping the concatenated children
+        too would destroy the structure brackets they legitimately contain.
+        """
         if self.tag in ["td", "th"]:
             result = (
                 f'"tag": {self.tag}, "colspan": {self.colspan}, '
@@ -73,11 +71,24 @@ class TableTree(Tree):
             )
         else:
             result = f'"tag": {self.tag}'
-        # Escape the node's own label only. Escaping the concatenated children too would
-        # destroy the structure brackets they legitimately contain.
-        label = result.translate(_LABEL_ESCAPE)
-        children = "".join(child.bracket() for child in self.children)
-        return "{" + label + children + "}"
+        return result.translate(_LABEL_ESCAPE)
+
+    def bracket(self):
+        """Show tree using brackets notation"""
+        # Iterative post-order walk. A stack entry is either a node still to expand or a
+        # literal string to emit; pushing the closer before the children makes it pop after
+        # them, which is what the recursive version got from the call stack.
+        out: list[str] = []
+        stack: list = [self]
+        while stack:
+            item = stack.pop()
+            if isinstance(item, str):
+                out.append(item)
+                continue
+            out.append("{" + item._label())
+            stack.append("}")
+            stack.extend(reversed(item.children))
+        return "".join(out)
 
     @staticmethod
     def from_bracket(bracket_str):
@@ -93,20 +104,16 @@ class TableTree(Tree):
         import ast
         import re
 
-        def parse_node(s, pos):
-            """Recursively parse a node from bracket notation
+        def parse_header(s, pos):
+            """Parse a single node's opening brace and attributes, without its children.
 
             Args:
                 s: The full bracket string
-                pos: Current position in the string
+                pos: Position of the node's opening brace
 
             Returns:
-                tuple: (parsed_node, new_position)
+                tuple: (parsed_node, position just after the attributes)
             """
-            # Skip whitespace
-            while pos < len(s) and s[pos].isspace():
-                pos += 1
-
             # Expect opening {
             if pos >= len(s) or s[pos] != "{":
                 raise ValueError(
@@ -159,38 +166,46 @@ class TableTree(Tree):
                 # This is a structural node (table, tbody, tr, etc.)
                 node = TableTree(tag, None, None, None)
 
-            # Parse children
-            while pos < len(s):
-                # Skip whitespace
-                while pos < len(s) and s[pos].isspace():
-                    pos += 1
-
-                if pos >= len(s):
-                    raise ValueError("Unexpected end of string")
-
-                # An escaped brace belongs to a label, not to the structure. Step over both
-                # characters so it is never mistaken for a node boundary.
-                if s[pos] == "\\" and pos + 1 < len(s) and s[pos + 1] in "\\{}":
-                    pos += 2
-                    continue
-
-                # Check for closing brace
-                if s[pos] == "}":
-                    pos += 1
-                    break
-
-                # Check for child node
-                if s[pos] == "{":
-                    child, pos = parse_node(s, pos)
-                    node.children.append(child)
-                else:
-                    # Skip any other characters (shouldn't happen in valid input)
-                    pos += 1
-
             return node, pos
 
-        # Parse the root node
-        root, _ = parse_node(bracket_str, 0)
+        # Iterative walk over the string, keeping the currently open nodes on a stack. The
+        # recursive version used the call stack for exactly this.
+        s = bracket_str
+        root = None
+        stack: list[TableTree] = []
+        pos = 0
+
+        while pos < len(s):
+            # Skip whitespace
+            while pos < len(s) and s[pos].isspace():
+                pos += 1
+            if pos >= len(s):
+                break
+
+            # An escaped brace belongs to a label, not to the structure. Step over both
+            # characters so it is never mistaken for a node boundary.
+            if s[pos] == "\\" and pos + 1 < len(s) and s[pos + 1] in "\\{}":
+                pos += 2
+            elif s[pos] == "}":
+                if not stack:
+                    raise ValueError(f"Unbalanced '}}' at position {pos}")
+                stack.pop()
+                pos += 1
+            elif s[pos] == "{":
+                node, pos = parse_header(s, pos)
+                if stack:
+                    stack[-1].children.append(node)
+                elif root is None:
+                    root = node
+                else:
+                    raise ValueError(f"More than one root at position {pos}")
+                stack.append(node)
+            else:
+                # Skip any other characters (shouldn't happen in valid input)
+                pos += 1
+
+        if root is None:
+            raise ValueError("No root node found")
         return root
 
 
@@ -226,24 +241,30 @@ class TEDScorer:
     def _tokenize(self, node: html):
         r"""
         Tokenizes table cells
-        """
-        self._tokens.append(f"<{node.tag}")
-        if node.text is not None:
-            self._tokens += list(node.text)
-        for n in node.getchildren():
-            self._tokenize(n)
-        if node.tag != "unk":
-            self._tokens.append(f"</{node.tag}>")
-        if (node.tag not in ["td", "th"]) and node.tail is not None:
-            self._tokens += list(node.tail)
 
-    def html_to_table_tree(
-        self, node: html, convert_cell: bool = False, parent: html = None
-    ) -> TableTree:
-        r"""
-        Converts HTML tree to the bracket notation for APTED
+        Iterative pre/post-order walk. A stack entry is (element, closing): the closing entry
+        is pushed before the children so that it pops after them, carrying the work the
+        recursive version did on the way back up.
         """
-        new_node: TableTree
+        stack: list[tuple[html, bool]] = [(node, False)]
+        while stack:
+            element, closing = stack.pop()
+            if closing:
+                if element.tag != "unk":
+                    self._tokens.append(f"</{element.tag}>")
+                if (element.tag not in ["td", "th"]) and element.tail is not None:
+                    self._tokens += list(element.tail)
+                continue
+            self._tokens.append(f"<{element.tag}")
+            if element.text is not None:
+                self._tokens += list(element.text)
+            stack.append((element, True))
+            stack.extend((child, False) for child in reversed(element.getchildren()))
+
+    def _make_table_tree_node(self, node: html, convert_cell: bool) -> TableTree:
+        r"""
+        Builds the TableTree node for a single HTML element, without its children
+        """
         if node.tag in ["td", "th"]:
             # Normalize the tag to td, otherwise the comparison in APTED causes mismatch
             # TODO: Make this normalization configurable.
@@ -254,23 +275,39 @@ class TEDScorer:
                 cell = self._tokens[1:-1].copy()
             else:
                 cell = []
-            new_node = TableTree(
+            return TableTree(
                 node.tag,
                 int(node.attrib.get("colspan", "1")),
                 int(node.attrib.get("rowspan", "1")),
                 cell,
                 *deque(),
             )
-        else:
-            new_node = TableTree(node.tag, None, None, None, *deque())
-        if parent is not None:
-            parent.children.append(new_node)
-        if node.tag not in ["td", "th"]:
-            for n in node.getchildren():
-                self.html_to_table_tree(n, convert_cell, new_node)
-        # if parent is None:
-        #     return new_node
-        return new_node
+        return TableTree(node.tag, None, None, None, *deque())
+
+    def html_to_table_tree(
+        self, node: html, convert_cell: bool = False, parent: html = None
+    ) -> TableTree:
+        r"""
+        Converts HTML tree to the bracket notation for APTED
+
+        Iterative pre-order walk over (element, parent) pairs. Children are pushed reversed so
+        that LIFO ordering appends siblings in document order.
+        """
+        new_node: TableTree
+        root: TableTree = None  # type: ignore[assignment]
+        stack: list[tuple[html, TableTree]] = [(node, parent)]
+        while stack:
+            element, tree_parent = stack.pop()
+            new_node = self._make_table_tree_node(element, convert_cell)
+            if tree_parent is not None:
+                tree_parent.children.append(new_node)
+            if root is None:
+                root = new_node
+            if element.tag not in ["td", "th"]:
+                stack.extend(
+                    (child, new_node) for child in reversed(element.getchildren())
+                )
+        return root
 
     def html_to_bracket(self, html_str: str, structure_only: bool = False) -> str:
         r"""
@@ -289,17 +326,25 @@ class TEDScorer:
         """
 
         def build_html_node(node: TableTree) -> html.HtmlElement:
-            element = html.Element(node.tag)
-            if node.tag in ["td", "th"]:
-                if node.colspan and node.colspan > 1:
-                    element.set("colspan", str(node.colspan))
-                if node.rowspan and node.rowspan > 1:
-                    element.set("rowspan", str(node.rowspan))
-                return element
-
-            for child in node.children:
-                element.append(build_html_node(child))
-            return element
+            # Iterative pre-order walk over (node, parent element) pairs. Appending an element
+            # to its parent before its own children exist is fine, lxml elements are live.
+            root_element: html.HtmlElement = None
+            stack: list[tuple[TableTree, html.HtmlElement]] = [(node, None)]
+            while stack:
+                tree_node, parent_element = stack.pop()
+                element = html.Element(tree_node.tag)
+                if parent_element is None:
+                    root_element = element
+                else:
+                    parent_element.append(element)
+                if tree_node.tag in ["td", "th"]:
+                    if tree_node.colspan and tree_node.colspan > 1:
+                        element.set("colspan", str(tree_node.colspan))
+                    if tree_node.rowspan and tree_node.rowspan > 1:
+                        element.set("rowspan", str(tree_node.rowspan))
+                    continue
+                stack.extend((child, element) for child in reversed(tree_node.children))
+            return root_element
 
         table_tree = TableTree.from_bracket(bracket_str)
         html_obj = build_html_node(table_tree)
