@@ -34,6 +34,28 @@ class CustomConfig(Config):
         return 0.0
 
 
+# The bracket notation uses {} as structure elements, so a label that contains them must escape
+# them as \{ and \}, and the escape character itself as \\. See the contract documented in
+# cpp_src/parser/bracket_notation_parser.h. str.maketrans applies all three in a single pass, so
+# an escape character introduced for { is never itself re-escaped.
+_LABEL_ESCAPE = str.maketrans({"\\": "\\\\", "{": r"\{", "}": r"\}"})
+
+
+def _unescape_label(label: str) -> str:
+    r"""Inverse of _LABEL_ESCAPE: turn \\ back into \, and \{ / \} back into { / }."""
+    out: list[str] = []
+    index = 0
+    while index < len(label):
+        char = label[index]
+        if char == "\\" and index + 1 < len(label) and label[index + 1] in "\\{}":
+            out.append(label[index + 1])
+            index += 2
+        else:
+            out.append(char)
+            index += 1
+    return "".join(out)
+
+
 class TableTree(Tree):
     def __init__(self, tag, colspan=None, rowspan=None, content=None, *children):
         self.tag = tag
@@ -51,9 +73,11 @@ class TableTree(Tree):
             )
         else:
             result = f'"tag": {self.tag}'
-        for child in self.children:
-            result += child.bracket()
-        return "{{{}}}".format(result)
+        # Escape the node's own label only. Escaping the concatenated children too would
+        # destroy the structure brackets they legitimately contain.
+        label = result.translate(_LABEL_ESCAPE)
+        children = "".join(child.bracket() for child in self.children)
+        return "{" + label + children + "}"
 
     @staticmethod
     def from_bracket(bracket_str):
@@ -118,12 +142,13 @@ class TableTree(Tree):
                     pos += rowspan_match.end()
                     rowspan = int(rowspan_match.group(1))
 
-                # Parse text content
+                # Parse text content. The writer escapes \, { and } in the label, so the
+                # escapes have to come off before the group is a valid Python literal.
                 text_match = re.match(r',\s*"text":\s*(\[.*?\])', s[pos:])
                 if text_match:
                     pos += text_match.end()
                     try:
-                        content = ast.literal_eval(text_match.group(1))
+                        content = ast.literal_eval(_unescape_label(text_match.group(1)))
                     except (ValueError, SyntaxError):
                         content = []
                 else:
@@ -142,6 +167,12 @@ class TableTree(Tree):
 
                 if pos >= len(s):
                     raise ValueError("Unexpected end of string")
+
+                # An escaped brace belongs to a label, not to the structure. Step over both
+                # characters so it is never mistaken for a node boundary.
+                if s[pos] == "\\" and pos + 1 < len(s) and s[pos + 1] in "\\{}":
+                    pos += 2
+                    continue
 
                 # Check for closing brace
                 if s[pos] == "}":

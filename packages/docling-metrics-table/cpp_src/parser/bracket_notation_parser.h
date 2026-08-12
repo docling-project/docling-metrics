@@ -52,6 +52,7 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <stdexcept>
 #include <string>
 
 namespace parser {
@@ -81,25 +82,34 @@ public:
 
   /// Generates the tokens for the input string.
   ///
+  /// A bracket is a structure element unless it is escaped, that is, unless it is preceded
+  /// by an odd number of consecutive escape characters. The escapes are kept in the label.
+  ///
   /// \param tree_string The string holding the tree in bracket notation.
   /// \return Vector with all tokens.
-  std::vector<std::string> get_tokens(const std::string &tree_string);
+  std::vector<std::string> get_tokens(const std::string &tree_string) const;
 
   /// Validates the bracket notation input.
-  ///
-  /// NOTE: This function could be merged with parse_string but this may
-  ///       decrease readability.
   ///
   /// \param tree_string Tree in bracket notation.
   /// \return True if the input is correct and false otherwise.
   bool validate_input(const std::string &tree_string) const;
+
+  // Member functions
+private:
+  /// Validates a tokenized tree.
+  ///
+  /// Needs the raw string as well as the tokens: text outside the outermost brackets is
+  /// never tokenized, so it is invisible to a token-only check.
+  ///
+  /// \param tree_string Tree in bracket notation.
+  /// \param tokens The tokens of tree_string, as returned by get_tokens.
+  /// \return True if the input is correct and false otherwise.
+  bool validate_tokens(const std::string &tree_string,
+                       const std::vector<std::string> &tokens) const;
+
   // Member variables
 private:
-  /// A stack to store nodes on a path to the root from the current node in the
-  /// parsing process. Needed for maintaining correct parent-child relationships
-  /// while parsing.
-  std::vector<std::reference_wrapper<node::Node<Label>>> node_stack;
-
   /// Structure brackets for representing nodes relationships. Could be
   /// modified to other types of paretheses if necessary.
   const std::string kLeftBracket = "{";

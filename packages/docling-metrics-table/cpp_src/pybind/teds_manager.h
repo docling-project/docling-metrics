@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
@@ -69,29 +71,35 @@ public:
     // Return object with full information: teds, tree sizes, ...
     TEDSSampleEvaluation eval_sample(id);
 
-    // Parse the inputs
-    if (!bnp_.validate_input(bracket_a)) {
+    // Parse the inputs. Each failure becomes an error_id.
+    std::optional<node::Node<Label>> tree_a;
+    std::optional<node::Node<Label>> tree_b;
+
+    try {
+      tree_a = bnp_.parse_single(bracket_a);
+    } catch (const std::exception &e) {
       eval_sample.error_id = 1;
-      eval_sample.error_msg = "Incorrect format of input A";
+      eval_sample.error_msg = std::string("Incorrect format of input A: ") + e.what();
       return eval_sample;
     }
-    const node::Node<Label> tree_a = bnp_.parse_single(bracket_a);
-    if (!bnp_.validate_input(bracket_b)) {
+
+    try {
+      tree_b = bnp_.parse_single(bracket_b);
+    } catch (const std::exception &e) {
       eval_sample.error_id = 2;
-      eval_sample.error_msg = "Incorrect format of input B";
+      eval_sample.error_msg = std::string("Incorrect format of input B: ") + e.what();
       return eval_sample;
     }
-    const node::Node<Label> tree_b = bnp_.parse_single(bracket_b);
 
     // Compute ted
-    int tree_a_size = tree_a.get_tree_size();
-    int tree_b_size = tree_b.get_tree_size();
+    int tree_a_size = tree_a->get_tree_size();
+    int tree_b_size = tree_b->get_tree_size();
     int max_tree_size = std::max(tree_a_size, tree_b_size);
 
     node::TreeIndexAPTED ti1;
     node::TreeIndexAPTED ti2;
-    node::index_tree(ti1, tree_a, ld_, *ucm_ptr_);
-    node::index_tree(ti2, tree_b, ld_, *ucm_ptr_);
+    node::index_tree(ti1, *tree_a, ld_, *ucm_ptr_);
+    node::index_tree(ti2, *tree_b, ld_, *ucm_ptr_);
     double distance = apted_ptr_->ted(ti1, ti2);
     double teds = 1. - (distance / max_tree_size);
 
