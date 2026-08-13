@@ -1,0 +1,51 @@
+# Well formed: single node
+{a}
+valid
+# Well formed: several nodes
+{a{b}{c}}
+valid
+# Well formed: empty root label
+{}
+valid
+# Well formed: empty label on a child
+{{}}
+valid
+# Well formed: escaped brackets belong to the label
+{a{\{b\}}}
+valid
+# Well formed: an escaped escape character is part of the label
+{a{\\}}
+valid
+# Malformed: no root
+x}
+invalid
+# Malformed: matching brackets, wrong nesting
+}{
+invalid
+# Malformed: two roots
+{x}{y}
+invalid
+# Malformed: unclosed root
+{x
+invalid
+# Malformed: matching brackets, pops below the root
+{a}}{b{c}}{d
+invalid
+# Malformed: trailing escape character
+{a\
+invalid
+# Stray text: before the root
+garbage{a}
+invalid
+# Stray text: a single character before the root, dropped by the tokenizer
+x{a}
+invalid
+# Stray text: after the root has closed
+{a}garbage
+invalid
+# Stray text: between two siblings
+{a{b}xx{c}}
+invalid
+# Stray text: between two siblings without labels
+{{}xx{}}
+invalid

@@ -5,6 +5,7 @@ set(parser_test_list
   parser_size_test            # Testing tree size after parsing.
   parser_labels_test          # Testing parsed labels.
   parser_tokens_test          # Testing parsed tokens.
+  parser_validate_test        # Testing the validation of well formed and malformed input.
   parser_collection_size_test # Testing collection tree sizes after parsing (reading from file).
 )
 

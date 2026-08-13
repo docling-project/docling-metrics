@@ -33,12 +33,23 @@ node::Node<Label> BracketNotationParser<Label>::parse_single(const std::string &
 
   std::vector<std::string> tokens = get_tokens(tree_string);
 
+  // Ensure that malformed input stops here
+  if (!validate_tokens(tree_string, tokens)) {
+    throw std::invalid_argument("Malformed bracket notation: '" + tree_string + "'");
+  }
+
+  // A stack to store nodes on a path to the root from the current node in the parsing process.
+  std::vector<std::reference_wrapper<node::Node<Label>>> node_stack;
+
   // Tokenize the input string - get iterator over tokens.
   auto tokens_begin = tokens.begin();
   auto tokens_end = tokens.end();
 
   // Deal with the root node separately.
   ++tokens_begin; // Advance tokens to label.
+  if (tokens_begin == tokens_end) {
+    throw std::invalid_argument("Truncated bracket notation: '" + tree_string + "'");
+  }
   std::string match_str = *tokens_begin;
   if (match_str == kLeftBracket || match_str == kRightBracket) { // Root has an empty label.
     match_str = "";
@@ -60,6 +71,9 @@ node::Node<Label> BracketNotationParser<Label>::parse_single(const std::string &
     if (match_str == kLeftBracket) { // Enter node.
       consumed_token = true;
       ++tokens_begin; // Advance tokens to label.
+      if (tokens_begin == tokens_end) {
+        throw std::invalid_argument("Truncated bracket notation: '" + tree_string + "'");
+      }
       match_str = *tokens_begin;
 
       if (match_str == kLeftBracket || match_str == kRightBracket) { // Node has an empty label.
@@ -76,11 +90,17 @@ node::Node<Label> BracketNotationParser<Label>::parse_single(const std::string &
       // Move n to become a child.
       // Return reference from add_child to the 'new-located' object.
       // Put a reference to just-moved n (last child of its parent) on a stack.
+      if (node_stack.empty()) {
+        throw std::invalid_argument("Unbalanced bracket notation: '" + tree_string + "'");
+      }
       node_stack.push_back(std::ref(node_stack.back().get().add_child(n)));
     }
 
     if (match_str == kRightBracket) { // Exit node.
       consumed_token = true;
+      if (node_stack.empty()) {
+        throw std::invalid_argument("Unbalanced bracket notation: '" + tree_string + "'");
+      }
       node_stack.pop_back();
       ++tokens_begin; // Advance tokens.
     }
@@ -104,18 +124,22 @@ void BracketNotationParser<Label>::parse_collection(
   // Read the trees line by line, parse, and move into the container.
   std::string tree_string;
   while (std::getline(trees_file, tree_string)) {
-    if (!validate_input(tree_string)) {
+    // parse_single validates the input itself, so a separate validate_input call here would
+    // only tokenize every line twice. Malformed lines are skipped, as before.
+    try {
+      trees_collection.push_back(parse_single(
+          tree_string)); // -> This invokes a move constructor (due to push_back(<rvalue>)).
+    } catch (const std::invalid_argument &) {
       continue;
     }
-    trees_collection.push_back(parse_single(
-        tree_string)); // -> This invokes a move constructor (due to push_back(<rvalue>)).
   }
   trees_file.close();
 }
 
 /// This is only a tokanizer that returns a vector with correct tokens.
 template <class Label>
-std::vector<std::string> BracketNotationParser<Label>::get_tokens(const std::string &tree_string) {
+std::vector<std::string>
+BracketNotationParser<Label>::get_tokens(const std::string &tree_string) const {
   std::vector<std::string> tokens;
 
   // Get pointer to the structure elements.
@@ -132,9 +156,14 @@ std::vector<std::string> BracketNotationParser<Label>::get_tokens(const std::str
        iter = strpbrk(next_begin, s_elems)) {
     // Next iteration will start from the position right of iter.
     next_begin = iter + 1;
-    // Check if the character just before the found position is an escape_char.
-    // Then, disregard the current position.
-    if (iter > begin && *(iter - 1) == kEscapeChar) {
+    // Count the consecutive escape characters just before the found position. The bracket
+    // belongs to a label only if that count is odd - an even count means the escapes escape
+    // each other and the bracket itself is a structure element.
+    size_t escapes = 0;
+    while (escapes < static_cast<size_t>(iter - begin) && *(iter - 1 - escapes) == kEscapeChar) {
+      ++escapes;
+    }
+    if (escapes % 2 == 1) {
       continue;
     }
     // If there is something between two consecutive brackets, it's potentially
@@ -154,22 +183,61 @@ std::vector<std::string> BracketNotationParser<Label>::get_tokens(const std::str
 
 template <class Label>
 bool BracketNotationParser<Label>::validate_input(const std::string &tree_string) const {
-  int bracket_diff_counter = 0; // Counts difference between the numbers of left and right brackets.
-  int bracket_pair_counter =
-      0; // Counts number of bracket pairs - number of nodes assuming correct nesting.
-  // Loop over all characters.
-  for (auto it = tree_string.begin(); it != tree_string.end(); ++it) {
-    if (*it == kEscapeChar) { // Skip next character if kEscapeChar is found.
-      ++it;
-    } else if (*it == kLeftBracket[0]) { // Increase bracket_counter when kLeftBracket found.
-      bracket_diff_counter++;
-      bracket_pair_counter++;
-    } else if (*it == kRightBracket[0]) { // Decrease bracket_counter when kRightBracket found.
-      bracket_diff_counter--;
-    }
-  }
-  if (bracket_diff_counter != 0 || bracket_pair_counter == 0) {
+  return validate_tokens(tree_string, get_tokens(tree_string));
+}
+
+template <class Label>
+bool BracketNotationParser<Label>::validate_tokens(const std::string &tree_string,
+                                                   const std::vector<std::string> &tokens) const {
+
+  // Rule 1: Text outside the outermost brackets is never tokenized, so it has to be caught on
+  // the raw string. Whitespace around the tree is tolerated, anything else is not. A string
+  // without any non-whitespace character fails here as well.
+  const size_t first = tree_string.find_first_not_of(" \t\n\r\f\v");
+  const size_t last = tree_string.find_last_not_of(" \t\n\r\f\v");
+  if (first == std::string::npos || tree_string[first] != kLeftBracket[0] ||
+      tree_string[last] != kRightBracket[0]) {
     return false;
   }
-  return true;
+
+  // Rule 2: The first token opens the root.
+  if (tokens.empty() || tokens.front() != kLeftBracket) {
+    return false;
+  }
+
+  int depth = 0;
+  int node_counter = 0;
+  bool root_closed = false;
+  bool expect_label = false; // A label is legal only right after kLeftBracket.
+
+  for (const auto &token : tokens) {
+    if (token == kLeftBracket) {
+      // Rule 5: Nothing may open after the root has closed.
+      if (root_closed) {
+        return false;
+      }
+      ++depth;
+      ++node_counter;
+      expect_label = true;
+    } else if (token == kRightBracket) {
+      // Rule 4: A closing bracket needs an open node.
+      if (depth == 0) {
+        return false;
+      }
+      --depth;
+      if (depth == 0) {
+        root_closed = true;
+      }
+      expect_label = false;
+    } else {
+      // Rule 3: Any other token is a label, and a label may only follow kLeftBracket.
+      if (!expect_label) {
+        return false;
+      }
+      expect_label = false;
+    }
+  }
+
+  // Rule 6: The tree is closed and holds at least one node.
+  return depth == 0 && node_counter > 0;
 }
