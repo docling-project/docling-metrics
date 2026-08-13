@@ -234,6 +234,11 @@ class TEDScorer:
         )
 
         n_nodes = max(n_nodes_pred, n_nodes_gt)
+
+        # Check against empty table tags to prevent division by zero
+        if n_nodes <= 0:
+            raise ValueError("Empty tree: both tables have no nodes")
+
         distance = APTED(tree_pred, tree_gt, CustomConfig()).compute_edit_distance()
         teds = 1.0 - (float(distance) / n_nodes)
         return teds
