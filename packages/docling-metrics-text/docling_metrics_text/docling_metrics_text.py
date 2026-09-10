@@ -1,3 +1,4 @@
+import logging
 import re
 import unicodedata
 from enum import Enum
@@ -41,6 +42,9 @@ _CJK = re.compile(
 def _segment_cjk(text: str) -> str:
     text = _HW_FW.sub(lambda m: unicodedata.normalize("NFKC", m.group(0)), text)
     return _CJK.sub(r" \1 ", text)
+
+
+_log = logging.getLogger(__name__)
 
 
 class TextMetricsMode(str, Enum):
@@ -259,18 +263,46 @@ class TextMetrics(BaseMetric):
         r"""
         Compute BLEU score between two texts.
 
+        BLEU is undefined when the prediction or the reference has no tokens.
+        The brevity penalty divides by the reference length and by the length
+        ratio, so the underlying implementation raises ZeroDivisionError. That
+        case is detected up front and reported as self._error_score with a
+        warning, so that an undefined score is never mistaken for a computed one.
+
         Args:
             text_a: First text (prediction)
             text_b: Second text (reference)
 
         Returns:
-            BLEU score, or self._error_score if computation fails
+            BLEU score, or self._error_score if the score is undefined or the
+            computation fails
         """
+        # The BLEU tokenizer (mteval-v13a) only inserts whitespace around
+        # punctuation, so a text without whitespace-delimited tokens has no BLEU
+        # tokens either. Check both sides before calling into `evaluate`.
+        n_tokens_a = len(text_a.split())
+        n_tokens_b = len(text_b.split())
+        if n_tokens_a == 0 or n_tokens_b == 0:
+            _log.warning(
+                "BLEU is undefined for this sample (prediction has %d tokens, "
+                "reference has %d tokens), returning error_score=%s",
+                n_tokens_a,
+                n_tokens_b,
+                self._error_score,
+            )
+            return self._error_score
+
         try:
             result = self._bleu_eval.compute(
                 predictions=[text_a],
                 references=[[text_b]],
             )
-            return self._error_score if result is None else result["bleu"]
         except Exception:
+            # Last resort: never hide the failure, but keep the sample scored.
+            _log.warning(
+                "BLEU computation failed, returning error_score=%s",
+                self._error_score,
+                exc_info=True,
+            )
             return self._error_score
+        return self._error_score if result is None else result["bleu"]
