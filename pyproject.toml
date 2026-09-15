@@ -9,6 +9,9 @@ default-groups = ["dev"]
 
 [tool.uv.workspace]
 members = ["packages/*"]
+# docling-metrics-teds has no pyproject.toml yet; exclude it so the glob doesn't
+# treat the incomplete directory as a workspace member and break builds.
+exclude = ["packages/docling-metrics-teds"]
 
 [dependency-groups]
 dev = [
