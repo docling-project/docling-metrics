@@ -253,9 +253,8 @@ class TextMetrics(BaseMetric):
         """
         try:
             result = self._bleu_eval.compute(
-                predictions=[text_a],
-                references=[[text_b]],
-                tokenizer=self._word_tokenize,
+                predictions=[_segment_cjk(text_a)],
+                references=[[_segment_cjk(text_b)]],
             )
             return self._error_score if result is None else result["bleu"]
         except Exception:
