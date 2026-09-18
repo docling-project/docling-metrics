@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from enum import Enum
 from typing import Iterable
 from uuid import uuid4
@@ -17,18 +18,28 @@ from nltk.translate import meteor_score
 
 from . import docling_metrics_text_cpp  # type: ignore
 
+# Fold the halfwidth/fullwidth block (U+FF00-FFEF) to its canonical equivalents
+# first, so fullwidth digits and latin normalize to ASCII (fullwidth "2024" ->
+# "2024") and halfwidth katakana composes. A no-op on text with no fullwidth forms.
+_HW_FW = re.compile(r"[＀-￯]+")
+
 # CJK scripts carry no word delimiters, so PTB/whitespace tokenization collapses a
 # whole run into a single token — any difference (a line-wrap, one character) then
 # zeroes every token metric. Space-pad each CJK codepoint so it tokenizes as its
 # own unit: char-level for CJK, word-level for Latin, the sacreBLEU ``zh``
 # convention. A no-op on text with no CJK, so it needs no language detection.
 _CJK = re.compile(
-    r"([　-〿぀-ヿ㐀-䶿一-鿿"
-    r"豈-﫿＀-￯가-힯])"
+    r"([　-〿"  # CJK punctuation
+    r"぀-ヿ"  # hiragana + katakana
+    r"㐀-䶿"  # Han, Ext A
+    r"一-鿿"  # Han, main block
+    r"豈-﫿"  # Han compatibility
+    r"가-힯])"  # Hangul syllables
 )
 
 
 def _segment_cjk(text: str) -> str:
+    text = _HW_FW.sub(lambda m: unicodedata.normalize("NFKC", m.group(0)), text)
     return _CJK.sub(r" \1 ", text)
 
 
@@ -87,9 +98,14 @@ class TextMetrics(BaseMetric):
         r"""
         Python implementation to compute text metrics for the input sample
         """
+        # Space-pad CJK once here so every metric below shares char-level CJK
+        # segmentation (and normalized fullwidth forms); a no-op on non-CJK text.
+        text_a = _segment_cjk(sample.text_a)
+        text_b = _segment_cjk(sample.text_b)
+
         # Tokenize the inputs
         tokens_a, tokens_b, tokens_a_set, tokens_b_set = self._tokenize_pair(
-            sample.text_a, sample.text_b
+            text_a, text_b
         )
 
         # Compute metrics
@@ -98,7 +114,7 @@ class TextMetrics(BaseMetric):
         recall_score = self._compute_recall(tokens_a_set, tokens_b_set)
         edit_distance_score = self._compute_edit_distance(tokens_a, tokens_b)
         meteor_score_value = self._compute_meteor(tokens_a, tokens_b)
-        bleu_score = self._compute_bleu(sample.text_a, sample.text_b)
+        bleu_score = self._compute_bleu(text_a, text_b)
 
         result = TextPairEvaluation(
             id=sample.id,
@@ -122,13 +138,12 @@ class TextMetrics(BaseMetric):
         return TextDatasetEvaluation(sample_count=0)
 
     def _word_tokenize(self, text: str) -> list[str]:
-        r"""Tokenize with the TreeBank tokenizer, CJK codepoints char-segmented.
+        r"""Tokenize with the TreeBank tokenizer.
 
-        Every token metric (F1/precision/recall, edit distance, METEOR) consumes
-        this, so segmenting CJK here is the single point that makes them all
-        char-level for CJK.
+        CJK segmentation is applied once upstream in ``evaluate_sample`` via
+        ``_segment_cjk``, so this stays the plain TreeBank tokenizer.
         """
-        return word_tokenize(_segment_cjk(text))
+        return word_tokenize(text)
 
     def _tokenize_pair(
         self, text_a: str, text_b: str
@@ -253,8 +268,8 @@ class TextMetrics(BaseMetric):
         """
         try:
             result = self._bleu_eval.compute(
-                predictions=[_segment_cjk(text_a)],
-                references=[[_segment_cjk(text_b)]],
+                predictions=[text_a],
+                references=[[text_b]],
             )
             return self._error_score if result is None else result["bleu"]
         except Exception:
