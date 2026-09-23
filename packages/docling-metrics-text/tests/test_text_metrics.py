@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from docling_metrics_text import TextMetrics
-from docling_metrics_text.docling_metrics_text import TextPairSample
+from docling_metrics_text.docling_metrics_text import TextPairSample, _segment_cjk
 from docling_metrics_text.utils.data_loader import FileEntry, TextFileLoader
 
 MD_DIR = Path(__file__).parent / "data" / "md"
@@ -81,6 +81,22 @@ def test_extreme_cases():
     assert result.bleu_score == -2.0
 
 
+def test_segment_cjk():
+    r"""CJK is char-segmented; fullwidth forms are NFKC-folded; non-CJK untouched."""
+    # Build fullwidth inputs from codepoints; literal fullwidth latin trips RUF001.
+    fw_2024 = "".join(chr(0xFF10 + d) for d in (2, 0, 2, 4))  # fullwidth "2024"
+    fw_abc = "".join(chr(0xFF21 + i) for i in range(3))  # fullwidth "ABC"
+    # Fullwidth digits fold to ASCII and split from the Han character.
+    assert _segment_cjk(fw_2024 + "年").split() == ["2024", "年"]
+    # Fullwidth latin folds to ASCII.
+    assert _segment_cjk(fw_abc).split() == ["ABC"]
+    # Han run is split into per-character tokens.
+    assert _segment_cjk("你好").split() == ["你", "好"]
+    # Non-CJK text is returned unchanged.
+    assert _segment_cjk("hello world") == "hello world"
+
+
 if __name__ == "__main__":
     test_text_metrics()
     test_extreme_cases()
+    test_segment_cjk()

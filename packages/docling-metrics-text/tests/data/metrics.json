@@ -48,12 +48,12 @@
     "recall_score": 0.8976377952755905
   },
   "ff850a0ebda17a1b314eeb2c32291ebc7dd57d4dacf34c666f607e4028eea2ee": {
-    "bleu_score": 0.5037519153077786,
-    "edit_distance_score": 0.3333333333333333,
-    "f1_score": 0.6285714285714286,
-    "meteor_score": 0.7570925320867848,
-    "precision_score": 0.5789473684210527,
-    "recall_score": 0.6875
+    "bleu_score": 0.7647868397220234,
+    "edit_distance_score": 0.12341772151898735,
+    "f1_score": 0.9022556390977443,
+    "meteor_score": 0.8843330054212161,
+    "precision_score": 0.9090909090909091,
+    "recall_score": 0.8955223880597015
   },
   "ff86d932d02036ee106321d65dc869effaf785754a5fa0d29657b4e0ed1397d2": {
     "bleu_score": 0.3866136079307839,
