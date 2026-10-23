@@ -217,7 +217,13 @@ class TEDScorer:
     def __init__(self):
         self._tokens = []
 
-    def teds(self, gt_table: html, pred_table: html, structure_only: bool) -> float:
+    def teds(
+        self,
+        gt_table: html,
+        pred_table: html,
+        structure_only: bool,
+        header_aware: bool = False,
+    ) -> float:
         r"""
         Compute the tree-edit-distance score TEDS
         TEDS is a float between [0, 1] where 0 is the worst and 1 is the best
@@ -227,10 +233,10 @@ class TEDScorer:
 
         # Convert the html objects into APTED trees
         tree_pred: TableTree = self.html_to_table_tree(
-            pred_table, convert_cell=not structure_only
+            pred_table, convert_cell=not structure_only, header_aware=header_aware
         )
         tree_gt: TableTree = self.html_to_table_tree(
-            gt_table, convert_cell=not structure_only
+            gt_table, convert_cell=not structure_only, header_aware=header_aware
         )
 
         n_nodes = max(n_nodes_pred, n_nodes_gt)
@@ -266,14 +272,16 @@ class TEDScorer:
             stack.append((element, True))
             stack.extend((child, False) for child in reversed(element.getchildren()))
 
-    def _make_table_tree_node(self, node: html, convert_cell: bool) -> TableTree:
+    def _make_table_tree_node(
+        self, node: html, convert_cell: bool, header_aware: bool = False
+    ) -> TableTree:
         r"""
         Builds the TableTree node for a single HTML element, without its children
         """
         if node.tag in ["td", "th"]:
-            # Normalize the tag to td, otherwise the comparison in APTED causes mismatch
-            # TODO: Make this normalization configurable.
-            node.tag = "td"
+            # Normalize the tag to td unless header cells must count as different from body cells
+            if not header_aware:
+                node.tag = "td"
             if convert_cell:
                 self._tokens = []
                 self._tokenize(node)
@@ -290,7 +298,11 @@ class TEDScorer:
         return TableTree(node.tag, None, None, None, *deque())
 
     def html_to_table_tree(
-        self, node: html, convert_cell: bool = False, parent: html = None
+        self,
+        node: html,
+        convert_cell: bool = False,
+        parent: html = None,
+        header_aware: bool = False,
     ) -> TableTree:
         r"""
         Converts HTML tree to the bracket notation for APTED
@@ -303,7 +315,7 @@ class TEDScorer:
         stack: list[tuple[html, TableTree]] = [(node, parent)]
         while stack:
             element, tree_parent = stack.pop()
-            new_node = self._make_table_tree_node(element, convert_cell)
+            new_node = self._make_table_tree_node(element, convert_cell, header_aware)
             if tree_parent is not None:
                 tree_parent.children.append(new_node)
             if root is None:
@@ -314,13 +326,15 @@ class TEDScorer:
                 )
         return root
 
-    def html_to_bracket(self, html_str: str, structure_only: bool = False) -> str:
+    def html_to_bracket(
+        self, html_str: str, structure_only: bool = False, header_aware: bool = False
+    ) -> str:
         r"""
         Convert html to bracket format
         """
         html_obj = html.fromstring(html_str)
         table_tree: TableTree = self.html_to_table_tree(
-            html_obj, convert_cell=not structure_only
+            html_obj, convert_cell=not structure_only, header_aware=header_aware
         )
         bracket: str = table_tree.bracket()
         return bracket

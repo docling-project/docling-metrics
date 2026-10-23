@@ -171,3 +171,33 @@ def test_unknown_cost_model_is_rejected() -> None:
 
     with pytest.raises(ValueError):
         docling_metric_table_cpp.TEDSManager("nope")
+
+
+@pytest.mark.parametrize("cost_model", list(TEDSCostModel))
+@pytest.mark.parametrize("structure_only", [True, False])
+def test_header_aware(cost_model: TEDSCostModel, structure_only: bool) -> None:
+    headed = "<table><tr><th>a</th><th>b</th></tr><tr><td>c</td><td>d</td></tr></table>"
+    swapped = headed.replace("<th>b</th>", "<td>b</td>")
+    metric = TableMetric(metrics=[TableMetricKind.TEDS], teds_cost_model=cost_model)
+
+    def teds(pred: str, header_aware: bool) -> float:
+        sample = TableMetricHTMLInputSample(
+            id="t",
+            html_a=headed,
+            html_b=pred,
+            structure_only=structure_only,
+            header_aware=header_aware,
+        )
+        evaluation = metric.evaluate_sample(sample)
+        assert evaluation.teds is not None
+        return evaluation.teds.teds
+
+    def py_teds(pred: str, header_aware: bool) -> float:
+        return TEDScorer().teds(
+            html.fromstring(headed), html.fromstring(pred), structure_only, header_aware
+        )
+
+    for score in (teds, py_teds):
+        assert score(swapped, header_aware=False) == 1.0
+        assert score(swapped, header_aware=True) < 1.0
+        assert score(headed, header_aware=True) == 1.0
