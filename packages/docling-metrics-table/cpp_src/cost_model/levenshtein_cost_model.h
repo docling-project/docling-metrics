@@ -10,10 +10,13 @@
 
 namespace cost_model {
 
-/// TEDS cost model with a graded rename cost, the C++ twin of CustomConfig.rename in
-/// docling_metrics_table/utils/teds.py.
+/// TEDS cost model with a unit or a graded rename cost. The graded one is the C++ twin of
+/// CustomConfig.rename in docling_metrics_table/utils/teds.py.
 /**
- * Labels are the strings written by TableTree._label():
+ * Not graded ("unit"): rename costs 0 for equal labels, else 1, on the whole label, exactly like
+ * UnitCostModelLD.
+ *
+ * Graded ("levenshtein"): labels are the strings written by TableTree._label():
  *   "tag": td, "colspan": 1, "rowspan": 1, "text": ['a', '<b', 'x', '</b>']
  * escaped with \\, \{ and \}. Everything before ', "text": ' is the head (tag and spans), the
  * rest is the Python repr of the token list. Rename costs:
@@ -28,11 +31,15 @@ namespace cost_model {
  */
 template <typename Label> class LevenshteinCostModelLD {
 public:
-  explicit LevenshteinCostModelLD(label::LabelDictionary<Label> &ld) : ld_(ld) {}
+  LevenshteinCostModelLD(label::LabelDictionary<Label> &ld, const bool graded)
+      : ld_(ld), graded_(graded) {}
 
   double ren(const int label_id_1, const int label_id_2) const {
     if (label_id_1 == label_id_2) {
       return 0.0;
+    }
+    if (!graded_) {
+      return 1.0;
     }
     // Resize first: a later resize would invalidate the reference to the first entry.
     if (parsed_.size() < static_cast<size_t>(ld_.size())) {
@@ -148,6 +155,7 @@ private:
   }
 
   const label::LabelDictionary<Label> &ld_;
+  const bool graded_;
   // Lazily filled caches, indexed by label id / keyed by token repr.
   mutable std::vector<Parsed> parsed_;
   mutable std::unordered_map<std::string, uint32_t> token_ids_;

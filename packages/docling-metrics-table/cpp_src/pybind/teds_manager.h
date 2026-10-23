@@ -13,13 +13,11 @@
 #include "levenshtein_cost_model.h"
 #include "node.h"
 #include "string_label.h"
-#include "unit_cost_model.h"
 
 namespace docling {
 
 using Label = label::StringLabel;
-using CostModelLD = cost_model::UnitCostModelLD<Label>;
-using LevenshteinCostModel = cost_model::LevenshteinCostModelLD<Label>;
+using CostModelLD = cost_model::LevenshteinCostModelLD<Label>;
 using LabelDictionary = label::LabelDictionary<Label>;
 
 /**
@@ -84,13 +82,9 @@ public:
    * std::invalid_argument -> Python ValueError.
    */
   explicit TEDSManager(const std::string &cost_model = "unit")
-      : levenshtein_(parse_cost_model(cost_model)), ucm_ptr_(std::make_unique<CostModelLD>(ld_)),
+      : cm_ptr_(std::make_unique<CostModelLD>(ld_, parse_cost_model(cost_model))),
         apted_ptr_(
-            std::make_unique<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>>(*ucm_ptr_)),
-        lcm_ptr_(std::make_unique<LevenshteinCostModel>(ld_)),
-        lev_apted_ptr_(
-            std::make_unique<ted::APTEDTreeIndex<LevenshteinCostModel, node::TreeIndexAPTED>>(
-                *lcm_ptr_)) {}
+            std::make_unique<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>>(*cm_ptr_)) {}
 
   /**
    * Evaluate a single sample in html format
@@ -163,8 +157,11 @@ public:
         return eval_sample;
       }
 
-      double distance = levenshtein_ ? tree_distance(*lcm_ptr_, *lev_apted_ptr_, *tree_a, *tree_b)
-                                     : tree_distance(*ucm_ptr_, *apted_ptr_, *tree_a, *tree_b);
+      node::TreeIndexAPTED ti1;
+      node::TreeIndexAPTED ti2;
+      node::index_tree(ti1, *tree_a, ld_, *cm_ptr_);
+      node::index_tree(ti2, *tree_b, ld_, *cm_ptr_);
+      double distance = apted_ptr_->ted(ti1, ti2);
       double teds = 1. - (distance / max_tree_size);
 
       eval_sample.tree_a_size = tree_a_size;
@@ -208,22 +205,13 @@ public:
   }
 
 private:
+  /// Returns whether the rename cost is graded ("levenshtein") rather than unit.
   static bool parse_cost_model(const std::string &cost_model) {
     if (cost_model != "unit" && cost_model != "levenshtein") {
       throw std::invalid_argument("Unknown cost model '" + cost_model +
                                   "', expected 'unit' or 'levenshtein'");
     }
     return cost_model == "levenshtein";
-  }
-
-  template <class CostModel, class Apted>
-  double tree_distance(const CostModel &cm, Apted &apted, const node::Node<Label> &tree_a,
-                       const node::Node<Label> &tree_b) {
-    node::TreeIndexAPTED ti1;
-    node::TreeIndexAPTED ti2;
-    node::index_tree(ti1, tree_a, ld_, cm);
-    node::index_tree(ti2, tree_b, ld_, cm);
-    return apted.ted(ti1, ti2);
   }
 
   std::string html_to_bracket(const std::string &html, bool structure_only) {
@@ -252,11 +240,8 @@ private:
 private:
   parser::BracketNotationParser<Label> bnp_;
   LabelDictionary ld_;
-  bool levenshtein_;
-  std::unique_ptr<CostModelLD> ucm_ptr_ = nullptr;
+  std::unique_ptr<CostModelLD> cm_ptr_ = nullptr;
   std::unique_ptr<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>> apted_ptr_;
-  std::unique_ptr<LevenshteinCostModel> lcm_ptr_ = nullptr;
-  std::unique_ptr<ted::APTEDTreeIndex<LevenshteinCostModel, node::TreeIndexAPTED>> lev_apted_ptr_;
 
   // Accumulated evaluations per sample
   std::unordered_map<std::string, TEDSSampleEvaluation> sample_evaluations;
