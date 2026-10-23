@@ -35,7 +35,10 @@ PYBIND11_MODULE(docling_metric_table_cpp, m) {
 
   pybind11::class_<TEDSManager>(m, "TEDSManager",
                                 "Manager for computing TEDS metrics on tree structures")
-      .def(py::init<>(), "Initialize a new TEDSManager instance")
+      .def(py::init<const std::string &>(), py::arg("cost_model") = "unit",
+           "Initialize a new TEDSManager instance\n\n"
+           "Args:\n"
+           "    cost_model: Rename cost of the cell nodes, \"unit\" or \"levenshtein\"")
       .def("evaluate_sample", &TEDSManager::evaluate_sample, py::arg("id"), py::arg("bracket_a"),
            py::arg("bracket_b"),
            "Evaluate a single sample\n\n"

@@ -7,11 +7,13 @@ from docling_metrics_table.docling_metrics_table import (
     TableMetricDatasetEvaluation,
     TableMetricHTMLInputSample,
     TableMetricSampleEvaluation,
+    TEDSCostModel,
     TEDSSampleEvaluation,
 )
 
 __all__ = [
     "GriTSSampleEvaluation",
+    "TEDSCostModel",
     "TEDSSampleEvaluation",
     "TableMetric",
     "TableMetricBracketInputSample",

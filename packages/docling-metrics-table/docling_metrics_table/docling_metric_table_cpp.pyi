@@ -23,8 +23,12 @@ class TEDSDatasetEvaluation:
 class TEDSManager:
     """Manager for computing TEDS metrics on tree structures."""
 
-    def __init__(self) -> None:
-        """Initialize a new TEDSManager instance."""
+    def __init__(self, cost_model: str = "unit") -> None:
+        """Initialize a new TEDSManager instance.
+
+        Args:
+            cost_model: Rename cost of the cell nodes, "unit" or "levenshtein"
+        """
 
     def evaluate_sample(
         self,

@@ -21,6 +21,13 @@ class TableMetricKind(str, Enum):
     GRITS = "GriTS"
 
 
+class TEDSCostModel(str, Enum):
+    r"""Rename cost of the cell nodes in the TEDS tree edit distance"""
+
+    UNIT = "unit"  # 0 for identical cells (tag, spans and text), 1 otherwise
+    LEVENSHTEIN = "levenshtein"  # normalized Levenshtein distance of the cell text
+
+
 class TableMetricTaskKind(str, Enum):
     STRUCTURE = "structure"
     CONTENT = "content"
@@ -136,6 +143,7 @@ class TableMetric(BaseMetric):
         self,
         metrics: list[TableMetricKind] = [TableMetricKind.TEDS, TableMetricKind.GRITS],
         grits_cache_size: int = 10000000,
+        teds_cost_model: TEDSCostModel = TEDSCostModel.UNIT,
     ) -> None:
         r"""
         Initialize the TableMetric for the given list of metrics
@@ -149,7 +157,9 @@ class TableMetric(BaseMetric):
 
         # Initialize the TEDS metric
         if TableMetricKind.TEDS in self._metrics:
-            self._teds_manager = docling_metric_table_cpp.TEDSManager()
+            self._teds_manager = docling_metric_table_cpp.TEDSManager(
+                TEDSCostModel(teds_cost_model).value
+            )
         if TableMetricKind.GRITS in self._metrics:
             self._grits_metric = GriTSMetric(max_cache_size=grits_cache_size)
 
