@@ -46,6 +46,16 @@ def compress_binary_representations(
     p: [u,]: The flattened values from preds that come from a unique pair (g, p)
     c: [u,]: The counts for each unique pair (g, p)
     """
+    # Fast path: pack each (g, p) pair into one uint64 when both fit in 32 bits.
+    # np.unique on a plain integer array is ~60x faster than on a structured array.
+    if gt.max(initial=0) < 2**32 and preds.max(initial=0) < 2**32:
+        shift = np.uint64(32)
+        packed = (gt.astype(np.uint64) << shift) | preds.astype(np.uint64)
+        u, counts = np.unique(packed, return_counts=True)
+        g = (u >> shift).astype(gt.dtype)
+        p = (u & np.uint64(0xFFFFFFFF)).astype(preds.dtype)
+        return g, p, counts
+
     # Build a structured array to keep the pairs (g, p)
     pairs = np.zeros(gt.shape, dtype=[("gt", gt.dtype), ("preds", preds.dtype)])
     pairs["gt"] = gt

@@ -9,6 +9,7 @@ from docling_metrics_layout.layout_types import (
 )
 from docling_metrics_layout.tore.multi_label_confusion_matrix import (
     MultiLabelConfusionMatrix,
+    compress_binary_representations,
 )
 
 # Get the directory of this test file
@@ -271,3 +272,23 @@ if __name__ == "__main__":
     test_multi_label_confusion_matrix_paper()
     test_preds_on_preds()
     test_preds_on_empty()
+
+
+def test_compress_binary_representations_fast_path():
+    r"""
+    The packed-key fast path must match the structured-array fallback exactly
+    """
+    rng = np.random.default_rng(0)
+    gt = np.uint64(1) << rng.integers(0, 18, (200, 300)).astype(np.uint64)
+    preds = np.uint64(1) << rng.integers(0, 18, (200, 300)).astype(np.uint64)
+    gt[:50] = 1
+    preds[:80] = 1
+
+    fast = compress_binary_representations(gt, preds)
+    # Setting a bit above 32 forces the fallback; then clear it again from the output
+    high = np.uint64(1) << np.uint64(40)
+    slow = compress_binary_representations(gt | high, preds)
+    assert np.array_equal(fast[0], slow[0] ^ high)
+    assert np.array_equal(fast[1], slow[1])
+    assert np.array_equal(fast[2], slow[2])
+    assert fast[0].dtype == gt.dtype and fast[1].dtype == preds.dtype
