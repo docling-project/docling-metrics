@@ -1217,9 +1217,9 @@ void APTEDTreeIndex<CostModel, TreeIndex>::treeEditDist(const TreeIndex &t1, con
   int ioff = t1.postl_to_lld_[i] - 1;
   int joff = t2.postl_to_lld_[j] - 1;
   // Variables holding costs of each minimum element.
-  float da = 0;
-  float db = 0;
-  float dc = 0;
+  double da = 0;
+  double db = 0;
+  double dc = 0;
   // Initialize forestdist array with deletion and insertion costs of each
   // relevant subforest.
   forestdist.at(0, 0) = 0;
@@ -1360,9 +1360,9 @@ void APTEDTreeIndex<CostModel, TreeIndex>::revTreeEditDist(
   int ioff = t1.postr_to_rld_[i] - 1;
   int joff = t2.postr_to_rld_[j] - 1;
   // Variables holding costs of each minimum element.
-  float da = 0;
-  float db = 0;
-  float dc = 0;
+  double da = 0;
+  double db = 0;
+  double dc = 0;
   // Initialize forestdist array with deletion and insertion costs of each
   // relevant subforest.
   forestdist.at(0, 0) = 0;
@@ -1386,7 +1386,7 @@ void APTEDTreeIndex<CostModel, TreeIndex>::revTreeEditDist(
       // Increment the number of subproblems.
       ++subproblem_counter_;
       // Calculate partial distance values for this subproblem.
-      float u =
+      double u =
           (treesSwapped
                ? c_.ren(t2.postr_to_label_id_[j1 + joff], t1.postr_to_label_id_[i1 + ioff])
                : c_.ren(

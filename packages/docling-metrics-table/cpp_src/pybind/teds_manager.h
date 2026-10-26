@@ -10,14 +10,14 @@
 
 #include "apted_tree_index.h"
 #include "bracket_notation_parser.h"
+#include "levenshtein_cost_model.h"
 #include "node.h"
 #include "string_label.h"
-#include "unit_cost_model.h"
 
 namespace docling {
 
 using Label = label::StringLabel;
-using CostModelLD = cost_model::UnitCostModelLD<Label>;
+using CostModelLD = cost_model::LevenshteinCostModelLD<Label>;
 using LabelDictionary = label::LabelDictionary<Label>;
 
 /**
@@ -76,10 +76,15 @@ struct TEDSDatasetEvaluation {
  */
 class TEDSManager {
 public:
-  TEDSManager()
-      : ucm_ptr_(std::make_unique<CostModelLD>(ld_)),
+  /**
+   * cost_model selects the rename cost of the cell nodes: "unit" (0 for equal labels, else 1) or
+   * "levenshtein" (normalized Levenshtein distance of the cell text). Anything else throws
+   * std::invalid_argument -> Python ValueError.
+   */
+  explicit TEDSManager(const std::string &cost_model = "unit")
+      : cm_ptr_(std::make_unique<CostModelLD>(ld_, parse_cost_model(cost_model))),
         apted_ptr_(
-            std::make_unique<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>>(*ucm_ptr_)) {}
+            std::make_unique<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>>(*cm_ptr_)) {}
 
   /**
    * Evaluate a single sample in html format
@@ -154,8 +159,8 @@ public:
 
       node::TreeIndexAPTED ti1;
       node::TreeIndexAPTED ti2;
-      node::index_tree(ti1, *tree_a, ld_, *ucm_ptr_);
-      node::index_tree(ti2, *tree_b, ld_, *ucm_ptr_);
+      node::index_tree(ti1, *tree_a, ld_, *cm_ptr_);
+      node::index_tree(ti2, *tree_b, ld_, *cm_ptr_);
       double distance = apted_ptr_->ted(ti1, ti2);
       double teds = 1. - (distance / max_tree_size);
 
@@ -200,6 +205,15 @@ public:
   }
 
 private:
+  /// Returns whether the rename cost is graded ("levenshtein") rather than unit.
+  static bool parse_cost_model(const std::string &cost_model) {
+    if (cost_model != "unit" && cost_model != "levenshtein") {
+      throw std::invalid_argument("Unknown cost model '" + cost_model +
+                                  "', expected 'unit' or 'levenshtein'");
+    }
+    return cost_model == "levenshtein";
+  }
+
   std::string html_to_bracket(const std::string &html, bool structure_only) {
     // TODO: Add implementation
     return "";
@@ -226,7 +240,7 @@ private:
 private:
   parser::BracketNotationParser<Label> bnp_;
   LabelDictionary ld_;
-  std::unique_ptr<CostModelLD> ucm_ptr_ = nullptr;
+  std::unique_ptr<CostModelLD> cm_ptr_ = nullptr;
   std::unique_ptr<ted::APTEDTreeIndex<CostModelLD, node::TreeIndexAPTED>> apted_ptr_;
 
   // Accumulated evaluations per sample

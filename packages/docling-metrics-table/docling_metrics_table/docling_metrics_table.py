@@ -21,6 +21,13 @@ class TableMetricKind(str, Enum):
     GRITS = "GriTS"
 
 
+class TEDSCostModel(str, Enum):
+    r"""Rename cost of the cell nodes in the TEDS tree edit distance"""
+
+    UNIT = "unit"  # 0 for identical cells (tag, spans and text), 1 otherwise
+    LEVENSHTEIN = "levenshtein"  # normalized Levenshtein distance of the cell text
+
+
 class TableMetricTaskKind(str, Enum):
     STRUCTURE = "structure"
     CONTENT = "content"
@@ -50,6 +57,11 @@ class TableMetricHTMLInputSample(BaseInputSample):
 
     structure_only: Annotated[
         bool, Field(description="If True the content is not evaluated")
+    ] = False
+
+    header_aware: Annotated[
+        bool,
+        Field(description="If True TEDS tells header cells (th) from body cells (td)"),
     ] = False
 
 
@@ -136,6 +148,7 @@ class TableMetric(BaseMetric):
         self,
         metrics: list[TableMetricKind] = [TableMetricKind.TEDS, TableMetricKind.GRITS],
         grits_cache_size: int = 10000000,
+        teds_cost_model: TEDSCostModel = TEDSCostModel.UNIT,
     ) -> None:
         r"""
         Initialize the TableMetric for the given list of metrics
@@ -149,7 +162,9 @@ class TableMetric(BaseMetric):
 
         # Initialize the TEDS metric
         if TableMetricKind.TEDS in self._metrics:
-            self._teds_manager = docling_metric_table_cpp.TEDSManager()
+            self._teds_manager = docling_metric_table_cpp.TEDSManager(
+                TEDSCostModel(teds_cost_model).value
+            )
         if TableMetricKind.GRITS in self._metrics:
             self._grits_metric = GriTSMetric(max_cache_size=grits_cache_size)
 
@@ -177,6 +192,7 @@ class TableMetric(BaseMetric):
                     sample.html_a,
                     sample.html_b,
                     structure_only=structure_only,
+                    header_aware=sample.header_aware,
                 )
             if compute_grits:
                 # The location task cannot be computed by the HTML inputs
@@ -279,13 +295,18 @@ class TableMetric(BaseMetric):
         return bracket
 
     def _evaluate_teds_from_html(
-        self, sample_id: str, html_a: str, html_b: str, structure_only: bool = False
+        self,
+        sample_id: str,
+        html_a: str,
+        html_b: str,
+        structure_only: bool = False,
+        header_aware: bool = False,
     ) -> TEDSSampleEvaluation:
         bracket_a = self._teds_scorer.html_to_bracket(
-            html_a, structure_only=structure_only
+            html_a, structure_only=structure_only, header_aware=header_aware
         )
         bracket_b = self._teds_scorer.html_to_bracket(
-            html_b, structure_only=structure_only
+            html_b, structure_only=structure_only, header_aware=header_aware
         )
         sample_evaluaton = self._teds_manager.evaluate_sample(
             sample_id,
